@@ -18,15 +18,14 @@ export default function Home() {
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {tools.map((tool) => {
-            const Icon = tool.icon;
             return (
               <Link
                 key={tool.id}
                 href={tool.href}
                 className="group bg-white rounded-lg p-6 shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col h-full items-center text-center"
               >
-                <div className={`p-4 rounded-xl ${tool.color} text-white group-hover:-translate-y-1 transition-transform duration-300 mb-4`}>
-                  <Icon className="h-9 w-9" strokeWidth={1.5} />
+                <div className="group-hover:-translate-y-1 transition-transform duration-300 mb-4 h-16 flex items-center justify-center">
+                  <img src={tool.iconUrl} alt={tool.name} className="h-14 w-14 object-contain" />
                 </div>
                 <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-brand transition-colors">
                   {tool.name}
