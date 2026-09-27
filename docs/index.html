@@ -3,74 +3,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenPDF - Tu Suite Privada de PDFs</title>
+    <title>OpenPDF - The Enterprise PDF Suite</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <!-- Vanta.js and Three.js for Interactive Background -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        #vanta-bg {
+            position: absolute;
+            z-index: -1;
+            top: 0; left: 0; width: 100%; height: 100%;
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body class="bg-gray-50 text-gray-900 relative">
+
+    <!-- Interactive 3D Background -->
+    <div id="vanta-bg"></div>
+
     <!-- Navbar -->
-    <nav class="bg-white shadow-sm py-4">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-            <div class="flex items-center gap-2">
-                <div class="bg-blue-600 text-white font-bold p-2 rounded">PDF</div>
-                <span class="text-xl font-bold">OpenPDF</span>
+    <nav class="glass-panel sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <img src="assets/banner.png" alt="OpenPDF Logo" class="h-10 object-contain">
             </div>
-            <a href="https://github.com/albert/OpenPDF" class="text-gray-500 hover:text-gray-900 font-medium">Ver en GitHub</a>
+            <a href="https://github.com/albert/OpenPDF" class="text-gray-600 hover:text-blue-600 font-semibold transition-colors">
+                View on GitHub
+            </a>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <header class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <h1 class="text-5xl font-extrabold tracking-tight text-gray-900 mb-6">
+    <header class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 text-center">
+        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 drop-shadow-sm">
             Procesa tus documentos PDF <br>
-            <span class="text-blue-600">de forma local y 100% privada.</span>
+            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+                de forma local y privada.
+            </span>
         </h1>
-        <p class="mt-4 text-xl text-gray-500 max-w-3xl mx-auto mb-10">
+        <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto mb-10 font-medium">
             Une, divide, convierte y protege tus archivos PDF sin depender de la nube. 
-            OpenPDF es gratuito, de código abierto y funciona sin internet en tu computadora Windows.
+            Arquitectura de grado empresarial, 100% código abierto y sin conexión a internet.
         </p>
         
-        <div class="flex justify-center gap-4 flex-wrap">
-            <!-- Link to the GitHub releases page for the .exe -->
-            <a href="https://github.com/albert/OpenPDF/releases/latest" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg shadow-lg transition transform hover:-translate-y-1 text-lg flex items-center gap-2">
+        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-16 relative z-10">
+            <a href="https://github.com/albert/OpenPDF/releases/latest" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl shadow-xl shadow-blue-500/30 transition transform hover:-translate-y-1 text-lg flex items-center justify-center gap-2">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                Descargar para Windows
+                Descargar Instalador (Windows)
             </a>
-            <a href="https://github.com/albert/OpenPDF#readme" class="bg-white hover:bg-gray-50 text-gray-900 font-semibold py-4 px-8 rounded-lg shadow border border-gray-200 transition text-lg">
+            <a href="https://github.com/albert/OpenPDF#readme" class="glass-panel hover:bg-white text-gray-900 font-bold py-4 px-8 rounded-xl shadow-sm transition transform hover:-translate-y-1 text-lg">
                 Leer Documentación
             </a>
         </div>
-        <p class="mt-4 text-sm text-gray-400">Versión 1.0.0 | Requiere Windows 10 o superior</p>
+
+        <!-- UI Preview -->
+        <div class="relative max-w-5xl mx-auto">
+            <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur opacity-20"></div>
+            <img src="assets/overview.jpg" alt="OpenPDF Dashboard" class="relative rounded-2xl shadow-2xl border border-gray-200">
+        </div>
     </header>
 
     <!-- Features -->
-    <section class="bg-white py-16">
+    <section class="bg-white py-24 relative z-10 border-t border-gray-100 shadow-t-xl">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="p-6 border rounded-xl shadow-sm hover:shadow-md transition">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4 text-2xl">🔒</div>
-                    <h3 class="text-xl font-bold mb-2">Privacidad Absoluta</h3>
-                    <p class="text-gray-600">Tus documentos nunca salen de tu computadora. Todo el procesamiento se realiza localmente.</p>
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-bold text-gray-900">Diseñado para la Productividad</h2>
+                <p class="mt-4 text-gray-500">Todo lo que necesitas en una sola aplicación de escritorio hermética.</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
+                <div class="p-8 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-lg transition duration-300">
+                    <div class="w-14 h-14 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-6 text-2xl shadow-md shadow-blue-500/20">🔒</div>
+                    <h3 class="text-xl font-bold mb-3">Privacidad Absoluta</h3>
+                    <p class="text-gray-600 leading-relaxed">Tus documentos nunca salen de tu computadora. Zero tracking, zero analíticas de terceros. Lo local se queda local.</p>
                 </div>
-                <div class="p-6 border rounded-xl shadow-sm hover:shadow-md transition">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4 text-2xl">⚡</div>
-                    <h3 class="text-xl font-bold mb-2">Múltiples Herramientas</h3>
-                    <p class="text-gray-600">Comprime, une, extrae imágenes, convierte a Word y extrae texto (OCR) en una sola aplicación.</p>
+                <div class="p-8 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-lg transition duration-300">
+                    <div class="w-14 h-14 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-6 text-2xl shadow-md shadow-blue-500/20">⚡</div>
+                    <h3 class="text-xl font-bold mb-3">Motor de Alto Rendimiento</h3>
+                    <p class="text-gray-600 leading-relaxed">Procesamiento acelerado por PyMuPDF y FastAPI. Convierte, divide y haz OCR en milisegundos sin bloqueos en la interfaz.</p>
                 </div>
-                <div class="p-6 border rounded-xl shadow-sm hover:shadow-md transition">
-                    <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4 text-2xl">💻</div>
-                    <h3 class="text-xl font-bold mb-2">Código Abierto</h3>
-                    <p class="text-gray-600">Totalmente transparente. Puedes auditar el código, reportar mejoras o crear tu propia versión a partir de nuestro repositorio.</p>
+                <div class="p-8 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-lg transition duration-300">
+                    <div class="w-14 h-14 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-6 text-2xl shadow-md shadow-blue-500/20">💻</div>
+                    <h3 class="text-xl font-bold mb-3">Transparencia Total</h3>
+                    <p class="text-gray-600 leading-relaxed">Licencia MIT. El código fuente está expuesto para ser auditado, mejorado o bifurcado por la comunidad.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <footer class="bg-gray-50 py-8 text-center text-gray-500 border-t">
-        <p>© 2026 OpenPDF Project. Distribuido bajo la Licencia MIT.</p>
+    <!-- Footer -->
+    <footer class="bg-gray-900 py-12 text-center text-gray-400 relative z-10">
+        <div class="max-w-7xl mx-auto px-4">
+            <img src="assets/banner.png" alt="OpenPDF Logo" class="h-8 mx-auto mb-6 opacity-50 grayscale hover:grayscale-0 transition">
+            <p class="mb-2">© 2026 OpenPDF Project.</p>
+            <p class="text-sm">Creado con excelencia técnica. Distribuido bajo la Licencia MIT.</p>
+        </div>
     </footer>
+
+    <!-- Initialize Vanta.js -->
+    <script>
+        VANTA.NET({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x3b82f6,      /* Tailwind Blue 500 */
+            backgroundColor: 0xf8fafc, /* Tailwind Slate 50 */
+            points: 12.00,
+            maxDistance: 22.00,
+            spacing: 18.00,
+            showDots: true
+        })
+    </script>
 </body>
 </html>
