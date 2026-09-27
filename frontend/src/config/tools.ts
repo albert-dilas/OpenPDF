@@ -1,6 +1,3 @@
-import { FilePlus2, SplitSquareHorizontal, Minimize2, RefreshCcw, ShieldAlert, FileSearch, LockOpen, Type, Hash } from 'lucide-react';
-import { WordIcon, JpgIcon, MarkdownIcon } from '@/components/BrandIcons';
-
 export const tools = [
   {
     id: 'merge-pdf',
