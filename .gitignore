@@ -1,0 +1,24 @@
+# Build and environment artifacts
+build/
+dist/
+*.spec
+temp_files/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.env
+.pytest_cache/
+
+# Node.js
+node_modules/
+.npm/
+.next/
+out/
+
+# OS files
+.DS_Store
+Thumbs.db
