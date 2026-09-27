@@ -1,5 +1,7 @@
 <div align="center">
-  
+  <img src="assets/banner.png" alt="OpenPDF Banner" width="100%">
+  <br><br>
+
   # OpenPDF
 
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
@@ -28,18 +30,22 @@ The application is structured as a monolithic desktop executable with a decouple
 
 ## Screenshots
 
-*(Upload your screenshots to the `assets/` directory and replace these placeholder paths)*
-
 <div align="center">
-  <img src="https://via.placeholder.com/800x450.png?text=Main+Dashboard" alt="Main Dashboard" width="80%">
+  <img src="assets/overview.jpg" alt="Main Dashboard" width="100%">
   <br>
   <em>Figure 1: Main Dashboard UI</em>
 </div>
-
+<br>
 <div align="center">
-  <img src="https://via.placeholder.com/800x450.png?text=PDF+Processing+View" alt="Processing View" width="80%">
+  <img src="assets/tools.jpg" alt="Complete Tool Suite" width="100%">
   <br>
-  <em>Figure 2: Active Document Processing Interface</em>
+  <em>Figure 2: Complete Tool Suite</em>
+</div>
+<br>
+<div align="center">
+  <img src="assets/workflow.jpg" alt="Processing Workflow" width="100%">
+  <br>
+  <em>Figure 3: Active Document Processing Workflow</em>
 </div>
 
 ## Core Capabilities
