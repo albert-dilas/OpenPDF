@@ -1,12 +1,49 @@
-# OpenPDF
+<div align="center">
+  
+  # OpenPDF
 
-OpenPDF is an open-source, fully localized platform for processing and manipulating PDF documents. Designed with strict data privacy in mind, the system executes all processing tasks locally on the host machine, eliminating the need for external network transmissions or third-party cloud services.
+  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+  [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+  [![Platform](https://img.shields.io/badge/platform-windows-lightgray.svg)]()
+  [![Python version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
+  [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
+
+  **An open-source, fully localized platform for processing and manipulating PDF documents.**
+
+</div>
+
+## Table of Contents
+- [Overview](#overview)
+- [Screenshots](#screenshots)
+- [Core Capabilities](#core-capabilities)
+- [System Architecture](#system-architecture)
+- [Development and Build Instructions](#development-and-build-instructions)
+- [License](#license)
 
 ## Overview
 
+Designed with strict data privacy in mind, the system executes all processing tasks locally on the host machine, eliminating the need for external network transmissions or third-party cloud services. 
+
 The application is structured as a monolithic desktop executable with a decoupled architecture. It bundles a high-performance Python processing engine (Backend) with a modern React-based user interface (Frontend).
 
+## Screenshots
+
+*(Upload your screenshots to the `assets/` directory and replace these placeholder paths)*
+
+<div align="center">
+  <img src="https://via.placeholder.com/800x450.png?text=Main+Dashboard" alt="Main Dashboard" width="80%">
+  <br>
+  <em>Figure 1: Main Dashboard UI</em>
+</div>
+
+<div align="center">
+  <img src="https://via.placeholder.com/800x450.png?text=PDF+Processing+View" alt="Processing View" width="80%">
+  <br>
+  <em>Figure 2: Active Document Processing Interface</em>
+</div>
+
 ## Core Capabilities
+
 - **Local Processing**: Absolute data privacy with zero external API dependencies for document processing.
 - **Document Manipulation**:
   - File compression, merging, and splitting operations.
@@ -45,4 +82,5 @@ python scripts/build_installer.py
 Compiled artifacts will be output to the `dist/` directory.
 
 ## License
-Please refer to the `LICENSE` file for terms of use and distribution.
+
+This project is distributed under the standard license terms provided in the `LICENSE` file. Please refer to that document for full terms of use and distribution.

@@ -22,3 +22,6 @@ out/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Windows
+desktop.ini
