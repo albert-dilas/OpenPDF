@@ -42,9 +42,9 @@ LZMAUseSeparateProcess=yes
 LZMANumBlockThreads=4
 
 WizardStyle=modern
-WizardImageFile=wizard_banner.bmp
-WizardSmallImageFile=wizard_small.bmp
-WizardImageStretch=yes
+;WizardImageFile=wizard_banner.bmp
+;WizardSmallImageFile=wizard_small.bmp
+;WizardImageStretch=yes
 
 ShowLanguageDialog=no
 LanguageDetectionMethod=uilanguage

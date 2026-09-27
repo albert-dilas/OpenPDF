@@ -20,17 +20,15 @@ os.chdir("..")
 print("\\n2. Empaquetando Backend + Frontend con PyInstaller...")
 os.chdir("backend")
 # Instalamos pyinstaller si no está
-subprocess.run(["pip", "install", "pyinstaller"], shell=True)
+subprocess.run([sys.executable, "-m", "pip", "install", "pyinstaller"], shell=True)
 
 # PyInstaller command: 
-# Incluye la carpeta frontend/out dentro del ejecutable en la ruta 'frontend/out'
+# Usamos el archivo de configuración .spec que ya tiene todos los hidden imports e iconos
 pyinstaller_cmd = [
-    "python", "-m", "PyInstaller",
-    "--name=OpenPDF",
-    "--onefile",
-    "--windowed", # No muestra consola negra en background
-    "--add-data=../frontend/out;frontend/out",
-    "app/main.py"
+    sys.executable, "-m", "PyInstaller",
+    "--clean",
+    "-y",
+    "../installer/OpenPDF.spec"
 ]
 subprocess.run(pyinstaller_cmd, shell=True)
 
