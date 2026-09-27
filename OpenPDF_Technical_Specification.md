@@ -1,4 +1,4 @@
-# OpenPDF
+﻿# OpenPDF
 **La Alternativa Open-Source, Privada y Local a iLovePDF**
 
 ## 1. Visión General del Proyecto
@@ -26,7 +26,7 @@ Construido con **Next.js 14 (App Router)**, **React**, y **Tailwind CSS**.
 El flujo de construcción está completamente automatizado a través del script maestro `scripts/build_installer.py`, el cual orquesta el pipeline de 3 fases:
 1. **Compilación Frontend:** Ejecuta `npm run build` en Next.js para generar la exportación estática en `frontend/out`.
 2. **Empaquetado (PyInstaller):** Toma el servidor FastAPI y los estáticos de Next.js (`--add-data`) y los encapsula en un único binario ejecutable (`OpenPDF.exe` de ~95 MB) excluyendo módulos innecesarios de Python.
-3. **Instalador Profesional (Inno Setup):** Inno Setup (`ISCC.exe`) toma el binario, el ícono multi-resolución, banners de instalación personalizados, y genera el instalador final distributable (`OpenPDF_Setup_v1.0.0.exe`) con compresión LZMA2 Ultra.
+3. **Instalador Profesional (Inno Setup):** Inno Setup (`ISCC.exe`) toma el binario, el ícono multi-resolución, aplica un diseño minimalista y moderno, y genera el instalador final distributable (`OpenPDF_Setup_v1.0.0.exe`) con compresión LZMA2 Ultra.
 
 ## 3. Especificaciones Técnicas de Herramientas (14 Módulos)
 
@@ -64,13 +64,14 @@ Para la ejecución desde código fuente, el entorno local requiere:
 El desacoplamiento del Router de FastAPI permite que OpenPDF pueda ser desplegado en el futuro como un clúster de microservicios Docker (ej. un contenedor dedicado exclusivamente a procesar OCR debido a su alto uso de CPU) sin necesidad de reescribir la lógica base.
 
 
-## 6. Distribuci�n e Instalaci�n
+## 6. Distribuci�n e Instalaci�n
 El proyecto incluye un instalador profesional construido con **Inno Setup 6**, definido en el script installer/OpenPDF_Installer.iss.
 
-### Caracter�sticas del Instalador:
+### Caracter�sticas del Instalador:
 - **Despliegue local:** No requiere permisos de administrador; si no hay permisos, se instala en el directorio de usuario (%LocalAppData%).
-- **Assets personalizados:** Emplea un �cono limpio multi-resoluci�n y banners del asistente de instalaci�n generados ad-hoc.
-- **Experiencia de usuario (UX):** Gu�a al usuario mostrando un resumen de las 14 herramientas y garantizando que se cumplen las promesas de privacidad.
-- **Desinstalador completo:** Limpia cach�s residuales y archivos temporales, e integra la aplicaci�n en el registro de Windows para permitir la desinstalaci�n desde *Agregar o quitar programas*.
+- **Assets personalizados:** Emplea un �cono limpio multi-resoluci�n y banners del asistente de instalaci�n generados ad-hoc.
+- **Experiencia de usuario (UX):** Gu�a al usuario mostrando un resumen de las 14 herramientas y garantizando que se cumplen las promesas de privacidad.
+- **Desinstalador completo:** Limpia cach�s residuales y archivos temporales, e integra la aplicaci�n en el registro de Windows para permitir la desinstalaci�n desde *Agregar o quitar programas*.
 - **Dependencias embebidas:** Incluye archivos informativos (README.txt, LICENSE.txt) que se muestran y se copian al instalar.
+
 
