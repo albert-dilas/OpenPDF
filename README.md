@@ -7,7 +7,7 @@
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
   [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
   [![Platform](https://img.shields.io/badge/platform-windows-lightgray.svg)]()
-  [![Website](https://img.shields.io/badge/Website-Live-success.svg)](#)
+  [![Website](https://img.shields.io/badge/Website-Live-success.svg)](https://albert-dilas.github.io/OpenPDF)
   [![Python version](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
   [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
 
