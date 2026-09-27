@@ -71,12 +71,12 @@ app.add_exception_handler(OpenPDFBaseException, global_openpdf_exception_handler
 app.add_exception_handler(Exception, global_unhandled_exception_handler)
 
 app.add_middleware(
-
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
+    allow_origins=settings.ALLOWED_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST"],
     allow_headers=["*"],
+    expose_headers=["X-Original-Size", "X-Compressed-Size", "X-Compression-Ratio"],
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

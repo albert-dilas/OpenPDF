@@ -1,32 +1,35 @@
 from fastapi.testclient import TestClient
 from app.main import app
+import fitz, io
 
 client = TestClient(app)
 
 
-def test_rotate_90(sample_pdf_bytes):
+def test_page_numbers_ok(sample_pdf_bytes):
     response = client.post(
-        "/api/v1/rotate/",
+        "/api/v1/page-numbers/",
         files=[("file", ("test.pdf", sample_pdf_bytes, "application/pdf"))],
-        data={"degrees": "90"},
     )
     assert response.status_code == 200
     assert response.content[:4] == b'%PDF'
 
 
-def test_rotate_180(sample_pdf_bytes):
+def test_page_numbers_verifica_texto(sample_pdf_bytes):
+    """Verificar que el PDF resultante contiene '1' como número de página."""
     response = client.post(
-        "/api/v1/rotate/",
+        "/api/v1/page-numbers/",
         files=[("file", ("test.pdf", sample_pdf_bytes, "application/pdf"))],
-        data={"degrees": "180"},
     )
     assert response.status_code == 200
+    doc = fitz.open(stream=response.content, filetype="pdf")
+    first_page_text = doc[0].get_text()
+    doc.close()
+    assert "1" in first_page_text
 
 
-def test_rotate_invalid_content():
+def test_page_numbers_invalid_content():
     response = client.post(
-        "/api/v1/rotate/",
+        "/api/v1/page-numbers/",
         files=[("file", ("fake.pdf", b'NOT A PDF', "application/pdf"))],
-        data={"degrees": "90"},
     )
     assert response.status_code == 400

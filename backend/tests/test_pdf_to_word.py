@@ -3,20 +3,22 @@ from app.main import app
 
 client = TestClient(app)
 
+DOCX_MAGIC = b'PK\x03\x04'
 
-def test_pdf_to_jpg_ok_returns_zip(sample_pdf_bytes):
+
+def test_pdf_to_word_ok(sample_pdf_bytes):
     response = client.post(
-        "/api/v1/pdf-to-jpg/",
+        "/api/v1/pdf-to-word/",
         files=[("file", ("test.pdf", sample_pdf_bytes, "application/pdf"))],
     )
     assert response.status_code == 200
-    # Debe devolver un ZIP con las imágenes
-    assert response.content[:2] == b'PK'
+    # DOCX es un ZIP, comienza con PK
+    assert response.content[:4] == DOCX_MAGIC
 
 
-def test_pdf_to_jpg_invalid_content():
+def test_pdf_to_word_invalid_content():
     response = client.post(
-        "/api/v1/pdf-to-jpg/",
+        "/api/v1/pdf-to-word/",
         files=[("file", ("fake.pdf", b'NOT A PDF', "application/pdf"))],
     )
     assert response.status_code == 400

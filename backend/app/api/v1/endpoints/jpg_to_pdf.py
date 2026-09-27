@@ -4,18 +4,13 @@ from typing import List
 from starlette.background import BackgroundTask
 import os
 
+from app.utils.helpers import remove_file
 from app.services.jpg_to_pdf import JpgToPdfService, get_jpg_to_pdf_service
 from app.core.dependencies import TempFileManager, get_temp_file_manager
 from app.core.exceptions import InvalidFormatError
+from app.utils.validators import validate_image_bytes
 
 router = APIRouter()
-
-def remove_file(path: str):
-    try:
-        if os.path.exists(path):
-            os.remove(path)
-    except Exception:
-        pass
 
 @router.post("/")
 async def jpg_to_pdf_endpoint(
@@ -25,9 +20,7 @@ async def jpg_to_pdf_endpoint(
 ):
     temp_paths = []
     for f in files:
-        if not (f.filename.lower().endswith(".jpg") or f.filename.lower().endswith(".jpeg") or f.filename.lower().endswith(".png")):
-            raise InvalidFormatError("Archivos inválidos, solo JPG/PNG")
-        temp_paths.append(await file_manager.save_upload_file(f))
+        temp_paths.append(await file_manager.save_upload_file(f, validate_fn=validate_image_bytes))
         
     output_path = file_manager.create_output_path()
     

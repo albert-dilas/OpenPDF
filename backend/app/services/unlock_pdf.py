@@ -2,7 +2,7 @@ import fitz
 import os
 import tempfile
 import shutil
-from app.core.exceptions import PDFProcessingError
+from app.core.exceptions import PDFProcessingError, BusinessRuleError
 from fastapi.concurrency import run_in_threadpool
 
 class PDFUnlockerService:
@@ -19,10 +19,10 @@ class PDFUnlockerService:
                 return output_path
                 
             if not doc.authenticate(password):
-                raise PDFProcessingError("Contraseña incorrecta")
+                raise BusinessRuleError("Contraseña incorrecta")
                 
             doc.save(output_path)
-        except PDFProcessingError:
+        except (PDFProcessingError, BusinessRuleError):
             raise
         except Exception as e:
             raise PDFProcessingError(f"Error desbloqueando el PDF: {str(e)}")

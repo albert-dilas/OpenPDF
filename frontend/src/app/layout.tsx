@@ -45,7 +45,7 @@ export default function RootLayout({
               <Link href="/pdf-to-word" className="text-sm font-bold text-gray-700 hover:text-brand transition-colors">Convertir PDF</Link>
             </div>
             <div className="flex items-center gap-4">
-              <a href="https://github.com/tu-usuario/openpdf" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-gray-900 transition-colors">
+              <a href="https://github.com/albert-dilas/OpenPDF" target="_blank" rel="noreferrer" className="text-gray-400 hover:text-gray-900 transition-colors">
                 <GithubIcon size={20} />
               </a>
             </div>
@@ -68,8 +68,8 @@ export default function RootLayout({
               </div>
               <div className="flex gap-6 text-sm text-gray-500">
                 <Link href="/" className="hover:text-brand transition-colors">Inicio</Link>
-                <a href="#" className="hover:text-brand transition-colors">Privacidad garantizada (Local)</a>
-                <a href="#" className="hover:text-brand transition-colors">Términos</a>
+                <Link href="/privacidad" className="hover:text-brand transition-colors">Política de Privacidad</Link>
+                <Link href="/terminos" className="hover:text-brand transition-colors">Términos de Uso</Link>
               </div>
             </div>
           </div>

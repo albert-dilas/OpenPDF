@@ -36,21 +36,31 @@ class OcrService:
         
         try:
             for page in doc:
-                pix = page.get_pixmap(dpi=300)
-                img_path = os.path.join(temp_dir, f"{uuid.uuid4().hex}.png")
-                temp_files.append(img_path)
-                pix.save(img_path)
-                
-                pdf_bytes = pytesseract.image_to_pdf_or_hocr(img_path, extension='pdf', lang=language)
-                
-                temp_pdf_path = os.path.join(temp_dir, f"{uuid.uuid4().hex}.pdf")
-                temp_files.append(temp_pdf_path)
-                with open(temp_pdf_path, "wb") as f:
-                    f.write(pdf_bytes)
-                    
-                temp_doc = fitz.open(temp_pdf_path)
-                final_pdf.insert_pdf(temp_doc)
-                temp_doc.close()
+                existing_text = page.get_text().strip()
+
+                if existing_text:
+                    # Página con texto existente: copiar directamente sin OCR
+                    single_page = fitz.open()
+                    single_page.insert_pdf(doc, from_page=page.number, to_page=page.number)
+                    final_pdf.insert_pdf(single_page)
+                    single_page.close()
+                else:
+                    # Página escaneada (sin texto): aplicar OCR
+                    pix = page.get_pixmap(dpi=300)
+                    img_path = os.path.join(temp_dir, f"{uuid.uuid4().hex}.png")
+                    temp_files.append(img_path)
+                    pix.save(img_path)
+
+                    pdf_bytes = pytesseract.image_to_pdf_or_hocr(img_path, extension='pdf', lang=language)
+
+                    temp_pdf_path = os.path.join(temp_dir, f"{uuid.uuid4().hex}.pdf")
+                    temp_files.append(temp_pdf_path)
+                    with open(temp_pdf_path, "wb") as f:
+                        f.write(pdf_bytes)
+
+                    temp_doc = fitz.open(temp_pdf_path)
+                    final_pdf.insert_pdf(temp_doc)
+                    temp_doc.close()
                 
             final_pdf.save(output_path)
         except Exception as e:
