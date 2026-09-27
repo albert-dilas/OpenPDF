@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Link from "next/link";
 import { Heart } from "lucide-react";
+import { Toaster } from "react-hot-toast";
 
 function GithubIcon({ size = 20 }: { size?: number }) {
   return (
@@ -54,6 +55,8 @@ export default function RootLayout({
         <main className="flex-grow flex flex-col pt-16">
           {children}
         </main>
+
+        <Toaster position="bottom-center" />
 
         <footer className="bg-white border-t border-gray-200 mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">

@@ -198,6 +198,11 @@ export default function MergePDFPage() {
                 Por favor selecciona al menos 2 archivos para poder unirlos.
               </p>
             )}
+            {files.length >= 2 && !error && (
+              <p className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                No se requieren configuraciones adicionales. Haz clic en <strong>Unir PDF</strong> para continuar.
+              </p>
+            )}
             {error && (
               <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-sm text-red-700 font-medium">{error}</p>

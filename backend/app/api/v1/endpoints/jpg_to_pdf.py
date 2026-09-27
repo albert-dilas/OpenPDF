@@ -1,24 +1,43 @@
-﻿from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, Depends
 from fastapi.responses import FileResponse
 from typing import List
 from starlette.background import BackgroundTask
-from app.services.jpg_to_pdf import convert_jpg_to_pdf
-from app.utils.file_manager import save_upload_file_temp, cleanup_files
+import os
+
+from app.services.jpg_to_pdf import JpgToPdfService, get_jpg_to_pdf_service
+from app.core.dependencies import TempFileManager, get_temp_file_manager
+from app.core.exceptions import InvalidFormatError
 
 router = APIRouter()
 
+def remove_file(path: str):
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+    except Exception:
+        pass
+
 @router.post("/")
-async def jpg_to_pdf_endpoint(files: List[UploadFile] = File(...)):
+async def jpg_to_pdf_endpoint(
+    files: List[UploadFile] = File(...),
+    file_manager: TempFileManager = Depends(get_temp_file_manager),
+    service: JpgToPdfService = Depends(get_jpg_to_pdf_service)
+):
     temp_paths = []
     for f in files:
         if not (f.filename.lower().endswith(".jpg") or f.filename.lower().endswith(".jpeg") or f.filename.lower().endswith(".png")):
-            cleanup_files(temp_paths)
-            raise HTTPException(status_code=400, detail="Archivos inválidos, solo JPG/PNG")
-        temp_paths.append(await save_upload_file_temp(f))
+            raise InvalidFormatError("Archivos inválidos, solo JPG/PNG")
+        temp_paths.append(await file_manager.save_upload_file(f))
         
-    try:
-        output_path = convert_jpg_to_pdf(temp_paths)
-        return FileResponse(output_path, filename="converted.pdf", background=BackgroundTask(cleanup_files, temp_paths + [output_path]))
-    except Exception as e:
-        cleanup_files(temp_paths)
-        raise HTTPException(500, str(e))
+    output_path = file_manager.create_output_path()
+    
+    await service.convert_jpg_to_pdf(temp_paths, output_path)
+    
+    file_manager.untrack(output_path)
+    
+    return FileResponse(
+        path=output_path,
+        filename="converted.pdf",
+        media_type="application/pdf",
+        background=BackgroundTask(remove_file, output_path)
+    )

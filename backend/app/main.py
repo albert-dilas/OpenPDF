@@ -53,6 +53,12 @@ async def lifespan(app: FastAPI):
         pass
 
 
+from app.core.exceptions import (
+    OpenPDFBaseException,
+    global_openpdf_exception_handler,
+    global_unhandled_exception_handler
+)
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Backend API for OpenPDF",
@@ -60,7 +66,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Exception handlers
+app.add_exception_handler(OpenPDFBaseException, global_openpdf_exception_handler)
+app.add_exception_handler(Exception, global_unhandled_exception_handler)
+
 app.add_middleware(
+
     CORSMiddleware,
     allow_origins=["*"],
     allow_credentials=True,

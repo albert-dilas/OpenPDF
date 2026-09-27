@@ -1,27 +1,41 @@
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import APIRouter, UploadFile, File, Form, Depends
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
-from app.services.pdf_protector import protect_pdf
-from app.utils.file_manager import save_upload_file_temp_validated, cleanup_files
-from app.utils.validators import validate_pdf_bytes
+import os
+
+from app.services.pdf_protector import PDFProtectorService, get_pdf_protector_service
+from app.core.dependencies import TempFileManager, get_temp_file_manager
+from app.core.exceptions import InvalidFormatError
 
 router = APIRouter()
 
+def remove_file(path: str):
+    try:
+        if os.path.exists(path):
+            os.remove(path)
+    except Exception:
+        pass
+
 @router.post("/")
-async def protect_pdf_endpoint(file: UploadFile = File(...), password: str = Form(...)):
-    temp_path = None
-    try:
-        temp_path = await save_upload_file_temp_validated(file, validate_pdf_bytes)
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    try:
-        output_path = protect_pdf(temp_path, password)
-        return FileResponse(
-            output_path,
-            filename="protected.pdf",
-            media_type="application/pdf",
-            background=BackgroundTask(cleanup_files, [temp_path, output_path])
-        )
-    except Exception as e:
-        cleanup_files([temp_path])
-        raise HTTPException(500, str(e))
+async def protect_pdf_endpoint(
+    file: UploadFile = File(...),
+    password: str = Form(...),
+    file_manager: TempFileManager = Depends(get_temp_file_manager),
+    service: PDFProtectorService = Depends(get_pdf_protector_service)
+):
+    if not file.filename.lower().endswith('.pdf'):
+        raise InvalidFormatError(f"El archivo {file.filename} no es un PDF válido.")
+        
+    temp_path = await file_manager.save_upload_file(file)
+    output_path = file_manager.create_output_path()
+
+    await service.protect_pdf(temp_path, output_path, password)
+    
+    file_manager.untrack(output_path)
+    
+    return FileResponse(
+        output_path,
+        filename="protected.pdf",
+        media_type="application/pdf",
+        background=BackgroundTask(remove_file, output_path)
+    )

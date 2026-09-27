@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react';
 import { useFileStore } from '@/store/useFileStore';
 import Uploader from '@/components/pdf/Uploader';
 import { apiClient } from '@/lib/api';
-import { FileText, Settings2, X, Image as ImageIcon } from 'lucide-react';
+import { FileText, Settings2, X, Image as ImageIcon, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import toast from 'react-hot-toast';
 
 export interface ExtraField {
   key: string;
@@ -91,7 +92,6 @@ export default function ToolPage({
   const [isProcessing, setIsProcessing] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [processStatus, setProcessStatus] = useState('');
-  const [error, setError] = useState<string | null>(null);
   const [fieldValues, setFieldValues] = useState<Record<string, string>>(
     Object.fromEntries(extraFields.map((f) => [f.key, f.defaultValue ?? '']))
   );
@@ -106,14 +106,13 @@ export default function ToolPage({
 
   const handleProcess = async () => {
     if (files.length === 0) return;
-    setError(null);
     setIsProcessing(true);
     setUploadProgress(0);
     setProcessStatus('Subiendo archivo...');
 
     for (const field of extraFields) {
       if (field.required && !fieldValues[field.key]) {
-        setError(field.requiredMessage ?? `El campo "${field.label}" es obligatorio.`);
+        toast.error(field.requiredMessage ?? `El campo "${field.label}" es obligatorio.`);
         setIsProcessing(false);
         return;
       }
@@ -151,6 +150,7 @@ export default function ToolPage({
       setPendingBlob(blob);
       const baseName = files[0].name.replace(/\.[^.]+$/, '');
       setDefaultFileName(`${baseName}_openpdf${outputExtension}`);
+      toast.success('¡Archivo procesado con éxito!');
     } catch (err: unknown) {
       let msg = 'Error desconocido al procesar el archivo.';
       if (axios.isAxiosError(err) && err.response) {
@@ -166,7 +166,7 @@ export default function ToolPage({
           msg = err.response.data.detail;
         }
       }
-      setError(msg);
+      toast.error(msg);
     } finally {
       setIsProcessing(false);
       setUploadProgress(0);
@@ -214,7 +214,7 @@ export default function ToolPage({
             {files.map((file, idx) => (
               <div
                 key={`${file.name}-${idx}`}
-                className="relative group bg-white rounded-lg shadow-sm p-4 flex flex-col items-center justify-center border border-gray-200 hover:border-brand hover:shadow-md transition-all"
+                className={`relative group bg-white rounded-lg shadow-sm p-4 flex flex-col items-center justify-center border transition-all ${isProcessing ? 'border-gray-200 opacity-50' : 'border-gray-200 hover:border-brand hover:shadow-md'}`}
               >
                 <button
                   onClick={() => removeFile(idx)}
@@ -243,6 +243,12 @@ export default function ToolPage({
           </div>
 
           <div className="p-6 flex-1 space-y-4 overflow-y-auto">
+            {extraFields.length === 0 && !sidebarContent && (
+              <p className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                No se requieren configuraciones adicionales para esta herramienta.
+              </p>
+            )}
+
             {extraFields.map((field) => (
               <div key={field.key}>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -277,12 +283,6 @@ export default function ToolPage({
             ))}
 
             {sidebarContent}
-
-            {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                <p className="text-sm text-red-700 font-medium">{error}</p>
-              </div>
-            )}
           </div>
 
           <div className="p-6 bg-gray-50 border-t border-gray-200 space-y-3">
@@ -305,8 +305,9 @@ export default function ToolPage({
             <button
               disabled={isProcessing}
               onClick={handleProcess}
-              className="w-full bg-brand hover:bg-brand-dark disabled:bg-gray-400 text-white font-bold py-4 rounded-lg shadow-lg text-lg transition-all"
+              className="w-full bg-brand hover:bg-brand-dark disabled:bg-gray-400 text-white font-bold py-4 rounded-lg shadow-lg text-lg transition-all flex items-center justify-center gap-2"
             >
+              {isProcessing && <Loader2 className="animate-spin" size={20} />}
               {isProcessing ? processStatus || 'Procesando...' : buttonLabel}
             </button>
           </div>
