@@ -1,4 +1,5 @@
-import { FilePlus2, SplitSquareHorizontal, Minimize2, RefreshCcw, FileImage, ShieldAlert, FileText, FileSearch, LockOpen, Image, Type, Hash, FileCode } from 'lucide-react';
+import { FilePlus2, SplitSquareHorizontal, Minimize2, RefreshCcw, ShieldAlert, FileSearch, LockOpen, Type, Hash } from 'lucide-react';
+import { WordIcon, JpgIcon, MarkdownIcon } from '@/components/BrandIcons';
 
 export const tools = [
   {
@@ -29,7 +30,7 @@ export const tools = [
     id: 'pdf-to-word',
     name: 'PDF a Word',
     description: 'Convierte tus PDF a documentos Word (.docx) editables y fáciles de modificar.',
-    icon: FileText,
+    icon: WordIcon,
     color: 'bg-blue-600',
     href: '/pdf-to-word'
   },
@@ -37,7 +38,7 @@ export const tools = [
     id: 'word-to-pdf',
     name: 'Word a PDF',
     description: 'Convierte tus documentos Word (.doc, .docx) a PDF conservando el formato original.',
-    icon: FileText,
+    icon: WordIcon,
     color: 'bg-blue-800',
     href: '/word-to-pdf'
   },
@@ -53,7 +54,7 @@ export const tools = [
     id: 'jpg-to-pdf',
     name: 'JPG a PDF',
     description: 'Convierte imágenes JPG a PDF. Ajusta la orientación y los márgenes.',
-    icon: Image,
+    icon: JpgIcon,
     color: 'bg-yellow-400',
     href: '/jpg-to-pdf'
   },
@@ -61,7 +62,7 @@ export const tools = [
     id: 'pdf-to-jpg',
     name: 'PDF a JPG',
     description: 'Extrae todas las imágenes que están dentro de un PDF o convierte cada página en una imagen JPG.',
-    icon: FileImage,
+    icon: JpgIcon,
     color: 'bg-yellow-500',
     href: '/pdf-to-jpg'
   },
@@ -109,7 +110,7 @@ export const tools = [
     id: 'pdf-to-markdown',
     name: 'PDF a Markdown',
     description: 'Convierte tus PDF a texto estructurado en formato Markdown (.md), ideal para RAG y LLMs.',
-    icon: FileCode,
+    icon: MarkdownIcon,
     color: 'bg-indigo-600',
     href: '/pdf-to-markdown'
   }
