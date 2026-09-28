@@ -129,6 +129,15 @@ if __name__ == '__main__':
     import threading
     import webbrowser
     import time
+    import sys
+    import os
+
+    # PyInstaller windowless mode (console=False) sets sys.stdout and sys.stderr to None.
+    # Uvicorn needs them to have an .isatty() method.
+    if sys.stdout is None:
+        sys.stdout = open(os.devnull, 'w')
+    if sys.stderr is None:
+        sys.stderr = open(os.devnull, 'w')
 
     def open_browser():
         time.sleep(1.5)
