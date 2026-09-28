@@ -76,8 +76,6 @@ a = Analysis(
         'notebook',
         'IPython',
         'pandas',
-        'numpy',
-        'cv2',
         'sklearn',
         'tensorflow',
         'torch',
