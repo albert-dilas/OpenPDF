@@ -1,170 +1,436 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenPDF - The Enterprise PDF Suite</title>
-    <!-- Tailwind CSS -->
+    <title>OpenPDF v2.0 | Suite Local-First de Procesamiento PDF</title>
+    <meta name="description" content="Plataforma de escritorio Local-First y de código abierto para unir, dividir, organizar, comprimir, convertir y cifrar documentos PDF sin conexión a la nube.">
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;800&display=swap" rel="stylesheet">
-    <!-- Vanta.js and Three.js for Interactive Background -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
-    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            DEFAULT: '#e5322d',
+                            dark: '#cc2c28',
+                            light: '#fef2f2',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        body { font-family: 'Inter', sans-serif; overflow-x: hidden; }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
+        body { font-family: 'Inter', sans-serif; }
+        .grid-bg {
+            background-size: 36px 36px;
+            background-image:
+                linear-gradient(to right, rgba(226, 232, 240, 0.6) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
         }
-        #vanta-bg {
-            position: absolute;
-            z-index: -1;
-            top: 0; left: 0; width: 100%; height: 100%;
-        }
-        .mac-shadow {
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05);
+        .window-shadow {
+            box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(15, 23, 42, 0.08);
         }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 relative">
+<body class="bg-slate-50 text-slate-900 antialiased selection:bg-brand selection:text-white">
 
-    <!-- Interactive 3D Background -->
-    <div id="vanta-bg"></div>
-
-    <!-- Navbar -->
-    <nav class="glass-panel sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-            
-            <!-- Clean Logo -->
-            <div class="flex items-center gap-2 select-none cursor-pointer hover:opacity-80 transition">
-                <div class="bg-blue-600 text-white p-1.5 rounded-lg flex items-center justify-center shadow-md shadow-blue-500/20">
-                    <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+    <!-- Top Navigation -->
+    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <a href="#" class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-brand text-white flex items-center justify-center font-extrabold text-sm tracking-tight shadow-sm">
+                    PDF
                 </div>
-                <span class="text-2xl font-extrabold tracking-tight text-gray-900">OpenPDF</span>
-            </div>
-
-            <!-- GitHub Logo Link -->
-            <a href="https://github.com/albert-dilas/OpenPDF" class="flex items-center gap-2 text-gray-700 hover:text-gray-900 hover:bg-gray-200/50 bg-gray-100/50 px-5 py-2.5 rounded-full font-semibold transition-all border border-gray-200">
-                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                    <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
-                </svg>
-                View on GitHub
-            </a>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <header class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-32 text-center">
-        <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 drop-shadow-sm">
-            Procesa tus documentos PDF <br>
-            <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                de forma local y privada.
-            </span>
-        </h1>
-        <p class="mt-6 text-xl text-gray-600 max-w-3xl mx-auto mb-10 font-medium">
-            Une, divide, convierte y protege tus archivos PDF sin depender de la nube. 
-            Arquitectura de grado empresarial, 100% código abierto y sin conexión a internet.
-        </p>
-        
-        <div class="flex flex-col sm:flex-row justify-center gap-4 mb-20 relative z-10">
-            <a href="https://github.com/albert-dilas/OpenPDF/releases/latest" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-xl shadow-xl shadow-blue-500/30 transition transform hover:-translate-y-1 text-lg flex items-center justify-center gap-2">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                Descargar Instalador (Windows)
-            </a>
-            <a href="https://github.com/albert-dilas/OpenPDF#readme" class="glass-panel hover:bg-white text-gray-900 font-bold py-4 px-8 rounded-xl shadow-sm transition transform hover:-translate-y-1 text-lg">
-                Leer Documentación
-            </a>
-        </div>
-
-        <!-- macOS UI Preview (Interactive) -->
-        <div class="relative max-w-5xl mx-auto group cursor-default">
-            <!-- Glow effect behind -->
-            <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-2xl blur-xl opacity-30 group-hover:opacity-70 transition duration-700"></div>
-            
-            <!-- Mac OS Window Container -->
-            <div class="relative bg-white rounded-xl mac-shadow overflow-hidden transform transition-all duration-500 group-hover:scale-[1.02] group-hover:-translate-y-2">
-                
-                <!-- Mac OS Header Bar -->
-                <div class="bg-[#f6f6f6] border-b border-gray-200 px-4 py-3 flex items-center gap-2">
-                    <div class="flex gap-2">
-                        <div class="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]"></div>
-                        <div class="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dea123]"></div>
-                        <div class="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]"></div>
-                    </div>
-                    <div class="flex-1 text-center text-xs font-semibold text-gray-500 mr-12 select-none">
-                        OpenPDF Workspace
-                    </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xl font-extrabold tracking-tight text-slate-900">Open<span class="text-brand">PDF</span></span>
+                    <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                        v2.0.0
+                    </span>
                 </div>
-                
-                <!-- Image content -->
-                <img src="assets/overview.jpg" alt="OpenPDF Dashboard" class="w-full object-cover">
+            </a>
+
+            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
+                <a href="#interfaz" class="hover:text-brand transition-colors">Interfaz</a>
+                <a href="#herramientas" class="hover:text-brand transition-colors">16 Módulos</a>
+                <a href="#arquitectura" class="hover:text-brand transition-colors">Arquitectura</a>
+                <a href="#descarga" class="hover:text-brand transition-colors">Instalación</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <a href="https://github.com/albert-dilas/OpenPDF" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/70 border border-slate-200/80 transition-all">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
+                    </svg>
+                    <span>Código Fuente</span>
+                </a>
+                <a href="https://github.com/albert-dilas/OpenPDF/releases/latest"
+                   class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-brand hover:bg-brand-dark text-white shadow-sm transition-all">
+                    <span>Descargar v2.0</span>
+                </a>
             </div>
         </div>
     </header>
 
-    <!-- Features -->
-    <section class="bg-white py-24 relative z-10 border-t border-gray-100 shadow-[0_-10px_30px_-15px_rgba(0,0,0,0.1)]">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-3xl font-bold text-gray-900">Diseñado para la Productividad</h2>
-                <p class="mt-4 text-gray-500">Todo lo que necesitas en una sola aplicación de escritorio hermética.</p>
+    <!-- Hero Section -->
+    <section class="relative grid-bg border-b border-slate-200/80 pt-16 pb-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 border border-red-200 text-brand text-xs font-bold uppercase tracking-wider mb-6">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                </svg>
+                <span>Arquitectura 100% Local-First · Sin Nube · Licencia MIT</span>
             </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
-                <div class="p-8 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-lg transition duration-300">
-                    <div class="w-14 h-14 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-6 text-2xl shadow-md shadow-blue-500/20">🔒</div>
-                    <h3 class="text-xl font-bold mb-3">Privacidad Absoluta</h3>
-                    <p class="text-gray-600 leading-relaxed">Tus documentos nunca salen de tu computadora. Zero tracking, zero analíticas de terceros. Lo local se queda local.</p>
+
+            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.12]">
+                Procesamiento documental PDF <span class="text-brand">en tu propia infraestructura</span>
+            </h1>
+
+            <p class="mt-6 text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
+                Une, divide, organiza páginas, edita metadatos, comprime en múltiples niveles, aplica OCR y cifra con AES-256. Empaquetado como aplicación nativa de escritorio con motor asíncrono FastAPI + PyMuPDF.
+            </p>
+
+            <!-- Download CTA Buttons -->
+            <div id="descarga" class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.0.0/OpenPDF_Setup_v2.0.0.exe"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-brand hover:bg-brand-dark text-white font-bold px-7 py-4 rounded-xl shadow-lg shadow-red-600/20 transition-all text-base">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
+                    <span>Descargar Instalador Windows (v2.0.0)</span>
+                </a>
+                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.0.0/OpenPDF.exe"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white hover:bg-slate-100 text-slate-800 font-semibold px-6 py-4 rounded-xl border border-slate-300 shadow-sm transition-all text-base">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Binario Portátil (OpenPDF.exe)</span>
+                </a>
+                <a href="https://github.com/albert-dilas/OpenPDF#readme"
+                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 font-semibold px-5 py-4 rounded-xl transition-colors text-base">
+                    <span>Documentación Técnica</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+            </div>
+
+            <div class="mt-4 text-xs text-slate-500 font-mono">
+                Windows 10 / 11 (x64) · No requiere Python ni Node.js preinstalados · Verificación SHA-256 en GitHub Releases
+            </div>
+
+            <!-- Interactive Screenshot Showcase -->
+            <div id="interfaz" class="mt-14 max-w-6xl mx-auto">
+                <div class="inline-flex p-1 rounded-xl bg-slate-200/80 border border-slate-300/80 mb-6">
+                    <button type="button" onclick="switchTab('overview')" id="tab-overview"
+                            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-slate-900 shadow-sm">
+                        1. Panel Principal y Buscador
+                    </button>
+                    <button type="button" onclick="switchTab('tools')" id="tab-tools"
+                            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900">
+                        2. Suite Completa (Modo Oscuro)
+                    </button>
+                    <button type="button" onclick="switchTab('workflow')" id="tab-workflow"
+                            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900">
+                        3. Espacio de Trabajo Interactivo
+                    </button>
                 </div>
-                <div class="p-8 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-lg transition duration-300">
-                    <div class="w-14 h-14 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-6 text-2xl shadow-md shadow-blue-500/20">⚡</div>
-                    <h3 class="text-xl font-bold mb-3">Motor de Alto Rendimiento</h3>
-                    <p class="text-gray-600 leading-relaxed">Procesamiento acelerado por PyMuPDF y FastAPI. Convierte, divide y haz OCR en milisegundos sin bloqueos en la interfaz.</p>
+
+                <div class="bg-slate-900 rounded-2xl window-shadow overflow-hidden border border-slate-800">
+                    <div class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
+                            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
+                            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
+                        </div>
+                        <div id="preview-caption" class="text-xs font-mono text-slate-400">
+                            http://127.0.0.1:8000 — Motor Local Activo (v2.0.0)
+                        </div>
+                        <div class="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">
+                            LOCALHOST
+                        </div>
+                    </div>
+                    <img id="preview-img" src="assets/overview.jpg" alt="Vista previa de OpenPDF v2.0" class="w-full object-cover">
                 </div>
-                <div class="p-8 rounded-2xl bg-gray-50 border border-gray-100 hover:shadow-lg transition duration-300">
-                    <div class="w-14 h-14 bg-blue-600 text-white rounded-xl flex items-center justify-center mb-6 text-2xl shadow-md shadow-blue-500/20">💻</div>
-                    <h3 class="text-xl font-bold mb-3">Transparencia Total</h3>
-                    <p class="text-gray-600 leading-relaxed">Licencia MIT. El código fuente está expuesto para ser auditado, mejorado o bifurcado por la comunidad.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Engineering Pillars -->
+    <section class="py-20 bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl">
+                <p class="text-xs font-mono font-bold uppercase tracking-widest text-brand">Ingeniería de Software</p>
+                <h2 class="mt-2 text-3xl font-extrabold text-slate-900">Diseñado bajo estándares de seguridad y rendimiento</h2>
+                <p class="mt-3 text-slate-600">Cada componente de OpenPDF v2.0 prioriza el aislamiento de datos, la predictibilidad en el consumo de memoria y la resiliencia operativa.</p>
+            </div>
+
+            <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="p-7 rounded-2xl bg-slate-50 border border-slate-200/80">
+                    <div class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Privacidad Estricta Local-First</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        El procesamiento ocurre íntegramente en `127.0.0.1`. Sin telemetría, sin cuentas de usuario y con limpieza inmediata de archivos temporales al finalizar cada petición HTTP.
+                    </p>
+                </div>
+
+                <div class="p-7 rounded-2xl bg-slate-50 border border-slate-200/80">
+                    <div class="w-11 h-11 rounded-xl bg-brand text-white flex items-center justify-center mb-5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Streaming de Memoria Constante</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Ingesta de archivos mediante bloques de `1 MiB` con verificación de firmas binarias (*magic bytes*) en el primer bloque y ejecución asíncrona no bloqueante en *threadpool*.
+                    </p>
+                </div>
+
+                <div class="p-7 rounded-2xl bg-slate-50 border border-slate-200/80">
+                    <div class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 mb-2">Binario Monolítico Auditado</h3>
+                    <p class="text-sm text-slate-600 leading-relaxed">
+                        Compilado con PyInstaller e Inno Setup 6. Incluye protección contra *path traversal*, selección automática de puerto libre (`8000–8010`) y suite con más de 55 pruebas automatizadas.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 16 Tools Catalog -->
+    <section id="herramientas" class="py-20 bg-slate-50 border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+                <div>
+                    <p class="text-xs font-mono font-bold uppercase tracking-widest text-brand">Catálogo Completo</p>
+                    <h2 class="mt-2 text-3xl font-extrabold text-slate-900">16 Módulos Especializados</h2>
+                </div>
+                <p class="text-sm text-slate-600 max-w-md">
+                    Todos los módulos operan sin conexión a internet y verifican la integridad estructural de los archivos de entrada.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
+                    <h3 class="mt-3 font-bold text-slate-900">1. Unir PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Fusión de múltiples documentos PDF en el orden definido por el usuario.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
+                    <h3 class="mt-3 font-bold text-slate-900">2. Dividir PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Extracción de páginas individuales o por intervalos personalizados (`1,3-5,7`) en archivo ZIP.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
+                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Nuevo en v2.0</span>
+                    </div>
+                    <h3 class="mt-3 font-bold text-slate-900">3. Organizar PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Previsualización de miniaturas reales para reordenar, rotar páginas individuales o descartar hojas.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
+                    <h3 class="mt-3 font-bold text-slate-900">4. Rotar PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Rotación uniforme en incrementos de 90°, 180° o 270° sobre todas las páginas.</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Optimizar</span>
+                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Mejorado</span>
+                    </div>
+                    <h3 class="mt-3 font-bold text-slate-900">5. Comprimir PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Tres niveles de compresión (`low`, `medium`, `high` con remuestreo de imágenes) y métricas de reducción.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Optimizar</span>
+                    <h3 class="mt-3 font-bold text-slate-900">6. OCR PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Reconocimiento óptico de caracteres local mediante Tesseract para documentos escaneados.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
+                    <h3 class="mt-3 font-bold text-slate-900">7. PDF a Word</h3>
+                    <p class="mt-1 text-xs text-slate-600">Conversión estructural de documentos PDF a formato editable `.docx`.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
+                    <h3 class="mt-3 font-bold text-slate-900">8. Word a PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Renderizado de documentos `.doc` y `.docx` a estándar PDF mediante LibreOffice local.</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
+                    <h3 class="mt-3 font-bold text-slate-900">9. JPG a PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Creación de documentos PDF a partir de secuencias de imágenes JPG y PNG.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
+                    <h3 class="mt-3 font-bold text-slate-900">10. PDF a JPG</h3>
+                    <p class="mt-1 text-xs text-slate-600">Rasterización de cada página del documento en imágenes JPG de alta densidad.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
+                    <h3 class="mt-3 font-bold text-slate-900">11. PDF a Markdown</h3>
+                    <p class="mt-1 text-xs text-slate-600">Extracción estructurada a formato `.md` para flujos de ingeniería de datos, RAG y LLMs.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
+                    <h3 class="mt-3 font-bold text-slate-900">12. Marca de Agua</h3>
+                    <p class="mt-1 text-xs text-slate-600">Estampado de texto diagonal semitransparente centrado en todas las páginas.</p>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
+                    <h3 class="mt-3 font-bold text-slate-900">13. Números de Página</h3>
+                    <p class="mt-1 text-xs text-slate-600">Paginación automática en el margen inferior con formato `Página X de Y`.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
+                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Nuevo en v2.0</span>
+                    </div>
+                    <h3 class="mt-3 font-bold text-slate-900">14. Editar Metadatos</h3>
+                    <p class="mt-1 text-xs text-slate-600">Lectura, modificación y limpieza de atributos `Título`, `Autor`, `Asunto` y `Palabras clave`.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
+                    <h3 class="mt-3 font-bold text-slate-900">15. Proteger PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Cifrado criptográfico bajo estándar AES-256 con clave de apertura.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
+                    <h3 class="mt-3 font-bold text-slate-900">16. Desbloquear PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Descifrado y eliminación de restricciones de acceso mediante contraseña autorizada.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Technical Architecture Section -->
+    <section id="arquitectura" class="py-20 bg-white border-b border-slate-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-6">
+                    <p class="text-xs font-mono font-bold uppercase tracking-widest text-brand">Especificación Técnica</p>
+                    <h2 class="mt-2 text-3xl font-extrabold text-slate-900">Arquitectura desacoplada compilada en un único ejecutable</h2>
+                    <p class="mt-4 text-slate-600 leading-relaxed">
+                        OpenPDF combina la velocidad de desarrollo y riqueza visual de <strong>Next.js 14</strong> (exportación estática con tipografías locales embebidas) con la potencia de cálculo nativo de <strong>PyMuPDF (C/C++)</strong> expuesto a través de <strong>FastAPI</strong>.
+                    </p>
+                    <ul class="mt-6 space-y-3 text-sm text-slate-700">
+                        <li class="flex items-start gap-3">
+                            <span class="mt-1 w-2 h-2 rounded-full bg-brand shrink-0"></span>
+                            <span><strong>Diagnóstico en vivo (`/api/v1/system/status`):</strong> Verifica en tiempo real el estado del motor local, límites de archivo y disponibilidad de módulos opcionales (Tesseract OCR y LibreOffice).</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-1 w-2 h-2 rounded-full bg-brand shrink-0"></span>
+                            <span><strong>Comprobador de versiones resiliente (`/api/v1/system/updates`):</strong> Único punto de red opcional con timeout de 3 segundos, caché de 6 horas y degradación silenciosa cuando el equipo opera sin internet.</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <span class="mt-1 w-2 h-2 rounded-full bg-brand shrink-0"></span>
+                            <span><strong>Empaquetado autónomo:</strong> El instalador oficial configura accesos directos, registro de versión y desinstalador limpio en Windows sin requerir dependencias externas.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="lg:col-span-6">
+                    <div class="bg-slate-900 text-slate-200 rounded-2xl p-6 sm:p-8 font-mono text-xs leading-relaxed border border-slate-800 shadow-xl">
+                        <div class="text-slate-400 mb-3 pb-3 border-b border-slate-800 flex justify-between">
+                            <span>ARQUITECTURA DE EJECUCIÓN LOCAL</span>
+                            <span class="text-emerald-400">127.0.0.1:8000</span>
+                        </div>
+                        <pre class="overflow-x-auto text-slate-300"><code>+-------------------------------------------------------+
+| Interfaz de Usuario (Next.js 14 Static + Zustand)     |
+|  - Modo Claro / Oscuro persistente                    |
+|  - Tipografías Geist Sans / Mono embebidas (Offline)  |
+|  - Progreso por fases + Cancelación (AbortController) |
++-------------------------------------------------------+
+                           |
+              HTTP / Multipart FormData
+                           v
++-------------------------------------------------------+
+| Motor Backend (FastAPI + Uvicorn)                     |
+|  - TempFileManager: Streaming en bloques de 1 MiB     |
+|  - Validación por firmas binarias (Magic Bytes)       |
+|  - Protección Path Traversal (Path.resolve)           |
++-------------------------------------------------------+
+                           |
+                           v
++-------------------------------------------------------+
+| Núcleo de Procesamiento Documental                    |
+|  - PyMuPDF (fitz) / pymupdf4llm / pdf2docx / Pillow   |
+|  - Integración local: Tesseract OCR & LibreOffice     |
++-------------------------------------------------------+</code></pre>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 py-12 text-center text-gray-400 relative z-10">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex items-center justify-center gap-2 mb-6 opacity-60 hover:opacity-100 transition cursor-default">
-                <div class="bg-gray-700 text-white p-1 rounded flex items-center justify-center">
-                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+    <footer class="bg-slate-950 text-slate-400 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-7 h-7 rounded-lg bg-brand text-white flex items-center justify-center font-extrabold text-xs">
+                    PDF
                 </div>
-                <span class="text-xl font-bold text-white tracking-tight">OpenPDF</span>
+                <span class="text-base font-bold text-white tracking-tight">OpenPDF Project</span>
+                <span class="text-xs font-mono text-slate-500">v2.0.0</span>
             </div>
-            <p class="mb-2">© 2026 OpenPDF Project.</p>
-            <p class="text-sm">Creado con excelencia técnica. Distribuido bajo la Licencia MIT.</p>
+            <div class="flex items-center gap-6 text-xs font-medium">
+                <a href="https://github.com/albert-dilas/OpenPDF" class="hover:text-white transition-colors">Repositorio GitHub</a>
+                <a href="https://github.com/albert-dilas/OpenPDF/releases" class="hover:text-white transition-colors">Releases</a>
+                <a href="https://github.com/albert-dilas/OpenPDF/blob/main/LICENSE" class="hover:text-white transition-colors">Licencia MIT</a>
+            </div>
         </div>
     </footer>
 
-    <!-- Initialize Vanta.js -->
     <script>
-        VANTA.NET({
-            el: "#vanta-bg",
-            mouseControls: true,
-            touchControls: true,
-            gyroControls: false,
-            minHeight: 200.00,
-            minWidth: 200.00,
-            scale: 1.00,
-            scaleMobile: 1.00,
-            color: 0x3b82f6,      /* Tailwind Blue 500 */
-            backgroundColor: 0xf8fafc, /* Tailwind Slate 50 */
-            points: 12.00,
-            maxDistance: 22.00,
-            spacing: 18.00,
-            showDots: true
-        })
+        const TABS = {
+            overview: {
+                src: 'assets/overview.jpg',
+                caption: 'http://127.0.0.1:8000 — Panel Principal con Buscador, Categorías y Estado del Motor Local'
+            },
+            tools: {
+                src: 'assets/tools.jpg',
+                caption: 'http://127.0.0.1:8000 — Catálogo Completo de 16 Módulos en Modo Oscuro'
+            },
+            workflow: {
+                src: 'assets/workflow.jpg',
+                caption: 'http://127.0.0.1:8000/organize-pdf — Espacio de Trabajo Interactivo con Miniaturas por Página'
+            }
+        };
+
+        function switchTab(key) {
+            const data = TABS[key];
+            if (!data) return;
+            document.getElementById('preview-img').src = data.src;
+            document.getElementById('preview-caption').textContent = data.caption;
+
+            ['overview', 'tools', 'workflow'].forEach(id => {
+                const btn = document.getElementById('tab-' + id);
+                if (id === key) {
+                    btn.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-slate-900 shadow-sm';
+                } else {
+                    btn.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900';
+                }
+            });
+        }
     </script>
 </body>
 </html>

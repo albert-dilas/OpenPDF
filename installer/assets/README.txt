@@ -1,96 +1,78 @@
-=========================================================
-  OpenPDF v1.0.0 - Suite de Herramientas PDF Local
-  La alternativa open-source, privada y local a iLovePDF
-=========================================================
+=========================================================================
+  OpenPDF v2.0.0 - Suite Local-First de Procesamiento Documental PDF
+  Plataforma de codigo abierto, privada y 100% local
+=========================================================================
 
-DESCRIPCION
------------
-OpenPDF es una plataforma de procesamiento de documentos PDF que opera
-100% de forma local en tu computadora. Tus archivos NUNCA se suben a
-ningun servidor. Todo el procesamiento ocurre en tu maquina.
-
-
-COMO USAR
----------
-1. Haz doble clic en el icono de OpenPDF en tu Escritorio o Menu de Inicio.
-2. La aplicacion se abrira automaticamente en tu navegador web predeterminado
-   (en la direccion: http://localhost:8000).
-3. Selecciona la herramienta que necesitas y arrastra tus archivos.
-4. Descarga el resultado cuando el procesamiento termine.
-5. Para cerrar la aplicacion, cierra la ventana del explorador Y el icono
-   de la barra de tareas.
-
-NOTA: Si el navegador no se abre solo, espera 5 segundos y navega
-manualmente a http://localhost:8000
+DESCRIPCION GENERAL
+-------------------
+OpenPDF es una plataforma de procesamiento y manipulacion de documentos
+PDF que opera integramente en tu equipo local. Ningun documento ni
+metadato se transmite a servidores externos.
 
 
-HERRAMIENTAS DISPONIBLES (14 modulos)
---------------------------------------
-[ORGANIZACION Y EDICION]
-  * Unir PDF         - Combina multiples PDFs en uno solo
-  * Dividir PDF      - Extrae paginas especificas como archivos separados
-  * Comprimir PDF    - Reduce el tamano del archivo manteniendo calidad
-  * Rotar PDF        - Rota paginas individuales o todo el documento
-  * Numeros de Pagina - Inserta numeracion automatica en tus PDFs
+INSTRUCCIONES DE USO
+--------------------
+1. Ejecuta OpenPDF desde el icono del Escritorio o el Menu de Inicio.
+2. El motor local iniciara automaticamente en el primer puerto libre
+   disponible (por defecto http://127.0.0.1:8000) y abrira tu navegador
+   web predeterminado.
+3. Selecciona cualquiera de los 16 modulos, arrastra tus documentos y
+   descarga el archivo resultante al instante.
 
-[CONVERSION]
-  * PDF a JPG        - Convierte cada pagina del PDF en imagen de alta calidad
-  * JPG a PDF        - Ensambla imagenes en un documento PDF estructurado
-  * PDF a Word       - Convierte a .docx preservando formato, tablas y parrafos
-  * Word a PDF       - Convierte documentos .docx a PDF con fidelidad perfecta
-  * PDF a Markdown   - Extrae el contenido en formato Markdown (ideal para IA)
+
+CATALOGO DE MODULOS INCLUIDOS (16 HERRAMIENTAS)
+-----------------------------------------------
+[ORGANIZAR]
+  * Unir PDF          - Combina multiples documentos PDF en el orden elegido
+  * Dividir PDF       - Extrae todas las paginas o rangos personalizados (.zip)
+  * Organizar PDF     - Previsualiza miniaturas para reordenar, rotar o borrar
+  * Rotar PDF         - Gira todas las paginas 90, 180 o 270 grados
+
+[OPTIMIZAR]
+  * Comprimir PDF     - 3 niveles (baja, media, alta con optimizacion de imagen)
+  * OCR PDF           - Reconocimiento optico de caracteres para PDFs escaneados
+
+[CONVERTIR]
+  * PDF a Word        - Convierte PDF a documentos editables .docx
+  * Word a PDF        - Convierte documentos .doc y .docx a estandar PDF
+  * JPG a PDF         - Ensambla imagenes JPG y PNG en un documento PDF
+  * PDF a JPG         - Rasteriza cada pagina en imagenes JPG de alta calidad
+  * PDF a Markdown    - Extrae contenido estructurado (.md) para flujos de IA
+
+[EDITAR]
+  * Marca de Agua     - Estampa texto diagonal semitransparente centrado
+  * Numeros de Pagina - Inserta numeracion secuencial automatica
+  * Editar Metadatos  - Modifica o limpia Titulo, Autor, Asunto y Etiquetas
 
 [SEGURIDAD]
-  * Proteger PDF     - Cifrado AES-256 con contrasena personalizada
-  * Desbloquear PDF  - Elimina la proteccion de contrasena de apertura
-  * Marca de Agua    - Agrega texto diagonal semitransparente como sello
-
-[OCR - RECONOCIMIENTO DE CARACTERES]
-  * OCR PDF          - Hace que PDFs escaneados sean buscables y copiables
+  * Proteger PDF      - Cifrado criptografico AES-256 con contrasena
+  * Desbloquear PDF   - Elimina restricciones y contrasena de apertura
 
 
 REQUISITOS DEL SISTEMA
 ----------------------
-  * Sistema Operativo: Windows 10 / Windows 11 (64-bit)
-  * RAM: 4 GB minimo (8 GB recomendado para OCR)
-  * Disco: 500 MB de espacio libre
-  * Procesador: Intel Core i3 / AMD Ryzen 3 o superior
-  * Red: NO requerida. Funciona completamente sin internet.
+  * Sistema Operativo : Windows 10 / Windows 11 (64-bit)
+  * Memoria RAM       : 4 GB minimo (8 GB recomendado para OCR)
+  * Espacio en Disco  : 400 MB libres
+  * Conexion de Red   : No requerida (100% autonomo sin internet)
 
-NOTA SOBRE OCR y WORD->PDF:
-  Estas funciones requieren que Tesseract-OCR y LibreOffice esten instalados
-  en el sistema. Si no los tienes instalados, las demas herramientas
-  funcionaran normalmente. Puedes descargarlos en:
-  - Tesseract: https://github.com/UB-Mannheim/tesseract/wiki
-  - LibreOffice: https://www.libreoffice.org/download/
+NOTA SOBRE MODULOS OPCIONALES (OCR y WORD A PDF):
+  El panel superior ("Motor Local Activo") detecta automaticamente si
+  Tesseract-OCR y LibreOffice estan instalados en el sistema:
+  - Tesseract OCR : https://github.com/UB-Mannheim/tesseract/wiki
+  - LibreOffice   : https://www.libreoffice.org/download/
 
 
-PRIVACIDAD
-----------
-OpenPDF fue disenado con la privacidad como principio fundamental:
-  - CERO telemetria. No recopilamos ningun dato.
-  - CERO conexiones a internet. Todo es local.
-  - CERO registro. No necesitas crear una cuenta.
-  - Tus documentos se eliminan automaticamente de la memoria temporal
-    despues de cada operacion.
+GARANTIA DE PRIVACIDAD
+----------------------
+  - Cero telemetria ni rastreadores de terceros.
+  - Procesamiento en streaming por bloques de 1 MiB.
+  - Limpieza automatica de archivos temporales tras cada operacion.
 
 
 SOPORTE Y CODIGO FUENTE
-------------------------
-Repositorio: https://github.com/openpdf
-Reportar errores: https://github.com/openpdf/issues
-Licencia: MIT (ver LICENSE.txt)
-
-
-DESINSTALACION
---------------
-Para desinstalar OpenPDF, ve a:
-  Panel de Control > Programas > Desinstalar un programa > OpenPDF
-
-O busca "OpenPDF" en el Menu de Inicio > "Desinstalar OpenPDF".
-
-
-=========================================================
-  Gracias por usar OpenPDF.
-  Hecho con codigo abierto, para personas que valoran su privacidad.
-=========================================================
+-----------------------
+  Repositorio oficial : https://github.com/albert-dilas/OpenPDF
+  Sitio web           : https://albert-dilas.github.io/OpenPDF
+  Licencia            : MIT (consultar LICENSE.txt)
+=========================================================================

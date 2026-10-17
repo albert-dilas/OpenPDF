@@ -1,67 +1,73 @@
 # -*- mode: python ; coding: utf-8 -*-
-# OpenPDF - PyInstaller Spec
-# Genera un ejecutable monolitico: FastAPI backend + Next.js frontend estatico
+# OpenPDF v2.0 - PyInstaller Spec
+# Genera un ejecutable monolítico: FastAPI backend + Next.js frontend estático
 
 import os
-import sys
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules, copy_metadata
 
-PROJECT_ROOT = os.path.abspath(os.path.join(SPECPATH, '..'))
+PROJECT_ROOT = os.path.abspath(os.path.join(SPECPATH, ".."))
 
-# ─── Datos a incluir ─────────────────────────────────────────────────────────
 datas = [
-    # Frontend compilado (Next.js static export)
-    (os.path.join(PROJECT_ROOT, 'frontend', 'out'), 'frontend/out'),
+    (os.path.join(PROJECT_ROOT, "frontend", "out"), "frontend/out"),
 ]
 
-# Agregar datos de pymupdf si existen
-datas += collect_data_files('pymupdf')
-datas += collect_data_files('fitz')
-datas += copy_metadata('python-multipart')
+for pkg in ("pymupdf", "fitz", "pymupdf4llm"):
+    try:
+        datas += collect_data_files(pkg)
+    except Exception:
+        pass
+
+for meta_pkg in ("python-multipart", "fastapi", "uvicorn", "pymupdf"):
+    try:
+        datas += copy_metadata(meta_pkg)
+    except Exception:
+        pass
 
 hidden_imports = []
-hidden_imports += collect_submodules('python_multipart')
+for sub_pkg in ("app", "python_multipart", "pdf2docx", "pymupdf4llm"):
+    try:
+        hidden_imports += collect_submodules(sub_pkg)
+    except Exception:
+        pass
+
 hidden_imports += [
-    # FastAPI & Starlette internals
-    'uvicorn.logging',
-    'uvicorn.loops',
-    'uvicorn.loops.auto',
-    'uvicorn.loops.asyncio',
-    'uvicorn.protocols',
-    'uvicorn.protocols.http',
-    'uvicorn.protocols.http.auto',
-    'uvicorn.protocols.http.h11_impl',
-    'uvicorn.protocols.http.httptools_impl',
-    'uvicorn.protocols.websockets',
-    'uvicorn.protocols.websockets.auto',
-    'uvicorn.lifespan',
-    'uvicorn.lifespan.on',
-    'fastapi',
-    'fastapi.staticfiles',
-    'fastapi.responses',
-    'starlette.staticfiles',
-    'starlette.responses',
-    'starlette.middleware.cors',
-    # PyMuPDF
-    'fitz',
-    'pymupdf',
-    'pymupdf4llm',
-    # Otros
-    'anyio',
-    'anyio._backends._asyncio',
-    'python_multipart',
-    'httpx',
-    'packaging',
-    'packaging.version',
-    'email.mime.multipart',
-    'email.mime.base',
-    'email.mime.text',
+    "uvicorn.logging",
+    "uvicorn.loops",
+    "uvicorn.loops.auto",
+    "uvicorn.loops.asyncio",
+    "uvicorn.protocols",
+    "uvicorn.protocols.http",
+    "uvicorn.protocols.http.auto",
+    "uvicorn.protocols.http.h11_impl",
+    "uvicorn.protocols.http.httptools_impl",
+    "uvicorn.protocols.websockets",
+    "uvicorn.protocols.websockets.auto",
+    "uvicorn.lifespan",
+    "uvicorn.lifespan.on",
+    "fastapi",
+    "fastapi.staticfiles",
+    "fastapi.responses",
+    "starlette.staticfiles",
+    "starlette.responses",
+    "starlette.middleware.cors",
+    "fitz",
+    "pymupdf",
+    "pymupdf4llm",
+    "anyio",
+    "anyio._backends._asyncio",
+    "python_multipart",
+    "httpx",
+    "packaging",
+    "packaging.version",
+    "email.mime.multipart",
+    "email.mime.base",
+    "email.mime.text",
 ]
 
 a = Analysis(
-    [os.path.join(PROJECT_ROOT, 'backend', 'app', 'main.py')],
+    [os.path.join(PROJECT_ROOT, "backend", "app", "main.py")],
     pathex=[
-        os.path.join(PROJECT_ROOT, 'backend'),
+        os.path.join(PROJECT_ROOT, "backend"),
     ],
     binaries=[],
     datas=datas,
@@ -70,16 +76,16 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
-        # Excluir modulos pesados innecesarios para ahorrar espacio
-        'tkinter',
-        'matplotlib',
-        'scipy',
-        'notebook',
-        'IPython',
-        'pandas',
-        'sklearn',
-        'tensorflow',
-        'torch',
+        "tkinter",
+        "matplotlib",
+        "scipy",
+        "notebook",
+        "IPython",
+        "pandas",
+        "sklearn",
+        "tensorflow",
+        "torch",
+        "pytest",
     ],
     noarchive=False,
     optimize=1,
@@ -93,19 +99,19 @@ exe = EXE(
     a.binaries,
     a.datas,
     [],
-    name='OpenPDF',
+    name="OpenPDF",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=False,
     upx_exclude=[],
     runtime_tmpdir=None,
-    console=False,           # Sin ventana de consola negra
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=os.path.join(PROJECT_ROOT, 'installer', 'openpdf.ico'),
-    version_file=os.path.join(PROJECT_ROOT, 'installer', 'version_info.txt'),
+    icon=os.path.join(PROJECT_ROOT, "installer", "openpdf.ico"),
+    version_file=os.path.join(PROJECT_ROOT, "installer", "version_info.txt"),
 )

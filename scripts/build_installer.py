@@ -1,135 +1,140 @@
 """
-OpenPDF - Build Master Script
+OpenPDF v2.0.0 - Master Build Pipeline
 Orquesta el proceso completo de empaquetado:
-  1. Compila el frontend Next.js
-  2. Empaqueta con PyInstaller -> OpenPDF.exe
-  3. Genera el instalador con Inno Setup -> OpenPDF_Setup_v1.0.0.exe
+  1. Genera iconos y banners del instalador (prepare_assets.py)
+  2. Compila el frontend estático Next.js (frontend/out)
+  3. Empaqueta el ejecutable monolítico con PyInstaller -> dist/OpenPDF.exe
+  4. Genera el instalador oficial con Inno Setup -> dist/OpenPDF_Setup_v2.0.0.exe
 """
 import os
-import sys
-import subprocess
 import shutil
+import subprocess
+import sys
 import time
 
-# ─── Colores para consola ─────────────────────────────────────────────────────
-def header(msg):
-    print("\n" + "=" * 60)
-    print(f"  {msg}")
-    print("=" * 60)
+VERSION = "2.0.0"
 
-def step(msg):
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
+BACKEND_DIR = os.path.join(PROJECT_ROOT, "backend")
+INSTALLER_DIR = os.path.join(PROJECT_ROOT, "installer")
+DIST_DIR = os.path.join(PROJECT_ROOT, "dist")
+BUILD_DIR = os.path.join(PROJECT_ROOT, "build")
+SPEC_FILE = os.path.join(INSTALLER_DIR, "OpenPDF.spec")
+ISS_FILE = os.path.join(INSTALLER_DIR, "OpenPDF_Installer.iss")
+
+
+def get_python_executable() -> str:
+    for venv_name in (".venv", "venv"):
+        candidate = os.path.join(BACKEND_DIR, venv_name, "Scripts", "python.exe")
+        if os.path.exists(candidate):
+            return candidate
+    return sys.executable
+
+
+def find_iscc() -> str:
+    candidates = [
+        r"C:\Users\Albert\AppData\Local\Programs\Inno Setup 6\ISCC.exe",
+        r"C:\Program Files (x86)\Inno Setup 6\ISCC.exe",
+        r"C:\Program Files\Inno Setup 6\ISCC.exe",
+    ]
+    for path in candidates:
+        if os.path.exists(path):
+            return path
+    which_iscc = shutil.which("ISCC") or shutil.which("iscc")
+    if which_iscc:
+        return which_iscc
+    raise FileNotFoundError("Inno Setup 6 (ISCC.exe) no fue encontrado en el sistema.")
+
+
+def header(msg: str) -> None:
+    print("\n" + "=" * 64)
+    print(f"  {msg}")
+    print("=" * 64)
+
+
+def step(msg: str) -> None:
     print(f"\n  >> {msg}")
 
-def ok(msg):
+
+def ok(msg: str) -> None:
     print(f"     [OK] {msg}")
 
-def err(msg):
+
+def err(msg: str) -> None:
     print(f"     [ERROR] {msg}")
     sys.exit(1)
 
-# ─── Rutas del proyecto ───────────────────────────────────────────────────────
-PROJECT_ROOT  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-FRONTEND_DIR  = os.path.join(PROJECT_ROOT, "frontend")
-BACKEND_DIR   = os.path.join(PROJECT_ROOT, "backend")
-INSTALLER_DIR = os.path.join(PROJECT_ROOT, "installer")
-DIST_DIR      = os.path.join(PROJECT_ROOT, "dist")
-SPEC_FILE     = os.path.join(INSTALLER_DIR, "OpenPDF.spec")
-ISS_FILE      = os.path.join(INSTALLER_DIR, "OpenPDF_Installer.iss")
-ISCC_PATH     = r"C:\Users\Albert\AppData\Local\Programs\Inno Setup 6\ISCC.exe"
 
-start_time = time.time()
+def main() -> None:
+    start_time = time.time()
+    py_exe = get_python_executable()
 
-# =============================================================================
-header("PASO 1/3: Compilando Frontend (Next.js)")
-# =============================================================================
-step("Ejecutando: npm run build")
+    header(f"PASO 1/4: Preparando Recursos Graficos del Instalador (v{VERSION})")
+    res = subprocess.run([py_exe, os.path.join(PROJECT_ROOT, "scripts", "prepare_assets.py")], cwd=PROJECT_ROOT)
+    if res.returncode != 0:
+        err("Fallo la generacion de recursos graficos en prepare_assets.py.")
 
-result = subprocess.run(
-    ["npm", "run", "build"],
-    cwd=FRONTEND_DIR,
-    shell=True,
-    capture_output=False
-)
-if result.returncode != 0:
-    err("Fallo la compilacion del frontend. Revisa los errores de npm.")
+    header("PASO 2/4: Compilando Frontend Estatico (Next.js)")
+    out_dir = os.path.join(FRONTEND_DIR, "out")
+    step("Ejecutando: npm run build")
+    res = subprocess.run(["npm", "run", "build"], cwd=FRONTEND_DIR, shell=True)
+    if res.returncode != 0 or not os.path.exists(out_dir):
+        err("Fallo la compilacion del frontend estatico.")
+    ok(f"Frontend exportado en: {out_dir}")
 
-out_dir = os.path.join(FRONTEND_DIR, "out")
-if not os.path.exists(out_dir):
-    err(f"No se encontro la carpeta 'out' en: {out_dir}")
+    header("PASO 3/4: Empaquetando Ejecutable Monolitico con PyInstaller")
+    for stale_dir in (BUILD_DIR, os.path.join(BACKEND_DIR, "build")):
+        if os.path.exists(stale_dir):
+            shutil.rmtree(stale_dir, ignore_errors=True)
 
-ok(f"Frontend compilado exitosamente -> {out_dir}")
+    step("Asegurando que PyInstaller este instalado en el entorno...")
+    subprocess.run(
+        [py_exe, "-m", "pip", "install", "-q", "--disable-pip-version-check", "pyinstaller"],
+        check=True,
+    )
 
-# =============================================================================
-header("PASO 2/3: Empaquetando con PyInstaller")
-# =============================================================================
-step("Limpiando builds anteriores...")
-build_dir = os.path.join(BACKEND_DIR, "build")
-if os.path.exists(build_dir):
-    shutil.rmtree(build_dir)
-    ok("Carpeta 'build' anterior eliminada")
+    step("Ejecutando PyInstaller...")
+    pyinstaller_cmd = [
+        py_exe,
+        "-m",
+        "PyInstaller",
+        "--distpath",
+        DIST_DIR,
+        "--workpath",
+        BUILD_DIR,
+        "--noconfirm",
+        SPEC_FILE,
+    ]
+    res = subprocess.run(pyinstaller_cmd, cwd=PROJECT_ROOT)
+    if res.returncode != 0:
+        err("PyInstaller fallo durante el empaquetado.")
 
-# Verificar que el icono existe
-ico_path = os.path.join(INSTALLER_DIR, "openpdf.ico")
-if not os.path.exists(ico_path):
-    err(f"Icono no encontrado: {ico_path}\nEjecuta primero: python scripts/prepare_assets.py")
+    exe_path = os.path.join(DIST_DIR, "OpenPDF.exe")
+    if not os.path.exists(exe_path):
+        err(f"No se encontro el ejecutable en: {exe_path}")
 
-step("Ejecutando PyInstaller con spec mejorado...")
-pyinstaller_cmd = [
-    sys.executable, "-m", "PyInstaller",
-    "--distpath", DIST_DIR,
-    "--workpath", os.path.join(PROJECT_ROOT, "build"),
-    "--noconfirm",
-    SPEC_FILE
-]
+    exe_size_mb = os.path.getsize(exe_path) / (1024 * 1024)
+    ok(f"OpenPDF.exe generado ({exe_size_mb:.1f} MB): {exe_path}")
 
-result = subprocess.run(
-    pyinstaller_cmd,
-    cwd=PROJECT_ROOT,
-    capture_output=False
-)
-if result.returncode != 0:
-    err("PyInstaller fallo. Revisa los errores arriba.")
+    header("PASO 4/4: Compilando Instalador con Inno Setup 6")
+    iscc_path = find_iscc()
+    step(f"Ejecutando ISCC: {iscc_path}")
+    res = subprocess.run([iscc_path, ISS_FILE], cwd=INSTALLER_DIR)
+    if res.returncode != 0:
+        err("Inno Setup fallo al compilar el instalador.")
 
-exe_path = os.path.join(DIST_DIR, "OpenPDF.exe")
-if not os.path.exists(exe_path):
-    err(f"El ejecutable no fue generado en: {exe_path}")
+    installer_path = os.path.join(DIST_DIR, f"OpenPDF_Setup_v{VERSION}.exe")
+    if not os.path.exists(installer_path):
+        err(f"No se encontro el instalador generado en: {installer_path}")
 
-exe_size_mb = os.path.getsize(exe_path) / (1024 * 1024)
-ok(f"OpenPDF.exe generado exitosamente ({exe_size_mb:.1f} MB)")
-ok(f"Ubicacion: {exe_path}")
-
-# =============================================================================
-header("PASO 3/3: Generando Instalador con Inno Setup")
-# =============================================================================
-if not os.path.exists(ISCC_PATH):
-    err(f"Inno Setup no encontrado en: {ISCC_PATH}")
-
-step("Compilando script .iss con ISCC...")
-result = subprocess.run(
-    [ISCC_PATH, ISS_FILE],
-    cwd=INSTALLER_DIR,
-    capture_output=False
-)
-if result.returncode != 0:
-    err("Inno Setup fallo. Revisa los errores arriba.")
-
-# Buscar el instalador generado
-installer_path = os.path.join(DIST_DIR, "OpenPDF_Setup_v1.0.0.exe")
-if os.path.exists(installer_path):
     installer_size_mb = os.path.getsize(installer_path) / (1024 * 1024)
-    ok(f"Instalador generado: {installer_size_mb:.1f} MB")
-    ok(f"Ubicacion: {installer_path}")
+    elapsed = time.time() - start_time
 
-# =============================================================================
-elapsed = time.time() - start_time
-header(f"BUILD COMPLETADO en {elapsed:.0f} segundos")
-# =============================================================================
-print(f"""
-  Archivos generados:
-  -------------------
-  Ejecutable:  {DIST_DIR}\\OpenPDF.exe
-  Instalador:  {DIST_DIR}\\OpenPDF_Setup_v1.0.0.exe
+    header(f"COMPILACION COMPLETADA EN {elapsed:.0f} SEGUNDOS")
+    print(f"  Ejecutable portatil : {exe_path} ({exe_size_mb:.1f} MB)")
+    print(f"  Instalador oficial  : {installer_path} ({installer_size_mb:.1f} MB)")
 
-  El instalador es el archivo a distribuir.
-  Cualquier persona puede hacer doble clic en el para instalar OpenPDF.
-""")
+
+if __name__ == "__main__":
+    main()

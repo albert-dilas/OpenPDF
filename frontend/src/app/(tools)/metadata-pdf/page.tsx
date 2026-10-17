@@ -116,12 +116,12 @@ export default function MetadataPDFPage() {
 
   const handleClearFields = () => {
     setForm(EMPTY_METADATA);
-    toast('Campos de metadatos limpiados', { icon: '🧹' });
+    toast.success('Campos de metadatos limpiados.');
   };
 
   const handleRestoreFields = () => {
     setForm({ ...originalMetadata });
-    toast('Metadatos originales restaurados', { icon: '↩️' });
+    toast.success('Metadatos originales restaurados.');
   };
 
   const handleSubmit = async (e?: React.FormEvent) => {
