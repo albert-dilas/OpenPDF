@@ -3,23 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenPDF v2.1 | Suite Local-First de Procesamiento PDF</title>
-    <meta name="description" content="Plataforma de escritorio Local-First y de código abierto con 21 módulos para unir, dividir, organizar, firmar, censurar, comprimir, traducir y convertir documentos PDF.">
+    <title>OpenPDF v2.1 | Suite de Procesamiento PDF en Local</title>
+    <meta name="description" content="Aplicación de escritorio de código abierto con 21 herramientas para unir, dividir, organizar, firmar, censurar, comprimir, traducir y convertir documentos PDF directamente en tu equipo.">
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+                        display: ['Space Grotesk', 'system-ui', 'sans-serif'],
                         mono: ['JetBrains Mono', 'monospace'],
                     },
                     colors: {
                         brand: {
                             DEFAULT: '#e5322d',
-                            dark: '#cc2c28',
-                            light: '#fef2f2',
+                            dark: '#c4221e',
+                            glow: '#ff4d47',
+                        },
+                        obsidian: {
+                            950: '#05070b',
+                            900: '#0a0d14',
+                            800: '#101520',
+                            700: '#182030',
                         }
                     }
                 }
@@ -27,442 +36,1600 @@
         }
     </script>
     <style>
-        body { font-family: 'Inter', sans-serif; }
-        .grid-bg {
-            background-size: 36px 36px;
-            background-image:
-                linear-gradient(to right, rgba(226, 232, 240, 0.6) 1px, transparent 1px),
-                linear-gradient(to bottom, rgba(226, 232, 240, 0.6) 1px, transparent 1px);
+        :root {
+            --rx: 8deg;
+            --ry: -6deg;
+            --glare-x: 50%;
+            --glare-y: 30%;
         }
-        .window-shadow {
-            box-shadow: 0 30px 60px -15px rgba(15, 23, 42, 0.22), 0 0 0 1px rgba(15, 23, 42, 0.08);
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #05070b;
+            color: #f1f5f9;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Ambient 3D Spatial Grid Floor */
+        .spatial-floor {
+            position: absolute;
+            inset: 0;
+            overflow: hidden;
+            pointer-events: none;
+            perspective: 900px;
+        }
+
+        .spatial-floor-plane {
+            position: absolute;
+            width: 220%;
+            height: 150%;
+            left: -60%;
+            top: 25%;
+            background-size: 64px 64px;
+            background-image:
+                linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(229, 50, 45, 0.06) 1px, transparent 1px);
+            transform: rotateX(72deg) translateZ(-120px);
+            mask-image: radial-gradient(ellipse 65% 55% at 50% 35%, black 15%, transparent 80%);
+            -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 35%, black 15%, transparent 80%);
+        }
+
+        /* 3D Hero Workstation Stage */
+        .stage-3d {
+            perspective: 1800px;
+            transform-style: preserve-3d;
+        }
+
+        .rig-3d {
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(var(--rx)) rotateY(var(--ry));
+            transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+            will-change: transform;
+        }
+
+        .rig-3d.mode-exploded {
+            transform: rotateX(20deg) rotateY(-26deg) rotateZ(4deg) scale(0.88) !important;
+            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .rig-3d.mode-flat {
+            transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) !important;
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Deep volumetric shadow under 3D window */
+        .rig-shadow {
+            position: absolute;
+            inset: 4%;
+            background: radial-gradient(ellipse at center, rgba(229, 50, 45, 0.28) 0%, rgba(5, 7, 11, 0.92) 70%);
+            filter: blur(42px);
+            transform: translateZ(-95px) translateY(34px) scale(0.98);
+            border-radius: 28px;
+            pointer-events: none;
+            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+        }
+
+        /* Extruded 3D Hardware Backplate */
+        .rig-backplate {
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #162032 0%, #090d16 55%, #3b1219 100%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            transform: translateZ(-22px);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.85);
+            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.5s ease;
+            pointer-events: none;
+        }
+
+        .rig-3d.mode-exploded .rig-backplate {
+            transform: translate3d(-56px, 52px, -110px);
+            border-color: rgba(56, 189, 248, 0.65);
+            box-shadow: -20px 30px 60px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Midplate (Engine Wireframe Layer Visible in Exploded Mode) */
+        .rig-midplate {
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            background: linear-gradient(135deg, rgba(26, 15, 23, 0.94) 0%, rgba(10, 14, 23, 0.94) 100%);
+            border: 1.5px dashed rgba(229, 50, 45, 0.65);
+            transform: translateZ(-10px);
+            opacity: 0;
+            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.5s ease;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 24px;
+            backdrop-filter: blur(8px);
+        }
+
+        .rig-3d.mode-exploded .rig-midplate {
+            transform: translate3d(-24px, 24px, -45px);
+            opacity: 1;
+        }
+
+        /* Primary Window Surface */
+        .rig-window {
+            position: relative;
+            border-radius: 20px;
+            background: #0b0f19;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            transform: translateZ(0px);
+            overflow: hidden;
+            box-shadow:
+                0 1px 0 0 rgba(255, 255, 255, 0.2) inset,
+                0 30px 70px -15px rgba(0, 0, 0, 0.8);
+            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+        }
+
+        .rig-3d.mode-exploded .rig-window {
+            transform: translate3d(22px, -22px, 32px);
+            box-shadow:
+                0 1px 0 0 rgba(255, 255, 255, 0.3) inset,
+                -25px 35px 60px rgba(0, 0, 0, 0.82);
+        }
+
+        /* Dynamic Specular Glare Overlay */
+        .rig-glare {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: radial-gradient(
+                circle 520px at var(--glare-x) var(--glare-y),
+                rgba(255, 255, 255, 0.11),
+                rgba(229, 50, 45, 0.04) 35%,
+                transparent 70%
+            );
+            mix-blend-mode: screen;
+            z-index: 20;
+        }
+
+        /* Floating 3D HUD Satellites around the Window */
+        .hud-satellite {
+            position: absolute;
+            transform-style: preserve-3d;
+            background: rgba(14, 19, 30, 0.88);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 16px;
+            box-shadow:
+                0 24px 48px -12px rgba(0, 0, 0, 0.85),
+                0 1px 0 0 rgba(255, 255, 255, 0.18) inset;
+            transition: transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 30;
+        }
+
+        .hud-sat-tl {
+            top: -22px;
+            left: -26px;
+            transform: translateZ(68px);
+        }
+
+        .hud-sat-br {
+            bottom: -24px;
+            right: -24px;
+            transform: translateZ(82px);
+        }
+
+        .hud-sat-tr {
+            top: 56px;
+            right: -30px;
+            transform: translateZ(54px);
+        }
+
+        .rig-3d.mode-exploded .hud-sat-tl {
+            transform: translateZ(110px) translateX(-14px) translateY(-10px);
+        }
+
+        .rig-3d.mode-exploded .hud-sat-br {
+            transform: translateZ(125px) translateX(14px) translateY(10px);
+        }
+
+        .rig-3d.mode-exploded .hud-sat-tr {
+            transform: translateZ(95px) translateX(16px);
+        }
+
+        /* 3D Layer Callout Labels in Exploded View */
+        .layer-tag {
+            opacity: 0;
+            transform: translateZ(40px) translateX(-12px);
+            transition: opacity 0.45s ease, transform 0.6s ease;
+            pointer-events: none;
+        }
+
+        .rig-3d.mode-exploded .layer-tag {
+            opacity: 1;
+            transform: translateZ(40px) translateX(0);
+        }
+
+        /* Interactive 3D Document Lab */
+        .doc-lab-stage {
+            perspective: 1400px;
+            transform-style: preserve-3d;
+        }
+
+        .doc-stack-3d {
+            position: relative;
+            width: 280px;
+            height: 360px;
+            transform-style: preserve-3d;
+            transform: rotateX(24deg) rotateY(-28deg) rotateZ(6deg);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .doc-page-3d {
+            position: absolute;
+            inset: 0;
+            border-radius: 14px;
+            background: linear-gradient(160deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            box-shadow: -14px 20px 38px rgba(0, 0, 0, 0.72), 0 1px 0 rgba(255, 255, 255, 0.22) inset;
+            padding: 22px;
+            transform-style: preserve-3d;
+            transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Document Lab States */
+        /* State 1: Split / Organize */
+        .doc-stack-3d[data-mode="organize"] .page-1 { transform: translateZ(-55px) translateX(-28px) translateY(18px) rotateZ(-6deg); opacity: 0.65; }
+        .doc-stack-3d[data-mode="organize"] .page-2 { transform: translateZ(0px) translateX(0px) translateY(0px) rotateZ(0deg); }
+        .doc-stack-3d[data-mode="organize"] .page-3 { transform: translateZ(60px) translateX(30px) translateY(-22px) rotateZ(7deg); border-color: rgba(229, 50, 45, 0.7); }
+
+        /* State 2: Redact */
+        .doc-stack-3d[data-mode="redact"] .page-1 { transform: translateZ(-28px); opacity: 0.45; }
+        .doc-stack-3d[data-mode="redact"] .page-2 { transform: translateZ(0px); opacity: 0.75; }
+        .doc-stack-3d[data-mode="redact"] .page-3 { transform: translateZ(34px); border-color: rgba(229, 50, 45, 0.75); }
+        .doc-stack-3d[data-mode="redact"] .redact-bar {
+            background: #e5322d !important;
+            transform: translateZ(26px);
+            box-shadow: 0 10px 24px rgba(229, 50, 45, 0.55);
+        }
+
+        /* State 3: Sign */
+        .doc-stack-3d[data-mode="sign"] .page-1 { transform: translateZ(-24px); opacity: 0.45; }
+        .doc-stack-3d[data-mode="sign"] .page-2 { transform: translateZ(0px); opacity: 0.75; }
+        .doc-stack-3d[data-mode="sign"] .page-3 { transform: translateZ(28px); border-color: rgba(16, 185, 129, 0.7); }
+        .doc-stack-3d[data-mode="sign"] .stamp-3d {
+            opacity: 1 !important;
+            transform: translateZ(48px) scale(1) !important;
+        }
+
+        /* State 4: Protect AES-256 */
+        .doc-stack-3d[data-mode="protect"] .page-1 { transform: translateZ(-12px); opacity: 0.6; }
+        .doc-stack-3d[data-mode="protect"] .page-2 { transform: translateZ(0px); opacity: 0.8; }
+        .doc-stack-3d[data-mode="protect"] .page-3 { transform: translateZ(12px); border-color: rgba(56, 189, 248, 0.75); }
+        .doc-stack-3d[data-mode="protect"] .vault-cage-3d {
+            opacity: 1 !important;
+            transform: translateZ(64px) scale(1.03) !important;
+        }
+
+        .redact-bar {
+            transition: all 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateZ(2px);
+        }
+
+        .stamp-3d {
+            opacity: 0;
+            transform: translateZ(95px) scale(1.25);
+            transition: all 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .vault-cage-3d {
+            position: absolute;
+            inset: -12px;
+            border-radius: 18px;
+            border: 2px solid rgba(56, 189, 248, 0.75);
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.14), rgba(15, 23, 42, 0.65));
+            backdrop-filter: blur(3px);
+            opacity: 0;
+            transform: translateZ(110px) scale(1.15);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 20px 50px rgba(14, 165, 233, 0.25);
+        }
+
+        /* 3D Tilt Tool Cards */
+        .tilt-card-wrap {
+            perspective: 1000px;
+        }
+
+        .tilt-card {
+            position: relative;
+            transform-style: preserve-3d;
+            background: linear-gradient(180deg, rgba(22, 29, 44, 0.85) 0%, rgba(12, 16, 25, 0.95) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            transition: transform 0.18s ease-out, border-color 0.25s ease, box-shadow 0.25s ease;
+            will-change: transform;
+        }
+
+        .tilt-card:hover {
+            border-color: rgba(229, 50, 45, 0.45);
+            box-shadow: 0 22px 44px -12px rgba(0, 0, 0, 0.75), 0 0 28px -8px rgba(229, 50, 45, 0.25);
+        }
+
+        .tilt-card::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: radial-gradient(
+                320px circle at var(--card-x, 50%) var(--card-y, 0%),
+                rgba(255, 255, 255, 0.09),
+                transparent 60%
+            );
+            opacity: 0;
+            transition: opacity 0.25s ease;
+            pointer-events: none;
+        }
+
+        .tilt-card:hover::before {
+            opacity: 1;
+        }
+
+        .tilt-icon-3d {
+            transform: translateZ(24px);
+            transition: transform 0.25s ease;
+        }
+
+        .tilt-card:hover .tilt-icon-3d {
+            transform: translateZ(34px) scale(1.06);
+        }
+
+        .tilt-body-3d {
+            transform: translateZ(14px);
+        }
+
+        /* 3D Isometric Architecture Stack */
+        .iso-scene {
+            perspective: 1400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 470px;
+        }
+
+        .iso-stack {
+            position: relative;
+            width: 300px;
+            height: 250px;
+            transform-style: preserve-3d;
+            transform: rotateX(50deg) rotateZ(-32deg);
+            transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .iso-plate {
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            padding: 22px;
+            transform-style: preserve-3d;
+            transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            backdrop-filter: blur(8px);
+        }
+
+        /* Plate Thickness Extrusion Effect */
+        .iso-plate::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 20px;
+            transform: translateZ(-8px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(5, 7, 11, 0.55);
+            pointer-events: none;
+        }
+
+        .iso-plate-1 {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.72) 0%, rgba(15, 23, 42, 0.78) 100%);
+            border: 1.5px solid rgba(255, 255, 255, 0.28);
+            transform: translate3d(-18px, -24px, 115px);
+            box-shadow: -18px 22px 40px rgba(0, 0, 0, 0.55);
+        }
+
+        .iso-plate-2 {
+            background: linear-gradient(135deg, rgba(60, 18, 26, 0.78) 0%, rgba(18, 23, 38, 0.82) 100%);
+            border: 1.5px solid rgba(229, 50, 45, 0.55);
+            transform: translate3d(0px, 0px, 0px);
+            box-shadow: -18px 22px 40px rgba(0, 0, 0, 0.65);
+        }
+
+        .iso-plate-3 {
+            background: linear-gradient(135deg, rgba(14, 34, 58, 0.82) 0%, rgba(8, 13, 24, 0.88) 100%);
+            border: 1.5px solid rgba(56, 189, 248, 0.5);
+            transform: translate3d(18px, 24px, -115px);
+            box-shadow: -25px 35px 60px rgba(0, 0, 0, 0.85);
+        }
+
+        .iso-plate.active-plate.iso-plate-1 {
+            transform: translate3d(-24px, -30px, 136px) scale(1.04);
+            border-color: #ffffff;
+            background: linear-gradient(135deg, rgba(45, 58, 82, 0.9) 0%, rgba(18, 27, 46, 0.94) 100%);
+            box-shadow: -20px 24px 55px rgba(255, 255, 255, 0.22);
+        }
+
+        .iso-plate.active-plate.iso-plate-2 {
+            transform: translate3d(-6px, -6px, 22px) scale(1.05);
+            border-color: #ff4d47;
+            background: linear-gradient(135deg, rgba(88, 22, 32, 0.92) 0%, rgba(22, 26, 42, 0.95) 100%);
+            box-shadow: -20px 24px 55px rgba(229, 50, 45, 0.42);
+        }
+
+        .iso-plate.active-plate.iso-plate-3 {
+            transform: translate3d(12px, 18px, -92px) scale(1.05);
+            border-color: #38bdf8;
+            background: linear-gradient(135deg, rgba(18, 48, 82, 0.94) 0%, rgba(10, 18, 34, 0.96) 100%);
+            box-shadow: -25px 35px 65px rgba(56, 189, 248, 0.38);
+        }
+
+        @media (max-width: 768px) {
+            .hud-satellite {
+                display: none;
+            }
+            .iso-stack {
+                width: 240px;
+                height: 240px;
+            }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 antialiased selection:bg-brand selection:text-white">
+<body class="selection:bg-brand selection:text-white">
 
-    <!-- Top Navigation -->
-    <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-200/80">
+    <!-- Background 3D WebGL/Canvas Mesh Field -->
+    <canvas id="spatial-canvas" class="fixed inset-0 w-full h-full pointer-events-none z-0 opacity-70"></canvas>
+
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-50 bg-obsidian-950/80 backdrop-blur-xl border-b border-white/10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <a href="#" class="flex items-center gap-3">
-                <div class="w-9 h-9 rounded-xl bg-brand text-white flex items-center justify-center font-extrabold text-sm tracking-tight shadow-sm">
+            <a href="#" class="flex items-center gap-3 group">
+                <div class="w-9 h-9 rounded-xl bg-brand text-white flex items-center justify-center font-display font-bold text-sm tracking-tight shadow-lg shadow-brand/30 group-hover:scale-105 transition-transform">
                     PDF
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xl font-extrabold tracking-tight text-slate-900">Open<span class="text-brand">PDF</span></span>
-                    <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200">
+                <div class="flex items-center gap-2.5">
+                    <span class="text-xl font-display font-bold tracking-tight text-white">Open<span class="text-brand">PDF</span></span>
+                    <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-mono font-medium bg-white/5 text-slate-300 border border-white/10">
                         v2.1.0
                     </span>
                 </div>
             </a>
 
-            <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
-                <a href="#interfaz" class="hover:text-brand transition-colors">Interfaz</a>
-                <a href="#herramientas" class="hover:text-brand transition-colors">21 Módulos</a>
-                <a href="#arquitectura" class="hover:text-brand transition-colors">Arquitectura</a>
-                <a href="#descarga" class="hover:text-brand transition-colors">Instalación</a>
+            <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
+                <a href="#estacion-3d" class="hover:text-white transition-colors">Entorno 3D</a>
+                <a href="#laboratorio-3d" class="hover:text-white transition-colors">Inspector Interactivo</a>
+                <a href="#herramientas" class="hover:text-white transition-colors">21 Herramientas</a>
+                <a href="#arquitectura" class="hover:text-white transition-colors">Arquitectura</a>
             </nav>
 
             <div class="flex items-center gap-3">
                 <a href="https://github.com/albert-dilas/OpenPDF" target="_blank" rel="noopener noreferrer"
-                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/70 border border-slate-200/80 transition-all">
+                   class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-slate-200 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
                     <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd" />
                     </svg>
-                    <span>Código Fuente</span>
+                    <span>GitHub</span>
                 </a>
-                <a href="https://github.com/albert-dilas/OpenPDF/releases/latest"
-                   class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-brand hover:bg-brand-dark text-white shadow-sm transition-all">
+                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF_Setup_v2.1.0.exe"
+                   class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-brand hover:bg-brand-dark text-white shadow-lg shadow-brand/25 transition-all">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                    </svg>
                     <span>Descargar v2.1</span>
                 </a>
             </div>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="relative grid-bg border-b border-slate-200/80 pt-16 pb-24">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 border border-red-200 text-brand text-xs font-bold uppercase tracking-wider mb-6">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                </svg>
-                <span>Arquitectura 100% Local-First · 21 Módulos · Licencia MIT</span>
-            </div>
+    <!-- HERO SECTION + 3D WORKSTATION STAGE -->
+    <section class="relative z-10 pt-14 pb-28 border-b border-white/10 overflow-hidden">
+        <!-- 3D Perspective Grid Floor -->
+        <div class="spatial-floor">
+            <div class="spatial-floor-plane"></div>
+        </div>
 
-            <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.12]">
-                Procesamiento documental PDF <span class="text-brand">en tu propia infraestructura</span>
-            </h1>
+        <!-- Ambient Spotlight -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[420px] bg-brand/15 rounded-full blur-[130px] pointer-events-none"></div>
 
-            <p class="mt-6 text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-                Une, divide, organiza páginas, firma documentos, censura datos sensibles de forma irreversible, comprime, convierte páginas web a PDF, traduce y audita códigos QR con motor asíncrono FastAPI + PyMuPDF.
-            </p>
-
-            <!-- Download CTA Buttons -->
-            <div id="descarga" class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF_Setup_v2.1.0.exe"
-                   class="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-brand hover:bg-brand-dark text-white font-bold px-7 py-4 rounded-xl shadow-lg shadow-red-600/20 transition-all text-base">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
-                    </svg>
-                    <span>Descargar Instalador Windows (v2.1.0)</span>
-                </a>
-                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF.exe"
-                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white hover:bg-slate-100 text-slate-800 font-semibold px-6 py-4 rounded-xl border border-slate-300 shadow-sm transition-all text-base">
-                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                    </svg>
-                    <span>Binario Portátil (OpenPDF.exe)</span>
-                </a>
-                <a href="https://github.com/albert-dilas/OpenPDF#readme"
-                   class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-slate-600 hover:text-slate-900 font-semibold px-5 py-4 rounded-xl transition-colors text-base">
-                    <span>Documentación Técnica</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/>
-                    </svg>
-                </a>
-            </div>
-
-            <div class="mt-4 text-xs text-slate-500 font-mono">
-                Windows 10 / 11 (x64) · No requiere Python ni Node.js preinstalados · Verificación SHA-256 en GitHub Releases
-            </div>
-
-            <!-- Interactive Screenshot Showcase -->
-            <div id="interfaz" class="mt-14 max-w-6xl mx-auto">
-                <div class="inline-flex p-1 rounded-xl bg-slate-200/80 border border-slate-300/80 mb-6">
-                    <button type="button" onclick="switchTab('overview')" id="tab-overview"
-                            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-slate-900 shadow-sm">
-                        1. Panel Principal y Buscador
-                    </button>
-                    <button type="button" onclick="switchTab('tools')" id="tab-tools"
-                            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900">
-                        2. Suite Completa (Modo Oscuro)
-                    </button>
-                    <button type="button" onclick="switchTab('workflow')" id="tab-workflow"
-                            class="px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900">
-                        3. Espacio de Trabajo Interactivo
-                    </button>
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-4xl mx-auto">
+                <div class="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-white/[0.04] border border-white/10 text-slate-300 text-xs font-medium mb-7 backdrop-blur-md">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Ejecución local en tu máquina</span>
+                    <span class="text-white/20">/</span>
+                    <span class="font-mono text-brand-glow">21 herramientas</span>
+                    <span class="text-white/20">/</span>
+                    <span>Código abierto MIT</span>
                 </div>
 
-                <div class="bg-slate-900 rounded-2xl window-shadow overflow-hidden border border-slate-800">
-                    <div class="bg-slate-900 border-b border-slate-800 px-4 py-3 flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
-                            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
-                            <span class="w-3 h-3 rounded-full bg-slate-700"></span>
+                <h1 class="text-4xl sm:text-6xl lg:text-[64px] font-display font-bold tracking-tight text-white leading-[1.06]">
+                    Tus documentos PDF nunca salen <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand-glow via-red-400 to-amber-300">de tu propio equipo</span>
+                </h1>
+
+                <p class="mt-6 text-base sm:text-xl text-slate-300 max-w-3xl mx-auto leading-relaxed font-normal">
+                    Suite de escritorio para Windows que une, divide, organiza páginas, firma, censura información confidencial, comprime y convierte documentos usando un motor nativo en C++ y Python sin depender de servidores externos.
+                </p>
+
+                <!-- Download Action Bar -->
+                <div id="descarga" class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF_Setup_v2.1.0.exe"
+                       class="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-brand hover:bg-brand-dark text-white font-bold px-7 py-4 rounded-xl shadow-xl shadow-brand/30 border border-red-400/30 transition-all hover:-translate-y-0.5 text-base">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        <span>Instalador Windows (v2.1.0)</span>
+                    </a>
+                    <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF.exe"
+                       class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white/[0.06] hover:bg-white/[0.12] text-white font-semibold px-6 py-4 rounded-xl border border-white/15 backdrop-blur-md transition-all hover:-translate-y-0.5 text-base">
+                        <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span>Ejecutable Portátil (OpenPDF.exe)</span>
+                    </a>
+                    <a href="https://github.com/albert-dilas/OpenPDF/releases/latest"
+                       class="w-full sm:w-auto inline-flex items-center justify-center gap-2 text-slate-400 hover:text-white font-medium px-4 py-4 rounded-xl transition-colors text-sm">
+                        <span>Ver sumas SHA-256</span>
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+                        </svg>
+                    </a>
+                </div>
+
+                <div class="mt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-slate-400 font-mono">
+                    <span>Windows 10 / 11 (64 bits)</span>
+                    <span class="text-white/20">/</span>
+                    <span>Sin instalar Python ni Node.js</span>
+                    <span class="text-white/20">/</span>
+                    <span>18 herramientas 100% offline + 3 utilidades web</span>
+                </div>
+            </div>
+
+            <!-- 3D WORKSTATION SHOWCASE -->
+            <div id="estacion-3d" class="mt-14 max-w-6xl mx-auto">
+                <!-- Controls Bar: Screen Switcher + 3D Camera Mode -->
+                <div class="flex flex-col lg:flex-row items-center justify-between gap-4 mb-8 bg-obsidian-900/90 border border-white/10 p-2.5 rounded-2xl backdrop-blur-xl">
+                    <!-- Screen Selector -->
+                    <div class="flex flex-wrap items-center gap-1.5 w-full lg:w-auto justify-center">
+                        <button type="button" onclick="switchScreen('overview')" id="tab-overview"
+                                class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-brand text-white shadow-md shadow-brand/30">
+                            Panel Principal
+                        </button>
+                        <button type="button" onclick="switchScreen('tools')" id="tab-tools"
+                                class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-white/5">
+                            Catálogo en Modo Oscuro
+                        </button>
+                        <button type="button" onclick="switchScreen('workflow')" id="tab-workflow"
+                                class="px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-white/5">
+                            Organizador de Páginas
+                        </button>
+                    </div>
+
+                    <!-- 3D Perspective & Exploded View Controls -->
+                    <div class="flex items-center gap-2 border-t lg:border-t-0 pt-2 lg:pt-0 border-white/10">
+                        <span class="text-[11px] font-mono uppercase tracking-wider text-slate-400 mr-1 hidden sm:inline">Cámara 3D:</span>
+                        <button type="button" onclick="setCameraMode('interactive')" id="cam-interactive"
+                                class="px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-white/15 text-white border border-white/20 transition-all">
+                            Seguimiento 3D
+                        </button>
+                        <button type="button" onclick="setCameraMode('exploded')" id="cam-exploded"
+                                class="px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-brand-glow" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                            <span>Desplegar Capas Z</span>
+                        </button>
+                        <button type="button" onclick="setCameraMode('flat')" id="cam-flat"
+                                class="px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+                            Vista Frontal
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 3D Interactive Stage -->
+                <div id="hero-stage" class="stage-3d py-4 px-2 sm:px-6">
+                    <div id="hero-rig" class="rig-3d">
+                        <!-- Volumetric Floor Shadow -->
+                        <div class="rig-shadow"></div>
+
+                        <!-- Layer 1 (Z: -95px in Exploded): Hardware Chassis Backplate -->
+                        <div class="rig-backplate flex items-end justify-between p-6">
+                            <div class="layer-tag bg-obsidian-950/90 border border-brand/50 px-3 py-1.5 rounded-lg text-[11px] font-mono text-brand-glow">
+                                CAPA BASE Z(-95px): Binario Autónomo PyInstaller + PyMuPDF C++
+                            </div>
                         </div>
-                        <div id="preview-caption" class="text-xs font-mono text-slate-400">
-                            http://127.0.0.1:8000 — Motor Local Activo (v2.1.0)
+
+                        <!-- Layer 2 (Z: -48px in Exploded): FastAPI Local Engine Midplate -->
+                        <div class="rig-midplate">
+                            <div class="flex items-center justify-between">
+                                <span class="bg-obsidian-950/90 border border-brand/50 px-3 py-1 rounded-lg text-[11px] font-mono text-red-300">
+                                    CAPA MEDIA Z(-48px): Servidor Local FastAPI (127.0.0.1:8000)
+                                </span>
+                                <span class="text-xs font-mono text-emerald-400">Lectura por bloques de 1 MiB</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4 my-auto opacity-80">
+                                <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 font-mono text-xs">
+                                    <div class="text-slate-400">GESTOR TEMPORAL</div>
+                                    <div class="text-white font-semibold mt-1">Purga inmediata en disco</div>
+                                </div>
+                                <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 font-mono text-xs">
+                                    <div class="text-slate-400">CABECERAS BINARIAS</div>
+                                    <div class="text-white font-semibold mt-1">Verificación Magic Bytes</div>
+                                </div>
+                                <div class="p-4 rounded-xl bg-white/[0.03] border border-white/10 font-mono text-xs">
+                                    <div class="text-slate-400">FILTRO DE RED</div>
+                                    <div class="text-white font-semibold mt-1">Protección Anti-SSRF</div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">
-                            LOCALHOST
+
+                        <!-- Layer 3 (Z: +68px / +82px): Floating 3D HUD Satellites -->
+                        <div class="hud-satellite hud-sat-tl px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M12 5l7 7-7 7"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400">Motor Local Activo</div>
+                                    <div class="text-xs font-mono font-semibold text-white">127.0.0.1:8000 (Offline)</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="hud-satellite hud-sat-tr px-4 py-2.5">
+                            <div class="flex items-center gap-2.5">
+                                <span class="w-2 h-2 rounded-full bg-brand-glow"></span>
+                                <span class="text-xs font-mono font-medium text-slate-200">RAM constante: bloques 1 MiB</span>
+                            </div>
+                        </div>
+
+                        <div class="hud-satellite hud-sat-br px-4 py-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-lg bg-brand/20 border border-brand/40 flex items-center justify-center text-brand-glow">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] font-mono uppercase tracking-wider text-slate-400">Seguridad Documental</div>
+                                    <div class="text-xs font-mono font-semibold text-white">AES-256 + Censura Física</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Window Frame (Z: 0px / +18px) -->
+                        <div class="rig-window">
+                            <div class="rig-glare"></div>
+
+                            <!-- Window Titlebar -->
+                            <div class="bg-obsidian-950 border-b border-white/10 px-4 py-3 flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="w-3 h-3 rounded-full bg-rose-500/80"></span>
+                                    <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
+                                    <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
+                                </div>
+                                <div id="preview-caption" class="text-xs font-mono text-slate-300 truncate max-w-md">
+                                    127.0.0.1:8000 / Panel principal con buscador y filtro de categorías
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                    <span class="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">Local</span>
+                                </div>
+                            </div>
+
+                            <!-- Application Screenshot -->
+                            <div class="relative bg-obsidian-900 overflow-hidden">
+                                <img id="preview-img" src="assets/overview.jpg" alt="Interfaz de OpenPDF v2.1"
+                                     class="w-full object-cover transition-all duration-300">
+                            </div>
                         </div>
                     </div>
-                    <img id="preview-img" src="assets/overview.jpg" alt="Vista previa de OpenPDF v2.1" class="w-full object-cover">
+                </div>
+
+                <p class="text-center text-xs font-mono text-slate-400 mt-5">
+                    Mueve el cursor sobre la ventana para inclinar la cámara en 3D o pulsa "Desplegar Capas Z" para inspeccionar el chasis interno.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- INTERACTIVE 3D DOCUMENT LAB SECTION -->
+    <section id="laboratorio-3d" class="relative z-10 py-24 bg-obsidian-900/70 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <!-- Left Column: Interactive Operation Selector -->
+                <div class="lg:col-span-6">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-brand/10 border border-brand/30 text-brand-glow text-xs font-mono uppercase tracking-wider mb-4">
+                        Simulador Espacial 3D
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
+                        Manipulación directa sobre la estructura interna del PDF
+                    </h2>
+                    <p class="mt-4 text-slate-300 text-base leading-relaxed">
+                        A diferencia de los visores básicos que solo superponen capas visuales, OpenPDF opera directamente sobre el árbol de objetos binarios del documento. Selecciona una operación para observar cómo actúa sobre las capas del archivo:
+                    </p>
+
+                    <div class="mt-8 space-y-3">
+                        <button type="button" onclick="setLabMode('organize')" id="lab-btn-organize"
+                                class="w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 bg-white/[0.07] border-brand/60 shadow-lg">
+                            <div class="w-10 h-10 rounded-lg bg-brand text-white flex items-center justify-center shrink-0 mt-0.5">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-display font-bold text-white text-base">Separación y Reordenamiento de Hojas</div>
+                                <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                                    Despliega las páginas como nodos independientes para reordenarlas con miniaturas reales, girarlas individualmente o extraer rangos específicos sin recodificar el texto.
+                                </p>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="setLabMode('redact')" id="lab-btn-redact"
+                                class="w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 bg-white/[0.02] border-white/10 hover:bg-white/[0.05]">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 text-slate-200 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-display font-bold text-white text-base">Censura Física Irreversible</div>
+                                <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                                    Localiza correos, teléfonos, identificadores o términos clave y destruye los glifos subyacentes del flujo del PDF para que jamás puedan copiarse ni recuperarse.
+                                </p>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="setLabMode('sign')" id="lab-btn-sign"
+                                class="w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 bg-white/[0.02] border-white/10 hover:bg-white/[0.05]">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 text-slate-200 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-display font-bold text-white text-base">Estampado de Firma y Sello Corporativo</div>
+                                <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                                    Incrusta trazos manuscritos dibujados en pantalla o sellos PNG transparentes con pie de firma en la posición exacta elegida.
+                                </p>
+                            </div>
+                        </button>
+
+                        <button type="button" onclick="setLabMode('protect')" id="lab-btn-protect"
+                                class="w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 bg-white/[0.02] border-white/10 hover:bg-white/[0.05]">
+                            <div class="w-10 h-10 rounded-lg bg-white/10 text-slate-200 flex items-center justify-center shrink-0 mt-0.5">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <div class="font-display font-bold text-white text-base">Cifrado Estándar AES-256</div>
+                                <p class="text-xs text-slate-300 mt-1 leading-relaxed">
+                                    Bloquea el documento mediante clave criptográfica de 256 bits o desbloquea archivos cuyos permisos necesitas administrar localmente.
+                                </p>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Column: Interactive 3D Multi-Page PDF Model -->
+                <div class="lg:col-span-6">
+                    <div id="doc-lab-viewport" class="doc-lab-stage relative rounded-3xl bg-obsidian-950 border border-white/10 h-[480px] flex flex-col items-center justify-center overflow-hidden shadow-2xl">
+                        <!-- Subtle radial glow -->
+                        <div id="lab-glow" class="absolute w-72 h-72 rounded-full bg-brand/20 blur-[80px] pointer-events-none transition-colors duration-500"></div>
+
+                        <!-- Top Status Pill inside 3D Viewport -->
+                        <div class="absolute top-5 left-5 right-5 flex items-center justify-between text-xs font-mono text-slate-400 z-20">
+                            <span id="lab-status-label" class="text-white font-semibold">MODO: SEPARACIÓN DE PÁGINAS EN Z</span>
+                            <span>PyMuPDF (fitz)</span>
+                        </div>
+
+                        <!-- 3D Stacked Document Model -->
+                        <div id="doc-stack" class="doc-stack-3d" data-mode="organize">
+                            <!-- Page 1 (Back) -->
+                            <div class="doc-page-3d page-1">
+                                <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                    <span class="text-[10px] font-mono text-slate-400">PÁGINA 03</span>
+                                    <span class="w-2 h-2 rounded-full bg-slate-600"></span>
+                                </div>
+                                <div class="space-y-2.5 my-auto">
+                                    <div class="h-2.5 w-3/4 rounded bg-slate-700/70"></div>
+                                    <div class="h-2 w-full rounded bg-slate-800"></div>
+                                    <div class="h-2 w-5/6 rounded bg-slate-800"></div>
+                                    <div class="h-20 w-full rounded-lg bg-slate-800/60 border border-white/5"></div>
+                                </div>
+                                <div class="text-[10px] font-mono text-slate-500 text-right">3 / 3</div>
+                            </div>
+
+                            <!-- Page 2 (Middle) -->
+                            <div class="doc-page-3d page-2">
+                                <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                                    <span class="text-[10px] font-mono text-slate-300">PÁGINA 02</span>
+                                    <span class="w-2 h-2 rounded-full bg-slate-500"></span>
+                                </div>
+                                <div class="space-y-2.5 my-auto">
+                                    <div class="h-2.5 w-2/3 rounded bg-slate-600/80"></div>
+                                    <div class="h-2 w-full rounded bg-slate-700/70"></div>
+                                    <div class="grid grid-cols-2 gap-2 pt-2">
+                                        <div class="h-16 rounded bg-slate-800/80 border border-white/5"></div>
+                                        <div class="h-16 rounded bg-slate-800/80 border border-white/5"></div>
+                                    </div>
+                                    <div class="h-2 w-4/5 rounded bg-slate-700/70"></div>
+                                </div>
+                                <div class="text-[10px] font-mono text-slate-400 text-right">2 / 3</div>
+                            </div>
+
+                            <!-- Page 3 (Front Active Layer) -->
+                            <div class="doc-page-3d page-3">
+                                <div class="flex justify-between items-center border-b border-white/15 pb-2.5">
+                                    <div class="flex items-center gap-2">
+                                        <span class="w-2.5 h-2.5 rounded-sm bg-brand"></span>
+                                        <span class="text-[11px] font-mono font-bold text-white">CONTRATO_CONFIDENCIAL.PDF</span>
+                                    </div>
+                                    <span class="text-[10px] font-mono text-slate-400">PÁG 01</span>
+                                </div>
+
+                                <div class="space-y-3 my-auto">
+                                    <div class="h-3 w-3/4 rounded bg-white/80"></div>
+                                    <div class="h-2 w-full rounded bg-slate-500/60"></div>
+
+                                    <!-- Redactable Target Line 1 -->
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] font-mono text-slate-400">ID:</span>
+                                        <div class="redact-bar h-4 w-40 rounded bg-slate-700/80 px-2 flex items-center">
+                                            <span class="text-[9px] font-mono text-slate-300">DNI 48910234-A</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="h-2 w-11/12 rounded bg-slate-500/60"></div>
+
+                                    <!-- Redactable Target Line 2 -->
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-[10px] font-mono text-slate-400">IBAN:</span>
+                                        <div class="redact-bar h-4 w-44 rounded bg-slate-700/80 px-2 flex items-center">
+                                            <span class="text-[9px] font-mono text-slate-300">ES91 2100 0418 4502</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="h-2 w-4/5 rounded bg-slate-500/60"></div>
+                                </div>
+
+                                <!-- 3D Floating Signature Stamp -->
+                                <div class="stamp-3d self-end bg-emerald-500/15 border-2 border-emerald-400 rounded-xl px-3 py-2 backdrop-blur-md shadow-xl">
+                                    <div class="text-[9px] font-mono uppercase tracking-wider text-emerald-300 font-bold">FIRMADO LOCALMENTE</div>
+                                    <svg class="w-24 h-7 text-emerald-400 mt-0.5" viewBox="0 0 120 32" fill="none" stroke="currentColor" stroke-width="2.2">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 24c12-18 18-18 22-2s12-14 20-14c6 0 4 14 12 14s14-12 22-12c6 0 8 8 16 6 6-1 12-6 16-8"/>
+                                    </svg>
+                                </div>
+
+                                <div class="flex justify-between items-center pt-2 border-t border-white/10 text-[10px] font-mono text-slate-400">
+                                    <span>SHA-256 VERIFICADO</span>
+                                    <span>1 / 3</span>
+                                </div>
+
+                                <!-- 3D Cryptographic Cage (Active in Protect mode) -->
+                                <div class="vault-cage-3d">
+                                    <div class="bg-obsidian-950/95 border border-sky-400/60 rounded-xl px-4 py-3 text-center shadow-2xl">
+                                        <svg class="w-7 h-7 text-sky-400 mx-auto mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                        </svg>
+                                        <div class="text-xs font-mono font-bold text-white">CIFRADO AES-256</div>
+                                        <div class="text-[10px] font-mono text-sky-300 mt-0.5">Clave requerida al abrir</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="absolute bottom-4 text-[11px] font-mono text-slate-400">
+                            Arrastra o mueve el cursor dentro del visor para rotar el modelo 3D
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Engineering Pillars -->
-    <section class="py-20 bg-white border-b border-slate-200">
+    <!-- 21 TOOLS CATALOG WITH 3D TILT CARDS & LIVE FILTER -->
+    <section id="herramientas" class="relative z-10 py-24 border-b border-white/10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="max-w-3xl">
-                <p class="text-xs font-mono font-bold uppercase tracking-widest text-brand">Ingeniería de Software</p>
-                <h2 class="mt-2 text-3xl font-extrabold text-slate-900">Diseñado bajo estándares de seguridad y rendimiento</h2>
-                <p class="mt-3 text-slate-600">Cada componente de OpenPDF v2.1 prioriza el aislamiento de datos, la predictibilidad en el consumo de memoria y la resiliencia operativa.</p>
-            </div>
-
-            <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-                <div class="p-7 rounded-2xl bg-slate-50 border border-slate-200/80">
-                    <div class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-5">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-bold text-slate-900 mb-2">Privacidad Estricta Local-First</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        El procesamiento ocurre en `127.0.0.1` con limpieza inmediata de archivos temporales, y los módulos asistidos por red están señalizados e integran protección anti-SSRF.
-                    </p>
-                </div>
-
-                <div class="p-7 rounded-2xl bg-slate-50 border border-slate-200/80">
-                    <div class="w-11 h-11 rounded-xl bg-brand text-white flex items-center justify-center mb-5">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-bold text-slate-900 mb-2">Streaming de Memoria Constante</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        Ingesta de archivos mediante bloques de `1 MiB` con verificación de firmas binarias (*magic bytes*) en el primer bloque y ejecución asíncrona no bloqueante en *threadpool*.
-                    </p>
-                </div>
-
-                <div class="p-7 rounded-2xl bg-slate-50 border border-slate-200/80">
-                    <div class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center mb-5">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-bold text-slate-900 mb-2">Binario Monolítico Auditado</h3>
-                    <p class="text-sm text-slate-600 leading-relaxed">
-                        Compilado con PyInstaller e Inno Setup 6. Incluye protección contra *path traversal*, selección automática de puerto libre (`8000–8010`) y suite con 70 pruebas automatizadas.
-                    </p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- 21 Tools Catalog -->
-    <section id="herramientas" class="py-20 bg-slate-50 border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+            <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
                 <div>
-                    <p class="text-xs font-mono font-bold uppercase tracking-widest text-brand">Catálogo Completo</p>
-                    <h2 class="mt-2 text-3xl font-extrabold text-slate-900">21 Módulos Especializados</h2>
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/5 border border-white/10 text-slate-300 text-xs font-mono uppercase tracking-wider mb-3">
+                        Catálogo de Herramientas
+                    </div>
+                    <h2 class="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
+                        21 utilidades especializadas incluidas de serie
+                    </h2>
                 </div>
-                <p class="text-sm text-slate-600 max-w-md">
-                    18 módulos operan 100% offline en tu equipo y 3 módulos integran funciones Online con validación anti-SSRF.
+
+                <!-- Search Input -->
+                <div class="relative w-full lg:w-80">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    <input type="text" id="tool-search" oninput="filterTools()" placeholder="Buscar herramienta (ej. firmar, OCR, unir)..."
+                           class="w-full pl-10 pr-4 py-2.5 rounded-xl bg-obsidian-900 border border-white/15 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-brand transition-colors">
+                </div>
+            </div>
+
+            <!-- Interactive Category Pills -->
+            <div class="flex flex-wrap items-center gap-2 mb-10" id="category-filters">
+                <button type="button" onclick="setCategory('todas')" data-cat="todas"
+                        class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-brand text-white shadow-lg shadow-brand/25">
+                    Todas (21)
+                </button>
+                <button type="button" onclick="setCategory('Organizar')" data-cat="Organizar"
+                        class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-white/5 text-slate-300 hover:text-white border border-white/10">
+                    Organizar (4)
+                </button>
+                <button type="button" onclick="setCategory('Optimizar')" data-cat="Optimizar"
+                        class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-white/5 text-slate-300 hover:text-white border border-white/10">
+                    Optimizar (2)
+                </button>
+                <button type="button" onclick="setCategory('Convertir')" data-cat="Convertir"
+                        class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-white/5 text-slate-300 hover:text-white border border-white/10">
+                    Convertir (7)
+                </button>
+                <button type="button" onclick="setCategory('Editar')" data-cat="Editar"
+                        class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-white/5 text-slate-300 hover:text-white border border-white/10">
+                    Editar (4)
+                </button>
+                <button type="button" onclick="setCategory('Seguridad')" data-cat="Seguridad"
+                        class="cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-white/5 text-slate-300 hover:text-white border border-white/10">
+                    Seguridad (4)
+                </button>
+            </div>
+
+            <!-- 3D Tilt Cards Grid (Rendered Dynamically & Accessible) -->
+            <div id="tools-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Populated by script below with fallback noscript support -->
+            </div>
+        </div>
+    </section>
+
+    <!-- 3D ISOMETRIC ARCHITECTURE SECTION -->
+    <section id="arquitectura" class="relative z-10 py-24 bg-obsidian-900/60 border-b border-white/10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="max-w-3xl mb-14">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-white/5 border border-white/10 text-slate-300 text-xs font-mono uppercase tracking-wider mb-3">
+                    Arquitectura Interna
+                </div>
+                <h2 class="text-3xl sm:text-4xl font-display font-bold text-white tracking-tight">
+                    Tres capas compiladas en un único ejecutable para Windows
+                </h2>
+                <p class="mt-3 text-slate-300 text-base leading-relaxed">
+                    Haz clic o pasa el cursor sobre cada nivel de la pila isométrica 3D para examinar cómo se comunican la interfaz estática, el servidor local y el núcleo binario de procesamiento.
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">1. Unir PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Fusión de múltiples documentos PDF en el orden definido por el usuario.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">2. Dividir PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Extracción de páginas individuales o por intervalos personalizados (`1,3-5,7`) en archivo ZIP.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">3. Organizar PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Previsualización de miniaturas reales para reordenar, rotar páginas individuales o descartar hojas.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">4. Rotar PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Rotación uniforme en incrementos de 90°, 180° o 270° sobre todas las páginas.</p>
-                </div>
-
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Optimizar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">5. Comprimir PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Tres niveles de compresión (`low`, `medium`, `high` con remuestreo de imágenes) y métricas de reducción.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Optimizar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">6. OCR PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Reconocimiento óptico de caracteres local mediante Tesseract para documentos escaneados.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
-                    <h3 class="mt-3 font-bold text-slate-900">7. PDF a Word</h3>
-                    <p class="mt-1 text-xs text-slate-600">Conversión estructural de documentos PDF a formato editable `.docx`.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
-                    <h3 class="mt-3 font-bold text-slate-900">8. Word a PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Renderizado de documentos `.doc` y `.docx` a estándar PDF mediante LibreOffice local.</p>
-                </div>
-
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
-                    <h3 class="mt-3 font-bold text-slate-900">9. JPG a PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Creación de documentos PDF a partir de secuencias de imágenes JPG y PNG.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
-                    <h3 class="mt-3 font-bold text-slate-900">10. PDF a JPG</h3>
-                    <p class="mt-1 text-xs text-slate-600">Rasterización de cada página del documento en imágenes JPG de alta densidad.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
-                    <h3 class="mt-3 font-bold text-slate-900">11. PDF a Markdown</h3>
-                    <p class="mt-1 text-xs text-slate-600">Extracción estructurada a formato `.md` para flujos de ingeniería de datos, RAG y LLMs.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
-                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-sky-50 text-sky-700">Online · v2.1</span>
-                    </div>
-                    <h3 class="mt-3 font-bold text-slate-900">12. Web / URL a PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Captura y convierte artículos o páginas web públicas a un documento PDF limpio con protección anti-SSRF.</p>
-                </div>
-
-                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
-                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-sky-50 text-sky-700">Online · v2.1</span>
-                    </div>
-                    <h3 class="mt-3 font-bold text-slate-900">13. Traducir PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Traduce los bloques de texto del documento a múltiples idiomas en formato directo o bilingüe.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">14. Marca de Agua</h3>
-                    <p class="mt-1 text-xs text-slate-600">Estampado de texto diagonal semitransparente centrado en todas las páginas.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">15. Números de Página</h3>
-                    <p class="mt-1 text-xs text-slate-600">Paginación automática en el margen inferior con formato `Página X de Y`.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">16. Editar Metadatos</h3>
-                    <p class="mt-1 text-xs text-slate-600">Lectura, modificación y limpieza de atributos `Título`, `Autor`, `Asunto` y `Palabras clave`.</p>
-                </div>
-
-                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
-                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-sky-50 text-sky-700">Online · v2.1</span>
-                    </div>
-                    <h3 class="mt-3 font-bold text-slate-900">17. Código QR Web en PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Estampa códigos QR verificando en línea la URL destino o escanea y audita los códigos QR del PDF.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
-                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Nuevo en v2.1</span>
-                    </div>
-                    <h3 class="mt-3 font-bold text-slate-900">18. Firmar / Sellar PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Dibuja tu firma manuscrita en lienzo o sube la imagen de tu sello corporativo con pie de firma.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
-                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Nuevo en v2.1</span>
-                    </div>
-                    <h3 class="mt-3 font-bold text-slate-900">19. Censurar / Redactar PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Purga física e irreversible de términos confidenciales, correos, teléfonos, identificadores y URLs.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
-                    <h3 class="mt-3 font-bold text-slate-900">20. Proteger PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Cifrado criptográfico bajo estándar AES-256 con clave de apertura.</p>
-                </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
-                    <h3 class="mt-3 font-bold text-slate-900">21. Desbloquear PDF</h3>
-                    <p class="mt-1 text-xs text-slate-600">Descifrado y eliminación de restricciones de acceso mediante contraseña autorizada.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Technical Architecture Section -->
-    <section id="arquitectura" class="py-20 bg-white border-b border-slate-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-                <div class="lg:col-span-6">
-                    <p class="text-xs font-mono font-bold uppercase tracking-widest text-brand">Especificación Técnica</p>
-                    <h2 class="mt-2 text-3xl font-extrabold text-slate-900">Arquitectura desacoplada compilada en un único ejecutable</h2>
-                    <p class="mt-4 text-slate-600 leading-relaxed">
-                        OpenPDF combina la velocidad de desarrollo y riqueza visual de <strong>Next.js 14</strong> (exportación estática con tipografías locales embebidas) con la potencia de cálculo nativo de <strong>PyMuPDF (C/C++)</strong> expuesto a través de <strong>FastAPI</strong>.
-                    </p>
-                    <ul class="mt-6 space-y-3 text-sm text-slate-700">
-                        <li class="flex items-start gap-3">
-                            <span class="mt-1 w-2 h-2 rounded-full bg-brand shrink-0"></span>
-                            <span><strong>Diagnóstico en vivo (`/api/v1/system/status`):</strong> Verifica en tiempo real el estado del motor local, límites de archivo y disponibilidad de módulos opcionales (Tesseract OCR y LibreOffice).</span>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <span class="mt-1 w-2 h-2 rounded-full bg-brand shrink-0"></span>
-                            <span><strong>Comprobador de versiones resiliente (`/api/v1/system/updates`):</strong> Consulta de versión con timeout de 3 segundos, caché de 6 horas y degradación silenciosa cuando el equipo opera sin internet.</span>
-                        </li>
-                        <li class="flex items-start gap-3">
-                            <span class="mt-1 w-2 h-2 rounded-full bg-brand shrink-0"></span>
-                            <span><strong>Empaquetado autónomo:</strong> El instalador oficial configura accesos directos, registro de versión y desinstalador limpio en Windows sin requerir dependencias externas.</span>
-                        </li>
-                    </ul>
+                <!-- 3D Isometric Plates Visualizer -->
+                <div class="lg:col-span-6 order-2 lg:order-1">
+                    <div class="iso-scene rounded-3xl bg-obsidian-950 border border-white/10 p-6 relative overflow-hidden">
+                        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(229,50,45,0.12),transparent_70%)] pointer-events-none"></div>
+
+                        <div class="iso-stack">
+                            <!-- Plate 1: Frontend -->
+                            <div class="iso-plate iso-plate-1 active-plate" id="plate-1" onmouseenter="selectArchLayer(1)" onclick="selectArchLayer(1)">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2.5 py-1 rounded bg-white/10 text-[10px] font-mono font-bold text-white uppercase">Nivel 01 / Interfaz</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+                                </div>
+                                <div>
+                                    <div class="font-display font-bold text-xl text-white">Next.js 14 Estático</div>
+                                    <div class="text-xs font-mono text-slate-300 mt-1">Geist Sans & Mono embebidas</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-[10px] font-mono text-slate-300 border-t border-white/10 pt-3">
+                                    <span>Zustand Store</span>
+                                    <span class="text-right">AbortController</span>
+                                </div>
+                            </div>
+
+                            <!-- Plate 2: FastAPI Local Server -->
+                            <div class="iso-plate iso-plate-2" id="plate-2" onmouseenter="selectArchLayer(2)" onclick="selectArchLayer(2)">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2.5 py-1 rounded bg-brand/30 text-[10px] font-mono font-bold text-red-200 uppercase">Nivel 02 / Servidor Local</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-brand-glow"></span>
+                                </div>
+                                <div>
+                                    <div class="font-display font-bold text-xl text-white">FastAPI + Uvicorn</div>
+                                    <div class="text-xs font-mono text-red-200 mt-1">127.0.0.1 (Puertos 8000 a 8010)</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-[10px] font-mono text-slate-300 border-t border-white/10 pt-3">
+                                    <span>Streaming 1 MiB</span>
+                                    <span class="text-right">Filtro Anti-SSRF</span>
+                                </div>
+                            </div>
+
+                            <!-- Plate 3: Native C++ / Python Core -->
+                            <div class="iso-plate iso-plate-3" id="plate-3" onmouseenter="selectArchLayer(3)" onclick="selectArchLayer(3)">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2.5 py-1 rounded bg-sky-500/20 text-[10px] font-mono font-bold text-sky-300 uppercase">Nivel 03 / Motor Nativo</span>
+                                    <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+                                </div>
+                                <div>
+                                    <div class="font-display font-bold text-xl text-white">PyMuPDF + OpenCV</div>
+                                    <div class="text-xs font-mono text-sky-300 mt-1">Tesseract OCR & LibreOffice</div>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 text-[10px] font-mono text-slate-300 border-t border-white/10 pt-3">
+                                    <span>70 Tests Pytest</span>
+                                    <span class="text-right">Cifrado AES-256</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                <div class="lg:col-span-6">
-                    <div class="bg-slate-900 text-slate-200 rounded-2xl p-6 sm:p-8 font-mono text-xs leading-relaxed border border-slate-800 shadow-xl">
-                        <div class="text-slate-400 mb-3 pb-3 border-b border-slate-800 flex justify-between">
-                            <span>ARQUITECTURA DE EJECUCIÓN LOCAL</span>
-                            <span class="text-emerald-400">127.0.0.1:8000</span>
+                <!-- Interactive Architecture Layer Details -->
+                <div class="lg:col-span-6 order-1 lg:order-2 space-y-4">
+                    <div id="arch-card-1" onclick="selectArchLayer(1)" onmouseenter="selectArchLayer(1)"
+                         class="cursor-pointer p-6 rounded-2xl border transition-all bg-white/[0.07] border-white/30">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-mono font-bold uppercase text-white">01. Capa de Presentación Offline</span>
+                            <span class="text-xs font-mono text-slate-400">Next.js 14 + Tailwind</span>
                         </div>
-                        <pre class="overflow-x-auto text-slate-300"><code>+-------------------------------------------------------+
-| Interfaz de Usuario (Next.js 14 Static + Zustand)     |
-|  - Modo Claro / Oscuro persistente                    |
-|  - Tipografías Geist Sans / Mono embebidas (Offline)  |
-|  - Progreso por fases + Cancelación (AbortController) |
-+-------------------------------------------------------+
-                           |
-              HTTP / Multipart FormData
-                           v
-+-------------------------------------------------------+
-| Motor Backend (FastAPI + Uvicorn)                     |
-|  - TempFileManager: Streaming en bloques de 1 MiB     |
-|  - Validación por firmas binarias (Magic Bytes)       |
-|  - Protección Path Traversal & SSRF Network Guard     |
-+-------------------------------------------------------+
-                           |
-                           v
-+-------------------------------------------------------+
-| Núcleo de Procesamiento Documental                    |
-|  - PyMuPDF (fitz) / OpenCV / qrcode / Pillow / lxml   |
-|  - Integración local: Tesseract OCR & LibreOffice     |
-+-------------------------------------------------------+</code></pre>
+                        <h3 class="text-lg font-display font-bold text-white">Interfaz estática con fuentes e iconos integrados</h3>
+                        <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                            Los recursos gráficos, tipografías e iconos vectoriales se sirven directamente desde el paquete compilado sin consultar CDNs externos. Incluye modo claro y oscuro persistente, previsualización de páginas y cancelación inmediata de tareas en curso.
+                        </p>
+                    </div>
+
+                    <div id="arch-card-2" onclick="selectArchLayer(2)" onmouseenter="selectArchLayer(2)"
+                         class="cursor-pointer p-6 rounded-2xl border transition-all bg-white/[0.02] border-white/10 hover:bg-white/[0.04]">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-mono font-bold uppercase text-brand-glow">02. Servidor de Transporte Local</span>
+                            <span class="text-xs font-mono text-slate-400">127.0.0.1:8000</span>
+                        </div>
+                        <h3 class="text-lg font-display font-bold text-white">Ingesta por bloques de 1 MiB y limpieza automática</h3>
+                        <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                            Valida las firmas binarias en el primer bloque antes de procesar el archivo, mantiene estable el uso de memoria RAM y borra cualquier archivo temporal en cuanto concluye la petición. Al arrancar, selecciona automáticamente un puerto libre entre el 8000 y el 8010.
+                        </p>
+                    </div>
+
+                    <div id="arch-card-3" onclick="selectArchLayer(3)" onmouseenter="selectArchLayer(3)"
+                         class="cursor-pointer p-6 rounded-2xl border transition-all bg-white/[0.02] border-white/10 hover:bg-white/[0.04]">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-mono font-bold uppercase text-sky-400">03. Núcleo de Procesamiento Documental</span>
+                            <span class="text-xs font-mono text-slate-400">PyMuPDF / OpenCV / Pillow</span>
+                        </div>
+                        <h3 class="text-lg font-display font-bold text-white">Ejecución asíncrona y detección de motores opcionales</h3>
+                        <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                            Ejecuta las operaciones pesadas en hilos dedicados para no bloquear la interfaz. Detecta automáticamente si el equipo cuenta con Tesseract OCR o LibreOffice instalados y expone el estado en tiempo real a través de la ruta de diagnóstico del sistema.
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-slate-950 text-slate-400 py-12">
+    <!-- FOOTER -->
+    <footer class="relative z-10 bg-obsidian-950 text-slate-400 py-14">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-6">
             <div class="flex items-center gap-3">
-                <div class="w-7 h-7 rounded-lg bg-brand text-white flex items-center justify-center font-extrabold text-xs">
+                <div class="w-8 h-8 rounded-lg bg-brand text-white flex items-center justify-center font-display font-bold text-xs shadow-md shadow-brand/20">
                     PDF
                 </div>
-                <span class="text-base font-bold text-white tracking-tight">OpenPDF Project</span>
-                <span class="text-xs font-mono text-slate-500">v2.1.0</span>
+                <div>
+                    <span class="text-base font-display font-bold text-white tracking-tight">OpenPDF</span>
+                    <span class="text-xs font-mono text-slate-500 ml-2">v2.1.0</span>
+                </div>
             </div>
-            <div class="flex items-center gap-6 text-xs font-medium">
-                <a href="https://github.com/albert-dilas/OpenPDF" class="hover:text-white transition-colors">Repositorio GitHub</a>
-                <a href="https://github.com/albert-dilas/OpenPDF/releases" class="hover:text-white transition-colors">Releases</a>
+
+            <div class="flex flex-wrap items-center justify-center gap-6 text-xs font-medium">
+                <a href="https://github.com/albert-dilas/OpenPDF" class="hover:text-white transition-colors">Repositorio en GitHub</a>
+                <a href="https://github.com/albert-dilas/OpenPDF/releases" class="hover:text-white transition-colors">Descargas y Releases</a>
+                <a href="https://github.com/albert-dilas/OpenPDF/blob/main/BUILD_GUIDE.md" class="hover:text-white transition-colors">Guía de Compilación</a>
                 <a href="https://github.com/albert-dilas/OpenPDF/blob/main/LICENSE" class="hover:text-white transition-colors">Licencia MIT</a>
             </div>
         </div>
     </footer>
 
+    <!-- INTERACTIVE 3D & UI SCRIPTS -->
     <script>
-        const TABS = {
+        /* 1. Screenshot Switcher & 3D Camera Modes */
+        const SCREENS = {
             overview: {
                 src: 'assets/overview.jpg',
-                caption: 'http://127.0.0.1:8000 — Panel Principal con Buscador, Categorías y Estado del Motor Local'
+                caption: '127.0.0.1:8000 / Panel principal con buscador y filtro de categorías'
             },
             tools: {
                 src: 'assets/tools.jpg',
-                caption: 'http://127.0.0.1:8000 — Catálogo Completo de 21 Módulos en Modo Oscuro'
+                caption: '127.0.0.1:8000 / Catálogo completo de 21 módulos en modo oscuro'
             },
             workflow: {
                 src: 'assets/workflow.jpg',
-                caption: 'http://127.0.0.1:8000/organize-pdf — Espacio de Trabajo Interactivo con Miniaturas por Página'
+                caption: '127.0.0.1:8000/organize-pdf / Espacio de trabajo con miniaturas por página'
             }
         };
 
-        function switchTab(key) {
-            const data = TABS[key];
-            if (!data) return;
-            document.getElementById('preview-img').src = data.src;
-            document.getElementById('preview-caption').textContent = data.caption;
+        function switchScreen(key) {
+            const item = SCREENS[key];
+            if (!item) return;
+            const img = document.getElementById('preview-img');
+            img.style.opacity = '0.35';
+            setTimeout(() => {
+                img.src = item.src;
+                img.style.opacity = '1';
+            }, 120);
+            document.getElementById('preview-caption').textContent = item.caption;
 
             ['overview', 'tools', 'workflow'].forEach(id => {
                 const btn = document.getElementById('tab-' + id);
                 if (id === key) {
-                    btn.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all bg-white text-slate-900 shadow-sm';
+                    btn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-brand text-white shadow-md shadow-brand/30';
                 } else {
-                    btn.className = 'px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all text-slate-600 hover:text-slate-900';
+                    btn.className = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all text-slate-300 hover:text-white hover:bg-white/5';
                 }
             });
         }
+
+        let currentCameraMode = 'interactive';
+        const heroRig = document.getElementById('hero-rig');
+        const heroStage = document.getElementById('hero-stage');
+
+        function setCameraMode(mode) {
+            currentCameraMode = mode;
+            heroRig.classList.remove('mode-exploded', 'mode-flat');
+            if (mode === 'exploded') {
+                heroRig.classList.add('mode-exploded');
+            } else if (mode === 'flat') {
+                heroRig.classList.add('mode-flat');
+            }
+
+            const modes = ['interactive', 'exploded', 'flat'];
+            modes.forEach(m => {
+                const btn = document.getElementById('cam-' + m);
+                if (!btn) return;
+                if (m === mode) {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-medium bg-white/15 text-white border border-white/25 transition-all flex items-center gap-1.5';
+                } else {
+                    btn.className = 'px-3 py-1.5 rounded-lg text-xs font-mono font-medium text-slate-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/10 transition-all flex items-center gap-1.5';
+                }
+            });
+        }
+
+        heroStage.addEventListener('mousemove', (e) => {
+            if (currentCameraMode !== 'interactive') return;
+            const rect = heroStage.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
+
+            const ry = (x - 0.5) * 18;
+            const rx = (0.5 - y) * 14;
+
+            heroRig.style.setProperty('--rx', rx.toFixed(2) + 'deg');
+            heroRig.style.setProperty('--ry', ry.toFixed(2) + 'deg');
+            heroRig.style.setProperty('--glare-x', (x * 100).toFixed(1) + '%');
+            heroRig.style.setProperty('--glare-y', (y * 100).toFixed(1) + '%');
+        });
+
+        heroStage.addEventListener('mouseleave', () => {
+            if (currentCameraMode !== 'interactive') return;
+            heroRig.style.setProperty('--rx', '7deg');
+            heroRig.style.setProperty('--ry', '-5deg');
+            heroRig.style.setProperty('--glare-x', '50%');
+            heroRig.style.setProperty('--glare-y', '30%');
+        });
+
+        /* 2. Interactive 3D Document Lab */
+        const LAB_CONFIG = {
+            organize: {
+                label: 'MODO: SEPARACIÓN Y REORDENAMIENTO EN 3D',
+                glow: 'rgba(229, 50, 45, 0.22)'
+            },
+            redact: {
+                label: 'MODO: PURGA FÍSICA DE DATOS SENSIBLES',
+                glow: 'rgba(239, 68, 68, 0.28)'
+            },
+            sign: {
+                label: 'MODO: ESTAMPADO DE FIRMA Y SELLO VECTORIAL',
+                glow: 'rgba(16, 185, 129, 0.22)'
+            },
+            protect: {
+                label: 'MODO: BLINDAJE CRIPTOGRÁFICO AES-256',
+                glow: 'rgba(56, 189, 248, 0.24)'
+            }
+        };
+
+        function setLabMode(mode) {
+            const stack = document.getElementById('doc-stack');
+            const label = document.getElementById('lab-status-label');
+            const glow = document.getElementById('lab-glow');
+            stack.setAttribute('data-mode', mode);
+            if (LAB_CONFIG[mode]) {
+                label.textContent = LAB_CONFIG[mode].label;
+                glow.style.background = LAB_CONFIG[mode].glow;
+            }
+
+            ['organize', 'redact', 'sign', 'protect'].forEach(m => {
+                const btn = document.getElementById('lab-btn-' + m);
+                if (m === mode) {
+                    btn.className = 'w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 bg-white/[0.07] border-brand/60 shadow-lg';
+                } else {
+                    btn.className = 'w-full text-left p-4 rounded-xl border transition-all flex items-start gap-4 bg-white/[0.02] border-white/10 hover:bg-white/[0.05]';
+                }
+            });
+        }
+
+        const labViewport = document.getElementById('doc-lab-viewport');
+        const docStack = document.getElementById('doc-stack');
+        labViewport.addEventListener('mousemove', (e) => {
+            const r = labViewport.getBoundingClientRect();
+            const nx = (e.clientX - r.left) / r.width - 0.5;
+            const ny = (e.clientY - r.top) / r.height - 0.5;
+            const rotY = -26 + nx * 36;
+            const rotX = 22 - ny * 28;
+            docStack.style.transform = `rotateX(${rotX.toFixed(1)}deg) rotateY(${rotY.toFixed(1)}deg) rotateZ(5deg)`;
+        });
+        labViewport.addEventListener('mouseleave', () => {
+            docStack.style.transform = 'rotateX(24deg) rotateY(-28deg) rotateZ(6deg)';
+        });
+
+        /* 3. 21 Modules Data + 3D Tilt Cards Rendering */
+        const TOOLS_DATA = [
+            {
+                name: 'Unir PDF',
+                category: 'Organizar',
+                badge: 'Offline',
+                desc: 'Combina varios archivos PDF en un único documento definiendo el orden exacto de unión.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"/>'
+            },
+            {
+                name: 'Dividir PDF',
+                category: 'Organizar',
+                badge: 'Offline',
+                desc: 'Extrae páginas sueltas o intervalos personalizados en archivos PDF independientes empaquetados en ZIP.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M14.121 14.121L19 19m-7-7l7-7m-7 7l-2.879 2.879M12 12L9.121 9.121m0 5.758a3 3 0 10-4.243 4.243 3 3 0 004.243-4.243zm0-5.758a3 3 0 10-4.243-4.243 3 3 0 004.243 4.243z"/>'
+            },
+            {
+                name: 'Organizar PDF',
+                category: 'Organizar',
+                badge: 'Offline',
+                desc: 'Inspecciona miniaturas reales por página para arrastrar, reordenar, rotar hojas específicas o descartarlas.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>'
+            },
+            {
+                name: 'Rotar PDF',
+                category: 'Organizar',
+                badge: 'Offline',
+                desc: 'Gira todas las páginas del documento en pasos de 90, 180 o 270 grados de forma instantánea.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>'
+            },
+            {
+                name: 'Comprimir PDF',
+                category: 'Optimizar',
+                badge: 'Offline',
+                desc: 'Reduce el tamaño del archivo mediante tres perfiles de compresión y remuestreo selectivo de imágenes.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>'
+            },
+            {
+                name: 'OCR PDF',
+                category: 'Optimizar',
+                badge: 'Offline',
+                desc: 'Reconoce texto en documentos escaneados con Tesseract local para volverlos buscables y seleccionables.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'
+            },
+            {
+                name: 'PDF a Word',
+                category: 'Convertir',
+                badge: 'Offline',
+                desc: 'Reconstruye párrafos, columnas y tablas del PDF en un documento Word (.docx) totalmente editable.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>'
+            },
+            {
+                name: 'Word a PDF',
+                category: 'Convertir',
+                badge: 'Offline',
+                desc: 'Convierte archivos .doc y .docx a estándar PDF conservando tipografías y márgenes con LibreOffice local.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'
+            },
+            {
+                name: 'JPG a PDF',
+                category: 'Convertir',
+                badge: 'Offline',
+                desc: 'Ensambla colecciones de fotografías e imágenes JPG o PNG en un único documento PDF multipágina.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>'
+            },
+            {
+                name: 'PDF a JPG',
+                category: 'Convertir',
+                badge: 'Offline',
+                desc: 'Exporta cada hoja del documento como imagen JPG de alta densidad (300 DPI) lista para descargar.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>'
+            },
+            {
+                name: 'PDF a Markdown',
+                category: 'Convertir',
+                badge: 'Offline',
+                desc: 'Extrae la jerarquía de títulos, listas y tablas a un archivo de texto Markdown (.md) limpio para documentación técnica.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>'
+            },
+            {
+                name: 'Web / URL a PDF',
+                category: 'Convertir',
+                badge: 'Online',
+                desc: 'Captura artículos o documentación pública desde una dirección URL a un PDF limpio con filtro anti-SSRF.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>'
+            },
+            {
+                name: 'Traducir PDF',
+                category: 'Convertir',
+                badge: 'Online',
+                desc: 'Traduce los bloques de texto del documento entre múltiples idiomas generando una edición directa o bilingüe.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>'
+            },
+            {
+                name: 'Marca de Agua',
+                category: 'Editar',
+                badge: 'Offline',
+                desc: 'Estampa texto diagonal semitransparente centrado sobre todas las páginas del documento.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>'
+            },
+            {
+                name: 'Números de Página',
+                category: 'Editar',
+                badge: 'Offline',
+                desc: 'Inserta numeración secuencial automática en el margen inferior de cada hoja del archivo.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>'
+            },
+            {
+                name: 'Editar Metadatos',
+                category: 'Editar',
+                badge: 'Offline',
+                desc: 'Inspecciona, modifica o borra por completo las propiedades internas de título, autor, asunto y palabras clave.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>'
+            },
+            {
+                name: 'Código QR Web en PDF',
+                category: 'Editar',
+                badge: 'Online',
+                desc: 'Estampa un código QR verificando la dirección destino o escanea y audita los códigos QR presentes en el PDF.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>'
+            },
+            {
+                name: 'Firmar / Sellar PDF',
+                category: 'Seguridad',
+                badge: 'Offline',
+                desc: 'Traza tu firma manuscrita en el lienzo interactivo o sube la imagen de tu sello con pie de firma personalizado.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>'
+            },
+            {
+                name: 'Censurar / Redactar PDF',
+                category: 'Seguridad',
+                badge: 'Offline',
+                desc: 'Elimina de forma física e irreversible textos confidenciales, correos, teléfonos o identificadores en todas las páginas.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>'
+            },
+            {
+                name: 'Proteger PDF',
+                category: 'Seguridad',
+                badge: 'Offline',
+                desc: 'Aplica cifrado criptográfico AES-256 con contraseña de apertura para blindar documentos confidenciales.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>'
+            },
+            {
+                name: 'Desbloquear PDF',
+                category: 'Seguridad',
+                badge: 'Offline',
+                desc: 'Suprime la contraseña de apertura y las restricciones de un documento PDF autorizado de manera permanente.',
+                icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>'
+            }
+        ];
+
+        let activeCategory = 'todas';
+
+        function renderTools() {
+            const query = (document.getElementById('tool-search').value || '').toLowerCase().trim();
+            const grid = document.getElementById('tools-grid');
+
+            const filtered = TOOLS_DATA.filter(t => {
+                const matchCat = activeCategory === 'todas' || t.category === activeCategory;
+                const matchQuery = !query || t.name.toLowerCase().includes(query) || t.desc.toLowerCase().includes(query) || t.category.toLowerCase().includes(query);
+                return matchCat && matchQuery;
+            });
+
+            grid.innerHTML = filtered.map(t => {
+                const isOnline = t.badge === 'Online';
+                const badgeClass = isOnline
+                    ? 'bg-sky-500/15 text-sky-300 border-sky-500/30'
+                    : 'bg-emerald-500/10 text-emerald-300 border-emerald-500/25';
+
+                return `
+                <div class="tilt-card-wrap">
+                    <div class="tilt-card p-6 h-full flex flex-col justify-between" onmousemove="tiltCard(event, this)" onmouseleave="resetTiltCard(this)">
+                        <div>
+                            <div class="flex items-center justify-between gap-2 mb-5">
+                                <div class="tilt-icon-3d w-11 h-11 rounded-xl bg-brand/15 border border-brand/35 text-brand-glow flex items-center justify-center shadow-lg shadow-brand/10">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        ${t.icon}
+                                    </svg>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-md bg-white/5 text-slate-300 border border-white/10">${t.category}</span>
+                                    <span class="text-[11px] font-mono px-2.5 py-0.5 rounded-md border ${badgeClass}">${t.badge}</span>
+                                </div>
+                            </div>
+                            <div class="tilt-body-3d">
+                                <h3 class="text-lg font-display font-bold text-white">${t.name}</h3>
+                                <p class="mt-2 text-sm text-slate-300 leading-relaxed">${t.desc}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function setCategory(cat) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                if (btn.getAttribute('data-cat') === cat) {
+                    btn.className = 'cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-brand text-white shadow-lg shadow-brand/25';
+                } else {
+                    btn.className = 'cat-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all bg-white/5 text-slate-300 hover:text-white border border-white/10';
+                }
+            });
+            renderTools();
+        }
+
+        function filterTools() {
+            renderTools();
+        }
+
+        function tiltCard(e, el) {
+            const r = el.getBoundingClientRect();
+            const x = e.clientX - r.left;
+            const y = e.clientY - r.top;
+            const xc = r.width / 2;
+            const yc = r.height / 2;
+            const dx = (x - xc) / xc;
+            const dy = (y - yc) / yc;
+
+            el.style.transform = `rotateX(${(-dy * 8).toFixed(2)}deg) rotateY(${(dx * 8).toFixed(2)}deg) translateY(-3px)`;
+            el.style.setProperty('--card-x', `${x}px`);
+            el.style.setProperty('--card-y', `${y}px`);
+        }
+
+        function resetTiltCard(el) {
+            el.style.transform = 'rotateX(0deg) rotateY(0deg) translateY(0px)';
+        }
+
+        renderTools();
+
+        /* 4. 3D Isometric Architecture Selector */
+        function selectArchLayer(num) {
+            [1, 2, 3].forEach(n => {
+                const plate = document.getElementById('plate-' + n);
+                const card = document.getElementById('arch-card-' + n);
+                if (n === num) {
+                    plate.classList.add('active-plate');
+                    card.className = 'cursor-pointer p-6 rounded-2xl border transition-all bg-white/[0.08] border-white/35 shadow-lg';
+                } else {
+                    plate.classList.remove('active-plate');
+                    card.className = 'cursor-pointer p-6 rounded-2xl border transition-all bg-white/[0.02] border-white/10 hover:bg-white/[0.04]';
+                }
+            });
+        }
+
+        /* 5. Spatial 3D Wireframe Document Polyhedra Canvas */
+        (function initSpatialCanvas() {
+            const canvas = document.getElementById('spatial-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+
+            window.addEventListener('resize', () => {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                canvas.width = width;
+                canvas.height = height;
+            });
+
+            let pointerX = 0;
+            let pointerY = 0;
+            window.addEventListener('mousemove', (e) => {
+                pointerX = (e.clientX / width - 0.5) * 2;
+                pointerY = (e.clientY / height - 0.5) * 2;
+            });
+
+            // Create floating 3D document wireframe sheets in 3D space
+            const sheets = Array.from({ length: 14 }, (_, i) => ({
+                x: (Math.random() - 0.5) * 1400,
+                y: (Math.random() - 0.5) * 900,
+                z: Math.random() * 900 + 250,
+                rx: Math.random() * Math.PI,
+                ry: Math.random() * Math.PI,
+                rz: Math.random() * Math.PI,
+                drx: (Math.random() - 0.5) * 0.004,
+                dry: (Math.random() - 0.5) * 0.005,
+                w: 38,
+                h: 50,
+                accent: i % 3 === 0
+            }));
+
+            function rotatePoint(p, rx, ry, rz) {
+                let { x, y, z } = p;
+                // Rotate X
+                let y1 = y * Math.cos(rx) - z * Math.sin(rx);
+                let z1 = y * Math.sin(rx) + z * Math.cos(rx);
+                // Rotate Y
+                let x2 = x * Math.cos(ry) + z1 * Math.sin(ry);
+                let z2 = -x * Math.sin(ry) + z1 * Math.cos(ry);
+                // Rotate Z
+                let x3 = x2 * Math.cos(rz) - y1 * Math.sin(rz);
+                let y3 = x2 * Math.sin(rz) + y1 * Math.cos(rz);
+                return { x: x3, y: y3, z: z2 };
+            }
+
+            function render() {
+                ctx.clearRect(0, 0, width, height);
+                const fov = 550;
+                const cx = width / 2 + pointerX * 35;
+                const cy = height / 2 + pointerY * 25;
+
+                for (const s of sheets) {
+                    s.rx += s.drx;
+                    s.ry += s.dry;
+
+                    const corners = [
+                        { x: -s.w, y: -s.h, z: 0 },
+                        { x: s.w,  y: -s.h, z: 0 },
+                        { x: s.w,  y: s.h,  z: 0 },
+                        { x: -s.w, y: s.h,  z: 0 }
+                    ].map(pt => {
+                        const r = rotatePoint(pt, s.rx, s.ry, s.rz);
+                        const wz = s.z + r.z;
+                        const scale = fov / Math.max(120, wz);
+                        return {
+                            px: cx + (s.x + r.x) * scale,
+                            py: cy + (s.y + r.y) * scale,
+                            scale
+                        };
+                    });
+
+                    const alpha = Math.min(0.22, Math.max(0.03, corners[0].scale * 0.16));
+                    ctx.beginPath();
+                    ctx.moveTo(corners[0].px, corners[0].py);
+                    ctx.lineTo(corners[1].px, corners[1].py);
+                    ctx.lineTo(corners[2].px, corners[2].py);
+                    ctx.lineTo(corners[3].px, corners[3].py);
+                    ctx.closePath();
+
+                    ctx.strokeStyle = s.accent
+                        ? `rgba(229, 50, 45, ${alpha * 1.4})`
+                        : `rgba(148, 163, 184, ${alpha})`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+        })();
     </script>
 </body>
 </html>

@@ -91,7 +91,7 @@ Para instalar y ejecutar **OpenPDF** en Windows sin compilar desde el código fu
 | **Convertir** | **Word a PDF** | `/word-to-pdf` (`POST /api/v1/word-to-pdf/`) | Convierte documentos `.doc`/`.docx` a estándar PDF mediante LibreOffice en modo *headless*. | 100% Offline* |
 | **Convertir** | **JPG a PDF** | `/jpg-to-pdf` (`POST /api/v1/jpg-to-pdf/`) | Ensambla secuencias de imágenes JPG o PNG en un único documento PDF multipágina. | 100% Offline |
 | **Convertir** | **PDF a JPG** | `/pdf-to-jpg` (`POST /api/v1/pdf-to-jpg/`) | Rasteriza cada página del documento como imagen JPG de alta resolución empaquetada en `.zip`. | 100% Offline |
-| **Convertir** | **PDF a Markdown** | `/pdf-to-markdown` (`POST /api/v1/pdf-to-markdown/`) | Extrae contenido estructurado en formato Markdown (`.md`) orientado a pipelines RAG y LLMs. | 100% Offline |
+| **Convertir** | **PDF a Markdown** | `/pdf-to-markdown` (`POST /api/v1/pdf-to-markdown/`) | Extrae contenido estructurado en formato Markdown (`.md`) para documentación técnica y control de versiones. | 100% Offline |
 | **Convertir** | **Web / URL a PDF** | `/url-to-pdf` (`POST /api/v1/url-to-pdf/`) | Captura artículos y páginas web públicas por URL (modo lectura o completo) con protección anti-SSRF. | Online |
 | **Convertir** | **Traducir PDF** | `/translate-pdf` (`POST /api/v1/translate/`) | Traduce los bloques de texto del PDF a múltiples idiomas generando un PDF maquetado o bilingüe. | Online |
 | **Editar** | **Marca de Agua** | `/watermark-pdf` (`POST /api/v1/watermark/`) | Superpone texto diagonal semitransparente centrado en todas las páginas del documento. | 100% Offline |
