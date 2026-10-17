@@ -41,7 +41,7 @@ def parse_page_ranges(ranges_str: str, total_pages: int) -> List[int]:
                 raise BusinessRuleError(f"Rango inválido: '{part}' — deben ser números enteros.")
 
             if start < 1 or end < 1:
-                raise BusinessRuleError(f"Los números de página deben ser mayores a 0.")
+                raise BusinessRuleError("Los números de página deben ser mayores a 0.")
             if start > end:
                 raise BusinessRuleError(f"En el rango '{part}', el inicio debe ser menor o igual al fin.")
             if end > total_pages:
@@ -75,32 +75,28 @@ class PDFSplitterService:
         except Exception as e:
             raise PDFProcessingError(f"Error abriendo PDF: {str(e)}")
 
-        total_pages = len(doc)
-
-        # Determinar qué páginas extraer
-        if page_ranges and page_ranges.strip():
-            page_indices = parse_page_ranges(page_ranges, total_pages)
-        else:
-            page_indices = list(range(total_pages))  # todas las páginas
-
-        if not page_indices:
-            doc.close()
-            raise BusinessRuleError("No se seleccionaron páginas para extraer.")
-
         try:
-            with zipfile.ZipFile(output_path, 'w', compression=zipfile.ZIP_DEFLATED) as zipf:
+            total_pages = len(doc)
+
+            if page_ranges and page_ranges.strip():
+                page_indices = parse_page_ranges(page_ranges, total_pages)
+            else:
+                page_indices = list(range(total_pages))
+
+            if not page_indices:
+                raise BusinessRuleError("No se seleccionaron páginas para extraer.")
+
+            with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED) as zipf:
                 for i in page_indices:
                     doc2 = fitz.open()
-                    doc2.insert_pdf(doc, from_page=i, to_page=i)
-
                     fd, page_path = tempfile.mkstemp(suffix=f"_page_{i + 1}.pdf")
                     os.close(fd)
-
                     try:
+                        doc2.insert_pdf(doc, from_page=i, to_page=i)
                         doc2.save(page_path)
-                        doc2.close()
                         zipf.write(page_path, f"page_{i + 1}.pdf")
                     finally:
+                        doc2.close()
                         if os.path.exists(page_path):
                             os.remove(page_path)
 

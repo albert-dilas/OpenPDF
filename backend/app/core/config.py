@@ -2,12 +2,14 @@ import os
 from pathlib import Path
 from typing import List
 
+
 class Settings:
     PROJECT_NAME: str = "OpenPDF"
+    VERSION: str = "2.0.0"
     API_V1_STR: str = "/api/v1"
 
     # Directorio temporal para procesar PDFs antes de descargarlos
-    BASE_DIR = Path(__file__).resolve().parent.parent.parent
+    BASE_DIR: Path = Path(__file__).resolve().parent.parent.parent
     TEMP_DIR: str = os.path.join(BASE_DIR, "temp_files")
 
     # Límites de archivos (app de escritorio — límites generosos)
@@ -17,14 +19,14 @@ class Settings:
 
     # CORS: solo localhost (app de escritorio)
     ALLOWED_ORIGINS: List[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
-        "http://localhost:3000",   # Next.js dev server
-        "http://127.0.0.1:3000",
     ]
 
-    # Crear el directorio temporal si no existe
-    if not os.path.exists(TEMP_DIR):
-        os.makedirs(TEMP_DIR)
+    def __init__(self) -> None:
+        os.makedirs(self.TEMP_DIR, exist_ok=True)
+
 
 settings = Settings()

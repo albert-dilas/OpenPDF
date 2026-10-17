@@ -1,9 +1,8 @@
 import fitz
-import os
-import tempfile
 import shutil
 from app.core.exceptions import PDFProcessingError, BusinessRuleError
 from fastapi.concurrency import run_in_threadpool
+
 
 class PDFUnlockerService:
     @staticmethod
@@ -17,10 +16,10 @@ class PDFUnlockerService:
             if not doc.is_encrypted:
                 shutil.copyfile(input_path, output_path)
                 return output_path
-                
+
             if not doc.authenticate(password):
                 raise BusinessRuleError("Contraseña incorrecta")
-                
+
             doc.save(output_path)
         except (PDFProcessingError, BusinessRuleError):
             raise
@@ -33,6 +32,7 @@ class PDFUnlockerService:
 
     async def unlock_pdf(self, input_path: str, password: str, output_path: str) -> str:
         return await run_in_threadpool(self._unlock_sync, input_path, password, output_path)
+
 
 def get_pdf_unlocker_service() -> PDFUnlockerService:
     return PDFUnlockerService()

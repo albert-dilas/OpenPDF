@@ -2,13 +2,15 @@ from fastapi import UploadFile
 from typing import List, AsyncGenerator, Optional, Callable
 import os
 import uuid
-import shutil
 from app.core.config import settings
 from app.core.exceptions import InvalidFormatError, BusinessRuleError
+from app.core.logging import logger
+
+CHUNK_SIZE = 1024 * 1024  # 1 MiB
 
 
 class TempFileManager:
-    """Gestiona archivos temporales, validación de contenido y limpieza garantizada."""
+    """Gestiona archivos temporales, validación de contenido en streaming y limpieza garantizada."""
 
     def __init__(self):
         self._tracked_files: List[str] = []
@@ -23,49 +25,61 @@ class TempFileManager:
         validate_fn: Optional[Callable[[bytes], bool]] = None,
     ) -> str:
         """
-        Guarda un archivo subido en el directorio temporal.
+        Guarda un archivo subido en el directorio temporal leyendo en streaming por chunks (1 MiB).
 
         Args:
             upload_file: Archivo recibido por FastAPI.
-            validate_fn: Función opcional que recibe los bytes del archivo y
-                         retorna True si el formato es válido. Se usa para
-                         validar por magic bytes en lugar de confiar en la extensión.
+            validate_fn: Función opcional que recibe el primer chunk/cabecera de bytes del archivo
+                         y retorna True si el formato es válido (magic bytes).
 
         Raises:
-            BusinessRuleError: Si el archivo supera el límite de tamaño.
-            InvalidFormatError: Si validate_fn retorna False.
+            BusinessRuleError: Si el archivo supera el límite de tamaño (aborta y borra el parcial).
+            InvalidFormatError: Si validate_fn retorna False en el primer chunk.
         """
-        # Leer todo el contenido para poder validarlo
-        content = await upload_file.read()
-
-        # 1. Validar tamaño
-        if len(content) > settings.MAX_FILE_SIZE_BYTES:
-            raise BusinessRuleError(
-                f"El archivo '{upload_file.filename}' supera el límite máximo de "
-                f"{settings.MAX_FILE_SIZE_MB} MB ({settings.MAX_FILE_SIZE_MB * 1024 * 1024 / 1024 / 1024:.0f} GB)."
-            )
-
-        # 2. Validar formato por magic bytes si se proporciona función
-        if validate_fn is not None and not validate_fn(content):
-            raise InvalidFormatError(
-                f"El archivo '{upload_file.filename}' no tiene un formato válido. "
-                f"Asegúrate de subir el tipo de archivo correcto."
-            )
-
-        # 3. Guardar en disco
+        os.makedirs(settings.TEMP_DIR, exist_ok=True)
         filename = upload_file.filename or "upload"
         extension = os.path.splitext(filename)[1].lower()
         temp_name = f"{uuid.uuid4().hex}{extension}"
         temp_path = os.path.join(settings.TEMP_DIR, temp_name)
 
-        with open(temp_path, "wb") as buffer:
-            buffer.write(content)
+        total_bytes = 0
+        first_chunk = True
+
+        try:
+            with open(temp_path, "wb") as buffer:
+                while True:
+                    chunk = await upload_file.read(CHUNK_SIZE)
+                    if first_chunk:
+                        first_chunk = False
+                        if validate_fn is not None and not validate_fn(chunk):
+                            raise InvalidFormatError(
+                                f"El archivo '{upload_file.filename}' no tiene un formato válido. "
+                                f"Asegúrate de subir el tipo de archivo correcto."
+                            )
+                    if not chunk:
+                        break
+
+                    total_bytes += len(chunk)
+                    if total_bytes > settings.MAX_FILE_SIZE_BYTES:
+                        raise BusinessRuleError(
+                            f"El archivo '{upload_file.filename}' supera el límite máximo de "
+                            f"{settings.MAX_FILE_SIZE_MB} MB."
+                        )
+                    buffer.write(chunk)
+        except Exception:
+            if os.path.exists(temp_path):
+                try:
+                    os.remove(temp_path)
+                except OSError as e:
+                    logger.warning("No se pudo eliminar archivo parcial %s: %s", temp_path, e)
+            raise
 
         self.track(temp_path)
         return temp_path
 
     def create_output_path(self, extension: str = ".pdf") -> str:
         """Genera una ruta única para el archivo de salida."""
+        os.makedirs(settings.TEMP_DIR, exist_ok=True)
         temp_name = f"output_{uuid.uuid4().hex}{extension}"
         temp_path = os.path.join(settings.TEMP_DIR, temp_name)
         self.track(temp_path)
@@ -83,7 +97,7 @@ class TempFileManager:
                 if os.path.exists(path):
                     os.remove(path)
             except Exception as e:
-                print(f"[TempFileManager] Error limpiando {path}: {e}")
+                logger.warning("Error limpiando %s: %s", path, e)
 
 
 async def get_temp_file_manager() -> AsyncGenerator[TempFileManager, None]:

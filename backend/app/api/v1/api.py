@@ -1,5 +1,24 @@
 from fastapi import APIRouter
-from app.api.v1.endpoints import merge, rotate, split, compress, protect, pdf_to_jpg, pdf_to_word, word_to_pdf, ocr, jpg_to_pdf, unlock, watermark, page_numbers, pdf_to_markdown
+from app.api.v1.endpoints import (
+    merge,
+    rotate,
+    split,
+    compress,
+    protect,
+    pdf_to_jpg,
+    pdf_to_word,
+    word_to_pdf,
+    ocr,
+    jpg_to_pdf,
+    unlock,
+    watermark,
+    page_numbers,
+    pdf_to_markdown,
+    system,
+    pdf_info,
+    organize,
+    metadata,
+)
 
 api_router = APIRouter()
 api_router.include_router(merge.router, prefix="/merge", tags=["Merge PDF"])
@@ -16,3 +35,7 @@ api_router.include_router(unlock.router, prefix="/unlock", tags=["Unlock PDF"])
 api_router.include_router(watermark.router, prefix="/watermark", tags=["Watermark PDF"])
 api_router.include_router(page_numbers.router, prefix="/page-numbers", tags=["Page Numbers PDF"])
 api_router.include_router(pdf_to_markdown.router, prefix="/pdf-to-markdown", tags=["PDF to Markdown"])
+api_router.include_router(system.router, prefix="/system", tags=["System"])
+api_router.include_router(pdf_info.router, prefix="/pdf-info", tags=["PDF Info"])
+api_router.include_router(organize.router, prefix="/organize", tags=["Organize PDF"])
+api_router.include_router(metadata.router, prefix="/metadata", tags=["Metadata PDF"])

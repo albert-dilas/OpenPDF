@@ -1,4 +1,4 @@
-from fastapi import APIRouter, UploadFile, File, Depends
+from fastapi import APIRouter, UploadFile, File, Form, Depends
 from fastapi.responses import FileResponse
 from starlette.background import BackgroundTask
 import os
@@ -14,15 +14,16 @@ router = APIRouter()
 @router.post("/")
 async def compress_pdf_endpoint(
     file: UploadFile = File(...),
+    level: str = Form("medium"),
     file_manager: TempFileManager = Depends(get_temp_file_manager),
-    compressor_service: PDFCompressorService = Depends(get_pdf_compressor_service)
+    compressor_service: PDFCompressorService = Depends(get_pdf_compressor_service),
 ):
     temp_path = await file_manager.save_upload_file(file, validate_fn=validate_pdf_bytes)
     output_path = file_manager.create_output_path()
 
     original_size = os.path.getsize(temp_path)
 
-    await compressor_service.compress_pdf(temp_path, output_path)
+    await compressor_service.compress_pdf(temp_path, output_path, level=level)
 
     compressed_size = os.path.getsize(output_path)
     ratio = (1 - compressed_size / original_size) * 100 if original_size > 0 else 0

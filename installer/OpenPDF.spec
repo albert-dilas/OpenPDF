@@ -21,7 +21,6 @@ datas += copy_metadata('python-multipart')
 
 hidden_imports = []
 hidden_imports += collect_submodules('python_multipart')
-hidden_imports += collect_submodules('multipart')
 hidden_imports += [
     # FastAPI & Starlette internals
     'uvicorn.logging',
@@ -50,8 +49,10 @@ hidden_imports += [
     # Otros
     'anyio',
     'anyio._backends._asyncio',
-    'multipart',
     'python_multipart',
+    'httpx',
+    'packaging',
+    'packaging.version',
     'email.mime.multipart',
     'email.mime.base',
     'email.mime.text',

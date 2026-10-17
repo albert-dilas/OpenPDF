@@ -1,114 +1,179 @@
-export const tools = [
+export type ToolCategory =
+  | 'organizar'
+  | 'optimizar'
+  | 'convertir'
+  | 'editar'
+  | 'seguridad';
+
+export interface ToolItem {
+  id: string;
+  name: string;
+  description: string;
+  category: ToolCategory;
+  iconUrl?: string;
+  iconName?: 'layout-grid' | 'file-sliders';
+  color: string;
+  href: string;
+  requiredCapability?: 'ocr' | 'word_to_pdf';
+  isNew?: boolean;
+}
+
+export const TOOL_CATEGORIES: { id: ToolCategory | 'todas'; label: string }[] = [
+  { id: 'todas', label: 'Todas' },
+  { id: 'organizar', label: 'Organizar' },
+  { id: 'optimizar', label: 'Optimizar' },
+  { id: 'convertir', label: 'Convertir' },
+  { id: 'editar', label: 'Editar' },
+  { id: 'seguridad', label: 'Seguridad' },
+];
+
+export const tools: ToolItem[] = [
   {
     id: 'merge-pdf',
     name: 'Unir PDF',
-    description: 'Une PDFs y ponlos en el orden que prefieras. ¡Rápido y fácil!',
+    description: 'Une varios archivos PDF y ponlos en el orden que prefieras en segundos.',
+    category: 'organizar',
     iconUrl: '/icons/merge-pdf.png',
     color: 'bg-brand',
-    href: '/merge-pdf'
+    href: '/merge-pdf',
   },
   {
     id: 'split-pdf',
     name: 'Dividir PDF',
-    description: 'Extrae una o varias páginas de tu PDF o convierte cada página del PDF en un archivo independiente.',
+    description: 'Extrae páginas específicas por rangos o convierte cada página en un archivo independiente.',
+    category: 'organizar',
     iconUrl: '/icons/split-pdf.png',
     color: 'bg-orange-500',
-    href: '/split-pdf'
+    href: '/split-pdf',
   },
   {
-    id: 'compress-pdf',
-    name: 'Comprimir PDF',
-    description: 'Consigue que tu documento PDF pese menos y, al mismo tiempo, mantener la máxima calidad posible.',
-    iconUrl: '/icons/compress-pdf.png',
-    color: 'bg-green-500',
-    href: '/compress-pdf'
-  },
-  {
-    id: 'pdf-to-word',
-    name: 'PDF a Word',
-    description: 'Convierte tus PDF a documentos Word (.docx) editables y fáciles de modificar.',
-    iconUrl: '/icons/pdf-to-word.png',
-    color: 'bg-blue-600',
-    href: '/pdf-to-word'
-  },
-  {
-    id: 'word-to-pdf',
-    name: 'Word a PDF',
-    description: 'Convierte tus documentos Word (.doc, .docx) a PDF conservando el formato original.',
-    iconUrl: '/icons/word-to-pdf.png',
-    color: 'bg-blue-800',
-    href: '/word-to-pdf'
-  },
-  {
-    id: 'ocr-pdf',
-    name: 'OCR PDF',
-    description: 'Convierte tus PDF escaneados en documentos con texto seleccionable y buscable (OCR).',
-    iconUrl: '/icons/ocr-pdf.png',
-    color: 'bg-indigo-500',
-    href: '/ocr-pdf'
-  },
-  {
-    id: 'jpg-to-pdf',
-    name: 'JPG a PDF',
-    description: 'Convierte imágenes JPG a PDF. Ajusta la orientación y los márgenes.',
-    iconUrl: '/icons/jpg-to-pdf.png',
-    color: 'bg-yellow-400',
-    href: '/jpg-to-pdf'
-  },
-  {
-    id: 'pdf-to-jpg',
-    name: 'PDF a JPG',
-    description: 'Extrae todas las imágenes que están dentro de un PDF o convierte cada página en una imagen JPG.',
-    iconUrl: '/icons/pdf-to-jpg.png',
-    color: 'bg-yellow-500',
-    href: '/pdf-to-jpg'
-  },
-  {
-    id: 'watermark-pdf',
-    name: 'Añadir Marca de Agua',
-    description: 'Añade una imagen o texto de marca de agua a tu PDF.',
-    iconUrl: '/icons/watermark-pdf.png',
-    color: 'bg-gray-600',
-    href: '/watermark-pdf'
-  },
-  {
-    id: 'page-numbers-pdf',
-    name: 'Añadir Números de Página',
-    description: 'Añade números de página a tu documento PDF. Elige la posición, dimensiones y tipografía.',
-    iconUrl: '/icons/page-numbers-pdf.png',
-    color: 'bg-brand',
-    href: '/page-numbers-pdf'
-  },
-  {
-    id: 'unlock-pdf',
-    name: 'Desbloquear PDF',
-    description: 'Quita la contraseña de un archivo PDF y desbloquéalo.',
-    iconUrl: '/icons/unlock-pdf.png',
-    color: 'bg-red-400',
-    href: '/unlock-pdf'
+    id: 'organize-pdf',
+    name: 'Organizar PDF',
+    description: 'Previsualiza miniaturas, reordena arrastrando, rota páginas individuales o elimina las que no necesites.',
+    category: 'organizar',
+    iconName: 'layout-grid',
+    color: 'bg-rose-600',
+    href: '/organize-pdf',
+    isNew: true,
   },
   {
     id: 'rotate-pdf',
     name: 'Rotar PDF',
-    description: 'Rota tus PDFs como quieras. Rota múltiples PDFs al mismo tiempo.',
+    description: 'Gira todas las páginas de tu documento PDF 90°, 180° o -90° al instante.',
+    category: 'organizar',
     iconUrl: '/icons/rotate-pdf.png',
     color: 'bg-blue-400',
-    href: '/rotate-pdf'
+    href: '/rotate-pdf',
   },
   {
-    id: 'protect-pdf',
-    name: 'Proteger PDF',
-    description: 'Protege archivos PDF con contraseña. Encripta documentos PDF para evitar accesos no autorizados.',
-    iconUrl: '/icons/protect-pdf.png',
-    color: 'bg-red-600',
-    href: '/protect-pdf'
+    id: 'compress-pdf',
+    name: 'Comprimir PDF',
+    description: 'Reduce el peso de tu PDF eligiendo entre compresión rápida, equilibrada o máxima con optimización de imágenes.',
+    category: 'optimizar',
+    iconUrl: '/icons/compress-pdf.png',
+    color: 'bg-emerald-600',
+    href: '/compress-pdf',
+  },
+  {
+    id: 'ocr-pdf',
+    name: 'OCR PDF',
+    description: 'Reconoce texto en documentos escaneados para hacerlos seleccionables y buscables.',
+    category: 'optimizar',
+    iconUrl: '/icons/ocr-pdf.png',
+    color: 'bg-indigo-500',
+    href: '/ocr-pdf',
+    requiredCapability: 'ocr',
+  },
+  {
+    id: 'pdf-to-word',
+    name: 'PDF a Word',
+    description: 'Convierte tus PDF a documentos Word (.docx) editables conservando la estructura.',
+    category: 'convertir',
+    iconUrl: '/icons/pdf-to-word.png',
+    color: 'bg-blue-600',
+    href: '/pdf-to-word',
+  },
+  {
+    id: 'word-to-pdf',
+    name: 'Word a PDF',
+    description: 'Convierte documentos Word (.doc, .docx) a PDF conservando el diseño original.',
+    category: 'convertir',
+    iconUrl: '/icons/word-to-pdf.png',
+    color: 'bg-blue-800',
+    href: '/word-to-pdf',
+    requiredCapability: 'word_to_pdf',
+  },
+  {
+    id: 'jpg-to-pdf',
+    name: 'JPG a PDF',
+    description: 'Convierte una o múltiples imágenes JPG y PNG en un único documento PDF.',
+    category: 'convertir',
+    iconUrl: '/icons/jpg-to-pdf.png',
+    color: 'bg-amber-500',
+    href: '/jpg-to-pdf',
+  },
+  {
+    id: 'pdf-to-jpg',
+    name: 'PDF a JPG',
+    description: 'Exporta cada página de tu documento PDF como imagen JPG de alta resolución (300 DPI).',
+    category: 'convertir',
+    iconUrl: '/icons/pdf-to-jpg.png',
+    color: 'bg-yellow-500',
+    href: '/pdf-to-jpg',
   },
   {
     id: 'pdf-to-markdown',
     name: 'PDF a Markdown',
-    description: 'Convierte tus PDF a texto estructurado en formato Markdown (.md), ideal para RAG y LLMs.',
+    description: 'Extrae el contenido de tu PDF a texto estructurado en Markdown (.md), ideal para notas y LLMs.',
+    category: 'convertir',
     iconUrl: '/icons/pdf-to-markdown.png',
     color: 'bg-indigo-600',
-    href: '/pdf-to-markdown'
-  }
+    href: '/pdf-to-markdown',
+  },
+  {
+    id: 'watermark-pdf',
+    name: 'Añadir Marca de Agua',
+    description: 'Estampa un texto de marca de agua diagonal sobre todas las páginas de tu PDF.',
+    category: 'editar',
+    iconUrl: '/icons/watermark-pdf.png',
+    color: 'bg-slate-600',
+    href: '/watermark-pdf',
+  },
+  {
+    id: 'page-numbers-pdf',
+    name: 'Añadir Números de Página',
+    description: 'Numera automáticamente todas las páginas de tu documento PDF con formato limpio.',
+    category: 'editar',
+    iconUrl: '/icons/page-numbers-pdf.png',
+    color: 'bg-brand',
+    href: '/page-numbers-pdf',
+  },
+  {
+    id: 'metadata-pdf',
+    name: 'Editar Metadatos',
+    description: 'Inspecciona, modifica o limpia las propiedades ocultas del PDF: título, autor, asunto y palabras clave.',
+    category: 'editar',
+    iconName: 'file-sliders',
+    color: 'bg-teal-600',
+    href: '/metadata-pdf',
+    isNew: true,
+  },
+  {
+    id: 'protect-pdf',
+    name: 'Proteger PDF',
+    description: 'Cifra tu archivo PDF con contraseña estándar AES para impedir accesos no autorizados.',
+    category: 'seguridad',
+    iconUrl: '/icons/protect-pdf.png',
+    color: 'bg-red-600',
+    href: '/protect-pdf',
+  },
+  {
+    id: 'unlock-pdf',
+    name: 'Desbloquear PDF',
+    description: 'Elimina la contraseña de apertura y restricciones de un archivo PDF de forma permanente.',
+    category: 'seguridad',
+    iconUrl: '/icons/unlock-pdf.png',
+    color: 'bg-red-400',
+    href: '/unlock-pdf',
+  },
 ];

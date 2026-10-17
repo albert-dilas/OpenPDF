@@ -1,40 +1,9 @@
 import os
 import subprocess
 import shutil
-from typing import Optional
-from app.core.exceptions import PDFProcessingError
 from fastapi.concurrency import run_in_threadpool
-
-
-def _find_soffice() -> Optional[str]:
-    """
-    Detecta la ruta de LibreOffice en múltiples plataformas.
-    Prioridad: PATH del sistema (Linux/macOS/Windows con PATH configurado)
-    → bundle portátil → rutas de instalación estándar de Windows.
-    """
-    # 1. Buscar en PATH del sistema (Linux, macOS, Windows con PATH configurado)
-    system_path = shutil.which("soffice") or shutil.which("libreoffice")
-    if system_path:
-        return system_path
-
-    # 2. Bundle portátil (para el instalador Windows de OpenPDF)
-    portable = os.path.join(
-        os.getcwd(), "bin", "LibreOfficePortable",
-        "App", "libreoffice", "program", "soffice.exe"
-    )
-    if os.path.exists(portable):
-        return portable
-
-    # 3. Rutas de instalación estándar de Windows
-    windows_paths = [
-        r"C:\Program Files\LibreOffice\program\soffice.exe",
-        r"C:\Program Files (x86)\LibreOffice\program\soffice.exe",
-    ]
-    for path in windows_paths:
-        if os.path.exists(path):
-            return path
-
-    return None
+from app.core.exceptions import PDFProcessingError
+from app.utils.binaries import find_soffice
 
 
 class WordToPDFService:
@@ -42,7 +11,7 @@ class WordToPDFService:
 
     @staticmethod
     def _convert_sync(input_path: str, output_path: str) -> str:
-        soffice_path = _find_soffice()
+        soffice_path = find_soffice()
 
         if not soffice_path:
             raise PDFProcessingError(

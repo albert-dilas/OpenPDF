@@ -1,57 +1,80 @@
 import os
+import re
+import uuid
 import fitz
 import pytesseract
 from PIL import Image  # noqa: F401 - needed by pytesseract
-import uuid
-from app.core.exceptions import PDFProcessingError
 from fastapi.concurrency import run_in_threadpool
+from app.core.exceptions import BusinessRuleError, PDFProcessingError
+from app.utils.binaries import find_tesseract, get_ocr_languages
+
+LANGUAGE_REGEX = re.compile(r"^[a-z_]{3,}(\+[a-z_]{3,})*$")
+
+
+def validate_ocr_language(language: str) -> str:
+    """Valida el formato del código de idioma OCR y verifica disponibilidad si es posible."""
+    lang = (language or "").strip()
+    if not LANGUAGE_REGEX.match(lang):
+        raise BusinessRuleError(
+            f"Código de idioma OCR inválido: '{language}'. "
+            "Usa códigos de 3+ letras minúsculas como 'spa', 'eng' o 'spa+eng'."
+        )
+
+    installed = get_ocr_languages()
+    if installed:
+        requested = lang.split("+")
+        missing = [code for code in requested if code not in installed]
+        if missing:
+            raise BusinessRuleError(
+                f"Idioma(s) OCR no instalado(s) en Tesseract: {', '.join(missing)}. "
+                f"Disponibles: {', '.join(installed)}"
+            )
+    return lang
+
 
 class OcrService:
     @staticmethod
-    def _ocr_sync(input_path: str, output_path: str, language: str = 'spa') -> str:
-        # Buscar Tesseract
-        possible_paths = [
-            os.path.join(os.getcwd(), "bin", "Tesseract-OCR", "tesseract.exe"),
-            "C:\\Program Files\\Tesseract-OCR\\tesseract.exe",
-            "C:\\Program Files (x86)\\Tesseract-OCR\\tesseract.exe"
-        ]
-        
-        tess_path = None
-        for path in possible_paths:
-            if os.path.exists(path):
-                tess_path = path
-                break
-                
+    def _ocr_sync(input_path: str, output_path: str, language: str = "spa") -> str:
+        validated_lang = validate_ocr_language(language)
+
+        tess_path = find_tesseract()
         if not tess_path:
-            raise PDFProcessingError("Tesseract no encontrado. Por favor, instala Tesseract-OCR en C:\\Program Files\\Tesseract-OCR o colócalo en backend/bin/Tesseract-OCR.")
-            
+            raise PDFProcessingError(
+                "Tesseract no encontrado. Por favor, instala Tesseract-OCR en el sistema "
+                "o colócalo en backend/bin/Tesseract-OCR."
+            )
+
         pytesseract.pytesseract.tesseract_cmd = tess_path
-        
-        doc = fitz.open(input_path)
+
+        try:
+            doc = fitz.open(input_path)
+        except Exception as e:
+            raise PDFProcessingError(f"Error abriendo PDF para OCR: {str(e)}")
+
         final_pdf = fitz.open()
         temp_files: list[str] = []
-        
-        # We need a temp directory or just use the same dir as output_path for temp files
         temp_dir = os.path.dirname(output_path)
-        
+
         try:
             for page in doc:
                 existing_text = page.get_text().strip()
 
                 if existing_text:
-                    # Página con texto existente: copiar directamente sin OCR
                     single_page = fitz.open()
-                    single_page.insert_pdf(doc, from_page=page.number, to_page=page.number)
-                    final_pdf.insert_pdf(single_page)
-                    single_page.close()
+                    try:
+                        single_page.insert_pdf(doc, from_page=page.number, to_page=page.number)
+                        final_pdf.insert_pdf(single_page)
+                    finally:
+                        single_page.close()
                 else:
-                    # Página escaneada (sin texto): aplicar OCR
                     pix = page.get_pixmap(dpi=300)
                     img_path = os.path.join(temp_dir, f"{uuid.uuid4().hex}.png")
                     temp_files.append(img_path)
                     pix.save(img_path)
 
-                    pdf_bytes = pytesseract.image_to_pdf_or_hocr(img_path, extension='pdf', lang=language)
+                    pdf_bytes = pytesseract.image_to_pdf_or_hocr(
+                        img_path, extension="pdf", lang=validated_lang
+                    )
 
                     temp_pdf_path = os.path.join(temp_dir, f"{uuid.uuid4().hex}.pdf")
                     temp_files.append(temp_pdf_path)
@@ -59,10 +82,14 @@ class OcrService:
                         f.write(pdf_bytes)
 
                     temp_doc = fitz.open(temp_pdf_path)
-                    final_pdf.insert_pdf(temp_doc)
-                    temp_doc.close()
-                
+                    try:
+                        final_pdf.insert_pdf(temp_doc)
+                    finally:
+                        temp_doc.close()
+
             final_pdf.save(output_path)
+        except (BusinessRuleError, PDFProcessingError):
+            raise
         except Exception as e:
             raise PDFProcessingError(f"Error realizando OCR: {str(e)}")
         finally:
@@ -74,11 +101,12 @@ class OcrService:
                     pass
             final_pdf.close()
             doc.close()
-        
+
         return output_path
 
-    async def ocr_pdf(self, input_path: str, output_path: str, language: str = 'spa') -> str:
+    async def ocr_pdf(self, input_path: str, output_path: str, language: str = "spa") -> str:
         return await run_in_threadpool(self._ocr_sync, input_path, output_path, language)
+
 
 def get_ocr_service() -> OcrService:
     return OcrService()

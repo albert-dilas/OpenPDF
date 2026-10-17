@@ -1,12 +1,25 @@
 'use client';
+
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useFileStore } from '@/store/useFileStore';
 import Uploader from '@/components/pdf/Uploader';
-import { apiClient } from '@/lib/api';
-import { FileText, Settings2, X, Image as ImageIcon, Loader2 } from 'lucide-react';
-import axios from 'axios';
-import toast from 'react-hot-toast';
 import SaveDialog from '@/components/pdf/SaveDialog';
+import { CapabilityWarningBanner } from '@/components/system/SystemStatus';
+import { useToolProcessor } from '@/hooks/useToolProcessor';
+import { formatBytes } from '@/lib/api';
+import {
+  FileText,
+  Settings2,
+  X,
+  Image as ImageIcon,
+  Loader2,
+  ArrowLeft,
+  Plus,
+  Trash2,
+  AlertCircle,
+} from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export interface ExtraField {
   key: string;
@@ -31,6 +44,7 @@ interface ToolPageProps {
   showImageIcon?: boolean;
   extraFields?: ExtraField[];
   sidebarContent?: React.ReactNode;
+  capabilityRequired?: 'ocr' | 'word_to_pdf';
 }
 
 export default function ToolPage({
@@ -45,16 +59,26 @@ export default function ToolPage({
   showImageIcon = false,
   extraFields = [],
   sidebarContent,
+  capabilityRequired,
 }: ToolPageProps) {
   const { files, addFiles, removeFile, clearFiles } = useFileStore();
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [processStatus, setProcessStatus] = useState('');
-  const [fieldValues, setFieldValues] = useState<Record<string, string>>(
+  const {
+    status,
+    isProcessing,
+    uploadProgress,
+    processStatus,
+    error,
+    pendingBlob,
+    defaultFileName,
+    process,
+    cancel,
+    handleSave,
+    dismissSave,
+  } = useToolProcessor();
+
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>(() =>
     Object.fromEntries(extraFields.map((f) => [f.key, f.defaultValue ?? '']))
   );
-  const [pendingBlob, setPendingBlob] = useState<Blob | null>(null);
-  const [defaultFileName, setDefaultFileName] = useState('');
 
   useEffect(() => {
     return () => {
@@ -64,20 +88,16 @@ export default function ToolPage({
 
   const handleProcess = async () => {
     if (files.length === 0) return;
-    setIsProcessing(true);
-    setUploadProgress(0);
-    setProcessStatus('Subiendo archivo...');
 
     for (const field of extraFields) {
-      if (field.required && !fieldValues[field.key]) {
+      const val = fieldValues[field.key] ?? field.defaultValue ?? '';
+      if (field.required && !val.trim()) {
         toast.error(field.requiredMessage ?? `El campo "${field.label}" es obligatorio.`);
-        setIsProcessing(false);
         return;
       }
     }
 
     const formData = new FormData();
-
     if (useMultipleFilesField) {
       files.forEach((file) => formData.append('files', file));
     } else {
@@ -85,73 +105,44 @@ export default function ToolPage({
     }
 
     for (const field of extraFields) {
-      if (fieldValues[field.key]) {
-        formData.append(field.key, fieldValues[field.key]);
+      const val = fieldValues[field.key] ?? field.defaultValue ?? '';
+      if (val) {
+        formData.append(field.key, val);
       }
     }
 
-    try {
-      const response = await apiClient.post(endpoint, formData, {
-        responseType: 'blob',
-        onUploadProgress: (progressEvent) => {
-          if (progressEvent.total) {
-            const pct = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setUploadProgress(pct);
-            if (pct === 100) {
-              setProcessStatus('Procesando...');
-            }
-          }
-        },
-      });
-
-      const blob = new Blob([response.data]);
-      setPendingBlob(blob);
-      const baseName = files[0].name.replace(/\.[^.]+$/, '');
-      setDefaultFileName(`${baseName}_openpdf${outputExtension}`);
-      toast.success('¡Archivo procesado con éxito!');
-    } catch (err: unknown) {
-      let msg = 'Error desconocido al procesar el archivo.';
-      if (axios.isAxiosError(err) && err.response) {
-        if (err.response.data instanceof Blob) {
-          try {
-            const text = await err.response.data.text();
-            const json = JSON.parse(text);
-            msg = json.detail ?? msg;
-          } catch {
-            // ignore
-          }
-        } else if (err.response.data?.detail) {
-          msg = err.response.data.detail;
-        }
-      }
-      toast.error(msg);
-    } finally {
-      setIsProcessing(false);
-      setUploadProgress(0);
-      setProcessStatus('');
-    }
-  };
-
-  const handleSave = (fileName: string) => {
-    if (!pendingBlob) return;
-    const url = window.URL.createObjectURL(pendingBlob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', fileName);
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-    window.URL.revokeObjectURL(url);
-    setPendingBlob(null);
-    clearFiles();
+    const baseName = files[0].name.replace(/\.[^.]+$/, '');
+    await process({
+      endpoint,
+      formData,
+      fallbackFileName: `${baseName}_openpdf${outputExtension}`,
+    });
   };
 
   if (files.length === 0) {
     return (
-      <div className="min-h-screen pt-24 px-4 bg-gray-50 text-center">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">{title}</h1>
-        <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">{description}</p>
-        <Uploader onFilesSelected={addFiles} multiple={multiple} accept={accept} />
+      <div className="flex-grow py-10 sm:py-14 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <div className="mb-6 flex justify-center">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-500 dark:text-slate-400 hover:text-brand dark:hover:text-brand transition-colors"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              Todas las herramientas
+            </Link>
+          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-black text-gray-900 dark:text-white tracking-tight mb-3">
+            {title}
+          </h1>
+          <p className="text-base sm:text-lg text-gray-600 dark:text-slate-400 mb-6 max-w-2xl mx-auto">
+            {description}
+          </p>
+
+          <CapabilityWarningBanner capability={capabilityRequired} />
+
+          <Uploader onFilesSelected={addFiles} multiple={multiple} accept={accept} />
+        </div>
       </div>
     );
   }
@@ -161,115 +152,225 @@ export default function ToolPage({
       {pendingBlob && (
         <SaveDialog
           defaultName={defaultFileName}
-          onConfirm={handleSave}
-          onCancel={() => setPendingBlob(null)}
+          blobSize={pendingBlob.size}
+          onConfirm={(fileName) => handleSave(fileName, clearFiles)}
+          onCancel={dismissSave}
         />
       )}
 
-      <div className="min-h-screen pt-16 flex bg-gray-100">
-        <div className="flex-1 p-8 overflow-y-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-6">
-            {files.map((file, idx) => (
-              <div
-                key={`${file.name}-${idx}`}
-                className={`relative group bg-white rounded-lg shadow-sm p-4 flex flex-col items-center justify-center border transition-all ${isProcessing ? 'border-gray-200 opacity-50' : 'border-gray-200 hover:border-brand hover:shadow-md'}`}
-              >
-                <button
-                  onClick={() => removeFile(idx)}
-                  className="absolute -top-2 -right-2 bg-brand text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                  aria-label="Eliminar archivo"
+      <div className="flex-grow flex flex-col lg:flex-row">
+        {/* Main Workspace */}
+        <div className="flex-1 p-4 sm:p-8 overflow-y-auto">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+              <div>
+                <Link
+                  href="/"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-500 dark:text-slate-400 hover:text-brand mb-1"
                 >
-                  <X size={16} />
-                </button>
-                {showImageIcon ? (
-                  <ImageIcon className="text-brand mb-3 w-16 h-16" />
-                ) : (
-                  <FileText className="text-brand mb-3 w-16 h-16" />
-                )}
-                <p className="text-xs text-center font-medium truncate w-full" title={file.name}>
-                  {file.name}
-                </p>
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  Volver a herramientas
+                </Link>
+                <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white">
+                  {title}
+                </h1>
               </div>
-            ))}
+
+              <button
+                type="button"
+                disabled={isProcessing}
+                onClick={clearFiles}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-600 dark:text-slate-300 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 hover:text-red-600 hover:border-red-200 dark:hover:border-red-900 transition-colors disabled:opacity-50"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                Quitar {files.length > 1 ? 'todos' : 'archivo'}
+              </button>
+            </div>
+
+            <CapabilityWarningBanner capability={capabilityRequired} />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4">
+              {files.map((file, idx) => (
+                <div
+                  key={`${file.name}-${idx}`}
+                  className={`relative group bg-white dark:bg-slate-900 rounded-2xl shadow-card p-5 flex flex-col items-center justify-center border transition-all ${
+                    isProcessing
+                      ? 'border-gray-200 dark:border-slate-800 opacity-60'
+                      : 'border-gray-200/80 dark:border-slate-800 hover:border-brand/60 hover:shadow-md'
+                  }`}
+                >
+                  <span className="absolute top-3 left-3 px-2 py-0.5 rounded-md text-[11px] font-bold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400">
+                    #{idx + 1}
+                  </span>
+
+                  <button
+                    type="button"
+                    disabled={isProcessing}
+                    onClick={() => removeFile(idx)}
+                    className="absolute top-2.5 right-2.5 bg-red-50 dark:bg-slate-800 hover:bg-brand text-gray-500 dark:text-slate-300 hover:text-white rounded-xl p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                    aria-label={`Eliminar archivo ${file.name}`}
+                  >
+                    <X size={15} />
+                  </button>
+
+                  <div className="p-4 rounded-2xl bg-red-50/80 dark:bg-brand/15 my-3">
+                    {showImageIcon ? (
+                      <ImageIcon className="text-brand w-10 h-10" />
+                    ) : (
+                      <FileText className="text-brand w-10 h-10" />
+                    )}
+                  </div>
+
+                  <p
+                    className="text-xs sm:text-sm text-center font-semibold text-gray-900 dark:text-slate-100 truncate w-full px-1"
+                    title={file.name}
+                  >
+                    {file.name}
+                  </p>
+                  <span className="mt-1 text-[11px] font-medium text-gray-400 dark:text-slate-500">
+                    {formatBytes(file.size)}
+                  </span>
+                </div>
+              ))}
+
+              {multiple && (
+                <label className="border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center p-6 min-h-[180px] cursor-pointer hover:bg-red-50/40 dark:hover:bg-slate-900 hover:border-brand hover:text-brand text-gray-500 dark:text-slate-400 transition-all">
+                  <input
+                    type="file"
+                    className="hidden"
+                    multiple
+                    accept={accept}
+                    disabled={isProcessing}
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        addFiles(Array.from(e.target.files));
+                        e.target.value = '';
+                      }
+                    }}
+                  />
+                  <Plus className="w-8 h-8 mb-2" />
+                  <span className="text-xs sm:text-sm font-semibold">Añadir más archivos</span>
+                </label>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="w-80 bg-white border-l border-gray-200 shadow-xl flex flex-col">
-          <div className="p-6 border-b border-gray-100 flex items-center gap-3">
-            <Settings2 className="text-brand" />
-            <h2 className="text-xl font-bold">Opciones</h2>
+        {/* Options Sidebar (Right on Desktop, Bottom on Mobile) */}
+        <aside className="w-full lg:w-96 bg-white dark:bg-slate-900 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-slate-800 shadow-xl flex flex-col shrink-0">
+          <div className="p-5 sm:p-6 border-b border-gray-100 dark:border-slate-800 flex items-center gap-3">
+            <Settings2 className="text-brand w-5 h-5" />
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+              Configuración
+            </h2>
           </div>
 
-          <div className="p-6 flex-1 space-y-4 overflow-y-auto">
+          <div className="p-5 sm:p-6 flex-1 space-y-4 overflow-y-auto">
             {extraFields.length === 0 && !sidebarContent && (
-              <p className="text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                No se requieren configuraciones adicionales para esta herramienta.
-              </p>
+              <div className="text-xs sm:text-sm text-gray-600 dark:text-slate-300 bg-gray-50 dark:bg-slate-800/60 p-4 rounded-2xl border border-gray-200/70 dark:border-slate-800">
+                Listo para procesar localmente. Haz clic en <strong>{buttonLabel}</strong> para
+                generar el documento.
+              </div>
             )}
 
-            {extraFields.map((field) => (
-              <div key={field.key}>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  {field.label}
-                </label>
-                {field.type === 'select' ? (
-                  <select
-                    value={fieldValues[field.key]}
-                    onChange={(e) =>
-                      setFieldValues((prev) => ({ ...prev, [field.key]: e.target.value }))
-                    }
-                    className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-brand"
+            {extraFields.map((field) => {
+              const currentValue = fieldValues[field.key] ?? field.defaultValue ?? '';
+              return (
+                <div key={field.key}>
+                  <label
+                    htmlFor={`field-${field.key}`}
+                    className="block text-xs font-bold uppercase tracking-wider text-gray-600 dark:text-slate-300 mb-1.5"
                   >
-                    {field.options?.map((opt) => (
-                      <option key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </option>
-                    ))}
-                  </select>
-                ) : (
-                  <input
-                    type={field.type}
-                    value={fieldValues[field.key]}
-                    onChange={(e) =>
-                      setFieldValues((prev) => ({ ...prev, [field.key]: e.target.value }))
-                    }
-                    className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-brand"
-                    placeholder={field.placeholder}
-                  />
-                )}
-              </div>
-            ))}
-
-            {sidebarContent}
-          </div>
-
-          <div className="p-6 bg-gray-50 border-t border-gray-200 space-y-3">
-            {isProcessing && (
-              <div>
-                <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>{processStatus}</span>
-                  {uploadProgress > 0 && uploadProgress < 100 && (
-                    <span>{uploadProgress}%</span>
+                    {field.label}
+                  </label>
+                  {field.type === 'select' ? (
+                    <select
+                      id={`field-${field.key}`}
+                      value={currentValue}
+                      onChange={(e) =>
+                        setFieldValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                      }
+                      className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl p-3 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand"
+                    >
+                      {field.options?.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      id={`field-${field.key}`}
+                      type={field.type}
+                      value={currentValue}
+                      onChange={(e) =>
+                        setFieldValues((prev) => ({ ...prev, [field.key]: e.target.value }))
+                      }
+                      className="w-full border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-white rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand"
+                      placeholder={field.placeholder}
+                    />
                   )}
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div
-                    className="bg-brand h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
+              );
+            })}
+
+            {sidebarContent}
+
+            {error && (
+              <div
+                role="alert"
+                className="flex items-start gap-2.5 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/70 rounded-xl p-3.5 text-xs sm:text-sm text-red-700 dark:text-red-300"
+              >
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>{error}</span>
               </div>
             )}
+          </div>
+
+          <div className="p-5 sm:p-6 bg-gray-50/80 dark:bg-slate-900/90 border-t border-gray-200 dark:border-slate-800 space-y-3">
+            {isProcessing && (
+              <div className="space-y-2">
+                <div className="flex justify-between items-center text-xs font-medium text-gray-600 dark:text-slate-300">
+                  <span>
+                    {status === 'uploading'
+                      ? 'Fase 1/2: Subiendo archivo...'
+                      : 'Fase 2/2: Procesando en motor local...'}
+                  </span>
+                  {uploadProgress > 0 && uploadProgress < 100 && (
+                    <span className="font-mono font-bold">{uploadProgress}%</span>
+                  )}
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-slate-800 rounded-full h-2 overflow-hidden">
+                  <div
+                    className={`bg-brand h-2 rounded-full transition-all duration-300 ${
+                      status === 'processing' ? 'animate-pulse w-full' : ''
+                    }`}
+                    style={{
+                      width: status === 'processing' ? '100%' : `${uploadProgress}%`,
+                    }}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={cancel}
+                  className="w-full py-2 rounded-xl border border-gray-300 dark:border-slate-700 text-xs font-semibold text-gray-700 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+                >
+                  Cancelar operación
+                </button>
+              </div>
+            )}
+
             <button
+              type="button"
               disabled={isProcessing}
               onClick={handleProcess}
-              className="w-full bg-brand hover:bg-brand-dark disabled:bg-gray-400 text-white font-bold py-4 rounded-lg shadow-lg text-lg transition-all flex items-center justify-center gap-2"
+              className="w-full bg-brand hover:bg-brand-dark disabled:bg-gray-400 dark:disabled:bg-slate-800 text-white font-bold py-4 rounded-xl shadow-lg shadow-brand/20 text-base sm:text-lg transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
             >
               {isProcessing && <Loader2 className="animate-spin" size={20} />}
-              {isProcessing ? processStatus || 'Procesando...' : buttonLabel}
+              <span>{isProcessing ? processStatus || 'Procesando...' : buttonLabel}</span>
             </button>
           </div>
-        </div>
+        </aside>
       </div>
     </>
   );
