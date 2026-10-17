@@ -5,16 +5,26 @@ export type ToolCategory =
   | 'editar'
   | 'seguridad';
 
+export type ToolIconName =
+  | 'layout-grid'
+  | 'file-sliders'
+  | 'pen-tool'
+  | 'eye-off'
+  | 'globe'
+  | 'languages'
+  | 'qr-code';
+
 export interface ToolItem {
   id: string;
   name: string;
   description: string;
   category: ToolCategory;
   iconUrl?: string;
-  iconName?: 'layout-grid' | 'file-sliders';
+  iconName?: ToolIconName;
   color: string;
   href: string;
   requiredCapability?: 'ocr' | 'word_to_pdf';
+  requiresInternet?: boolean;
   isNew?: boolean;
 }
 
@@ -54,7 +64,6 @@ export const tools: ToolItem[] = [
     iconName: 'layout-grid',
     color: 'bg-rose-600',
     href: '/organize-pdf',
-    isNew: true,
   },
   {
     id: 'rotate-pdf',
@@ -131,6 +140,28 @@ export const tools: ToolItem[] = [
     href: '/pdf-to-markdown',
   },
   {
+    id: 'url-to-pdf',
+    name: 'Web / URL a PDF',
+    description: 'Captura y convierte cualquier página web pública, artículo o documentación en línea a un documento PDF limpio.',
+    category: 'convertir',
+    iconName: 'globe',
+    color: 'bg-cyan-600',
+    href: '/url-to-pdf',
+    requiresInternet: true,
+    isNew: true,
+  },
+  {
+    id: 'translate-pdf',
+    name: 'Traducir PDF',
+    description: 'Traduce el contenido de tu documento PDF a múltiples idiomas en línea generando un PDF maquetado o bilingüe.',
+    category: 'convertir',
+    iconName: 'languages',
+    color: 'bg-violet-600',
+    href: '/translate-pdf',
+    requiresInternet: true,
+    isNew: true,
+  },
+  {
     id: 'watermark-pdf',
     name: 'Añadir Marca de Agua',
     description: 'Estampa un texto de marca de agua diagonal sobre todas las páginas de tu PDF.',
@@ -156,6 +187,36 @@ export const tools: ToolItem[] = [
     iconName: 'file-sliders',
     color: 'bg-teal-600',
     href: '/metadata-pdf',
+  },
+  {
+    id: 'qr-pdf',
+    name: 'Código QR Web en PDF',
+    description: 'Estampa un código QR verificando en línea la URL destino o escanea y audita los códigos QR existentes en tu PDF.',
+    category: 'editar',
+    iconName: 'qr-code',
+    color: 'bg-sky-600',
+    href: '/qr-pdf',
+    requiresInternet: true,
+    isNew: true,
+  },
+  {
+    id: 'sign-pdf',
+    name: 'Firmar / Sellar PDF',
+    description: 'Dibuja tu firma manuscrita en pantalla o sube la imagen de tu firma o sello corporativo para estamparla en tu PDF.',
+    category: 'seguridad',
+    iconName: 'pen-tool',
+    color: 'bg-emerald-700',
+    href: '/sign-pdf',
+    isNew: true,
+  },
+  {
+    id: 'redact-pdf',
+    name: 'Censurar / Redactar PDF',
+    description: 'Elimina de forma física e irreversible textos confidenciales, correos, teléfonos o identificadores en todo el PDF.',
+    category: 'seguridad',
+    iconName: 'eye-off',
+    color: 'bg-slate-800',
+    href: '/redact-pdf',
     isNew: true,
   },
   {

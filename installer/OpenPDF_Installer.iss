@@ -1,11 +1,11 @@
 ; =============================================================================
-;  OpenPDF v2.0.0 - Script de Inno Setup 6
+;  OpenPDF v2.1.0 - Script de Inno Setup 6
 ;  Instalador corporativo con interfaz moderna, licencia, cierre automatico de
 ;  instancias previas, accesos directos y desinstalador limpio.
 ; =============================================================================
 
 #define AppName        "OpenPDF"
-#define AppVersion     "2.0.0"
+#define AppVersion     "2.1.0"
 #define AppPublisher   "OpenPDF Project"
 #define AppURL         "https://github.com/albert-dilas/OpenPDF"
 #define AppWebURL      "https://albert-dilas.github.io/OpenPDF"
@@ -141,12 +141,12 @@ begin
   WizardForm.WelcomeLabel1.Caption := 'Instalacion de OpenPDF v{#AppVersion}';
 
   Bienvenida := 'Este asistente instalara OpenPDF v{#AppVersion} en tu equipo.' + NL + NL;
-  Bienvenida := Bienvenida + 'OpenPDF es una plataforma Local-First de 16 modulos especializados' + NL;
-  Bienvenida := Bienvenida + 'para unir, dividir, organizar, comprimir, convertir y proteger' + NL;
-  Bienvenida := Bienvenida + 'documentos PDF sin depender de servicios en la nube.' + NL + NL;
+  Bienvenida := Bienvenida + 'OpenPDF es una plataforma Local-First de 21 modulos especializados' + NL;
+  Bienvenida := Bienvenida + 'para unir, dividir, organizar, firmar, censurar, comprimir, traducir' + NL;
+  Bienvenida := Bienvenida + 'y convertir documentos PDF con privacidad y control total.' + NL + NL;
   Bienvenida := Bienvenida + 'Arquitectura de privacidad estricta:' + NL;
   Bienvenida := Bienvenida + '  - Ejecucion 100% local en 127.0.0.1' + NL;
-  Bienvenida := Bienvenida + '  - Cero telemetria ni transmision de documentos' + NL;
+  Bienvenida := Bienvenida + '  - Utilidades Online con proteccion anti-SSRF' + NL;
   Bienvenida := Bienvenida + '  - Limpieza automatica de archivos temporales' + NL + NL;
   Bienvenida := Bienvenida + 'Haz clic en Siguiente para continuar con la instalacion.';
 
@@ -167,13 +167,13 @@ begin
   if MemoTasksInfo <> '' then
     S := S + 'Tareas adicionales:' + NewLine + MemoTasksInfo + NewLine + NewLine;
 
-  S := S + 'MODULOS INCLUIDOS (16 HERRAMIENTAS)' + NewLine;
+  S := S + 'MODULOS INCLUIDOS (21 HERRAMIENTAS)' + NewLine;
   S := S + '-----------------------------------' + NewLine;
   S := S + Space + '[Organizar]   Unir PDF, Dividir PDF, Organizar PDF, Rotar PDF' + NewLine;
   S := S + Space + '[Optimizar]   Comprimir PDF (3 niveles), OCR PDF' + NewLine;
-  S := S + Space + '[Convertir]   PDF <-> Word, JPG <-> PDF, PDF a Markdown' + NewLine;
-  S := S + Space + '[Editar]      Marca de Agua, Numeros de Pagina, Editar Metadatos' + NewLine;
-  S := S + Space + '[Seguridad]   Proteger PDF (AES-256), Desbloquear PDF' + NewLine + NewLine;
+  S := S + Space + '[Convertir]   PDF <-> Word, JPG <-> PDF, Markdown, Web a PDF, Traducir' + NewLine;
+  S := S + Space + '[Editar]      Marca de Agua, Numeros de Pagina, Metadatos, Codigo QR Web' + NewLine;
+  S := S + Space + '[Seguridad]   Firmar/Sellar, Censurar/Redactar, Proteger AES-256, Desbloquear' + NewLine + NewLine;
   S := S + 'Garantia Local-First: Procesamiento integro en el equipo local.' + NewLine;
 
   Result := S;

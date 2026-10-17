@@ -18,6 +18,11 @@ from app.api.v1.endpoints import (
     pdf_info,
     organize,
     metadata,
+    sign,
+    redact,
+    url_to_pdf,
+    translate,
+    qr,
 )
 
 api_router = APIRouter()
@@ -39,3 +44,8 @@ api_router.include_router(system.router, prefix="/system", tags=["System"])
 api_router.include_router(pdf_info.router, prefix="/pdf-info", tags=["PDF Info"])
 api_router.include_router(organize.router, prefix="/organize", tags=["Organize PDF"])
 api_router.include_router(metadata.router, prefix="/metadata", tags=["Metadata PDF"])
+api_router.include_router(sign.router, prefix="/sign", tags=["Sign PDF"])
+api_router.include_router(redact.router, prefix="/redact", tags=["Redact PDF"])
+api_router.include_router(url_to_pdf.router, prefix="/url-to-pdf", tags=["URL to PDF"])
+api_router.include_router(translate.router, prefix="/translate", tags=["Translate PDF"])
+api_router.include_router(qr.router, prefix="/qr", tags=["QR PDF"])

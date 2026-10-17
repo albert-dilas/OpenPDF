@@ -83,6 +83,9 @@ app.add_middleware(
         "X-Original-Size",
         "X-Compressed-Size",
         "X-Compression-Ratio",
+        "X-Redacted-Count",
+        "X-QR-Verified",
+        "X-Translated-Pages",
         "Content-Disposition",
     ],
 )

@@ -44,7 +44,7 @@ export function useToolProcessor() {
     setStatus('idle');
     setUploadProgress(0);
     setProcessStatus('');
-    toast('Procesamiento cancelado', { icon: '⏹️' });
+    toast('Procesamiento cancelado.');
   }, []);
 
   const process = useCallback(async ({

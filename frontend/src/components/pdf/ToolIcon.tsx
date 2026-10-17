@@ -1,6 +1,15 @@
 /* eslint-disable @next/next/no-img-element */
 import React from 'react';
-import { LayoutGrid, FileSliders, FileText } from 'lucide-react';
+import {
+  LayoutGrid,
+  FileSliders,
+  FileText,
+  PenTool,
+  EyeOff,
+  Globe,
+  Languages,
+  QrCode,
+} from 'lucide-react';
 import { ToolItem } from '@/config/tools';
 
 interface ToolIconProps {
@@ -42,6 +51,16 @@ export default function ToolIcon({ tool, size = 'lg' }: ToolIconProps) {
         <LayoutGrid size={iconSize} strokeWidth={2} />
       ) : tool.iconName === 'file-sliders' ? (
         <FileSliders size={iconSize} strokeWidth={2} />
+      ) : tool.iconName === 'pen-tool' ? (
+        <PenTool size={iconSize} strokeWidth={2} />
+      ) : tool.iconName === 'eye-off' ? (
+        <EyeOff size={iconSize} strokeWidth={2} />
+      ) : tool.iconName === 'globe' ? (
+        <Globe size={iconSize} strokeWidth={2} />
+      ) : tool.iconName === 'languages' ? (
+        <Languages size={iconSize} strokeWidth={2} />
+      ) : tool.iconName === 'qr-code' ? (
+        <QrCode size={iconSize} strokeWidth={2} />
       ) : (
         <FileText size={iconSize} strokeWidth={2} />
       )}

@@ -2,7 +2,7 @@
   <img src="assets/banner.png" alt="OpenPDF Banner" width="100%">
   <br><br>
 
-  # OpenPDF v2.0
+  # OpenPDF v2.1
 
   [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
   [![CI](https://github.com/albert-dilas/OpenPDF/actions/workflows/ci.yml/badge.svg)](https://github.com/albert-dilas/OpenPDF/actions/workflows/ci.yml)
@@ -12,9 +12,9 @@
   [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
   [![Website](https://img.shields.io/badge/Website-Live-success.svg)](https://albert-dilas.github.io/OpenPDF)
 
-  **Plataforma Local-First de código abierto para el procesamiento, conversión, optimización y protección de documentos PDF con privacidad estricta.**
+  **Plataforma Local-First de código abierto para el procesamiento, conversión, firma, censura, optimización y protección de documentos PDF con privacidad estricta.**
   <br>
-  *Ejecución íntegra en el equipo local sin transmisión de documentos a servicios externos.*
+  *Ejecución local en el equipo complementada con utilidades Online protegidas contra SSRF.*
 
 </div>
 
@@ -24,7 +24,7 @@
 - [Descarga e Instalación (Usuarios)](#descarga-e-instalación-usuarios)
 - [Descripción General](#descripción-general)
 - [Capturas de Pantalla](#capturas-de-pantalla)
-- [Catálogo de Herramientas (16 Módulos)](#catálogo-de-herramientas-16-módulos)
+- [Catálogo de Herramientas (21 Módulos)](#catálogo-de-herramientas-21-módulos)
 - [Arquitectura Local-First (Offline / Online)](#arquitectura-local-first-offline--online)
 - [Guía de Desarrollo y Ejecución Local](#guía-de-desarrollo-y-ejecución-local)
 - [Compilación y Empaquetado (.exe / Instalador)](#compilación-y-empaquetado-exe--instalador)
@@ -39,17 +39,17 @@
 Para instalar y ejecutar **OpenPDF** en Windows sin compilar desde el código fuente:
 
 1. Accede a la sección de [**Releases**](../../releases) de este repositorio.
-2. Descarga el instalador oficial de la versión más reciente (`OpenPDF_Setup_v2.0.0.exe`) o el ejecutable portátil autónomo (`OpenPDF.exe`).
+2. Descarga el instalador oficial de la versión más reciente (`OpenPDF_Setup_v2.1.0.exe`) o el ejecutable portátil autónomo (`OpenPDF.exe`).
 3. Ejecuta el instalador y sigue las instrucciones del asistente.
 
 ---
 
 ## Descripción General
 
-**OpenPDF** es una suite de escritorio y servidor local autoalojable diseñada para organizaciones y profesionales que requieren manipular documentos confidenciales sin exponerlos a servicios en la nube de terceros. Toda la manipulación criptográfica, renderizado, compresión, reconocimiento óptico de caracteres (OCR) y conversión documental se ejecuta localmente mediante un motor asíncrono en Python (**FastAPI + PyMuPDF**) acoplado a una interfaz estática compilada en **Next.js 14 + Tailwind CSS**.
+**OpenPDF** es una suite de escritorio y servidor local autoalojable diseñada para organizaciones y profesionales que requieren manipular documentos confidenciales sin exponerlos a servicios en la nube de terceros. Toda la manipulación criptográfica, firma manuscrita, censura irreversible (redacción física), renderizado, compresión, reconocimiento óptico de caracteres (OCR) y conversión documental se ejecuta localmente mediante un motor asíncrono en Python (**FastAPI + PyMuPDF + OpenCV**) acoplado a una interfaz estática compilada en **Next.js 14 + Tailwind CSS**, e incluye además herramientas asistidas por red con validación anti-SSRF.
 
-### Pilares de Ingeniería (v2.0)
-- **Privacidad Estricta (`[LOCAL-FIRST]`)**: Ningún documento ni metadato abandona el dispositivo del usuario.
+### Pilares de Ingeniería (v2.1)
+- **Privacidad Estricta (`[LOCAL-FIRST]`)**: Los 18 módulos de procesamiento local operan sin conexión alguna; los 3 módulos con acceso a Internet están explícitamente señalizados con la insignia `Online` e incorporan protección anti-SSRF.
 - **Ingesta en Streaming con Memoria Constante**: Validación de formato por *magic bytes* en cabecera y escritura en disco por bloques de `1 MiB`, con recolección y borrado garantizado de archivos temporales.
 - **Interfaz Técnica y Accesible**: Búsqueda en tiempo real, clasificación por categorías funcionales, soporte nativo para modo claro y modo oscuro con tipografías locales (*Geist Sans* y *Geist Mono*) 100% offline, barra de progreso por fases con cancelación activa (`AbortController`) y diagnóstico del motor local en vivo.
 
@@ -66,7 +66,7 @@ Para instalar y ejecutar **OpenPDF** en Windows sin compilar desde el código fu
 <div align="center">
   <img src="assets/tools.jpg" alt="Suite Completa de Herramientas en Modo Oscuro" width="100%">
   <br>
-  <em>Figura 2: Catálogo de los 16 módulos de procesamiento PDF en modo oscuro.</em>
+  <em>Figura 2: Catálogo de los 21 módulos de procesamiento PDF en modo oscuro.</em>
 </div>
 <br>
 <div align="center">
@@ -77,7 +77,7 @@ Para instalar y ejecutar **OpenPDF** en Windows sin compilar desde el código fu
 
 ---
 
-## Catálogo de Herramientas (16 Módulos)
+## Catálogo de Herramientas (21 Módulos)
 
 | Categoría | Herramienta | Ruta / Endpoint | Descripción Técnica | Ejecución |
 | :--- | :--- | :--- | :--- | :---: |
@@ -92,9 +92,14 @@ Para instalar y ejecutar **OpenPDF** en Windows sin compilar desde el código fu
 | **Convertir** | **JPG a PDF** | `/jpg-to-pdf` (`POST /api/v1/jpg-to-pdf/`) | Ensambla secuencias de imágenes JPG o PNG en un único documento PDF multipágina. | 100% Offline |
 | **Convertir** | **PDF a JPG** | `/pdf-to-jpg` (`POST /api/v1/pdf-to-jpg/`) | Rasteriza cada página del documento como imagen JPG de alta resolución empaquetada en `.zip`. | 100% Offline |
 | **Convertir** | **PDF a Markdown** | `/pdf-to-markdown` (`POST /api/v1/pdf-to-markdown/`) | Extrae contenido estructurado en formato Markdown (`.md`) orientado a pipelines RAG y LLMs. | 100% Offline |
+| **Convertir** | **Web / URL a PDF** | `/url-to-pdf` (`POST /api/v1/url-to-pdf/`) | Captura artículos y páginas web públicas por URL (modo lectura o completo) con protección anti-SSRF. | Online |
+| **Convertir** | **Traducir PDF** | `/translate-pdf` (`POST /api/v1/translate/`) | Traduce los bloques de texto del PDF a múltiples idiomas generando un PDF maquetado o bilingüe. | Online |
 | **Editar** | **Marca de Agua** | `/watermark-pdf` (`POST /api/v1/watermark/`) | Superpone texto diagonal semitransparente centrado en todas las páginas del documento. | 100% Offline |
 | **Editar** | **Números de Página** | `/page-numbers-pdf` (`POST /api/v1/page-numbers/`) | Inserta numeración secuencial `Página X de Y` en el margen inferior del documento. | 100% Offline |
 | **Editar** | **Editar Metadatos** | `/metadata-pdf` (`POST /api/v1/metadata/`) | Inspecciona, modifica o limpia los atributos estándar (`Título`, `Autor`, `Asunto`, `Palabras clave`). | 100% Offline |
+| **Editar** | **Código QR Web** | `/qr-pdf` (`POST /api/v1/qr/{stamp,inspect}`) | Estampa códigos QR verificando en línea la URL destino o escanea y audita los códigos QR del PDF. | Online / Local |
+| **Seguridad** | **Firmar / Sellar PDF** | `/sign-pdf` (`POST /api/v1/sign/`) | Permite dibujar firma manuscrita en pantalla o cargar imagen PNG/JPG de sello con pie de firma. | 100% Offline |
+| **Seguridad** | **Censurar / Redactar** | `/redact-pdf` (`POST /api/v1/redact/`) | Purga física e irreversiblemente textos confidenciales, correos, teléfonos, identificadores y URLs. | 100% Offline |
 | **Seguridad** | **Proteger PDF** | `/protect-pdf` (`POST /api/v1/protect/`) | Cifra documentos bajo estándar **AES-256** con clave de apertura y permisos. | 100% Offline |
 | **Seguridad** | **Desbloquear PDF** | `/unlock-pdf` (`POST /api/v1/unlock/`) | Elimina el cifrado y las restricciones de acceso de un PDF autenticado mediante su contraseña. | 100% Offline |
 
@@ -119,13 +124,14 @@ flowchart TD
         TempMgr["TempFileManager (Streaming 1 MiB + Magic Bytes + Auto-Cleanup)"]
         
         subgraph CoreServices ["Servicios de Dominio (100% Offline)"]
-            Fitz["PyMuPDF (Merge, Split, Organize, Compress, Metadata, AES-256)"]
+            Fitz["PyMuPDF (Merge, Split, Organize, Sign, Redact, Compress, Metadata, AES-256)"]
             Docx["pdf2docx & pymupdf4llm (PDF a Word / Markdown)"]
             Bins["Binarios Locales Opcionales (Tesseract OCR / LibreOffice)"]
         end
 
-        subgraph OnlineModule ["Módulo de Red Opcional con Fallback"]
+        subgraph OnlineModule ["Módulos de Red Opcionales (SSRF Guard + Fallback)"]
             Upd["GET /api/v1/system/updates (Timeout 3s + Caché 6h + Fallback Silencioso)"]
+            NetTools["URL a PDF / Traducir PDF / Verificador QR Web (Protección Anti-SSRF)"]
         end
 
         API --> TempMgr
@@ -139,8 +145,8 @@ flowchart TD
 ```
 
 ### Garantías de Operación Offline y Resiliencia
-1. **Autonomía Offline en el Núcleo**: Las fuentes tipográficas, hojas de estilo, iconos y lógica de interfaz se sirven íntegramente desde el paquete estático local. Ninguna operación documental requiere acceso a la red.
-2. **Verificación de Actualizaciones con *Fallback* Silencioso**: El endpoint `GET /api/v1/system/updates` es el único componente que realiza una consulta externa hacia GitHub Releases (con un tiempo límite estricto de `3 segundos` y almacenamiento en caché de `6 horas`). Si el entorno carece de conexión a internet, devuelve `{ "online": false, "update_available": false }` con estado HTTP `200 OK` sin interrumpir el flujo de trabajo. Puede deshabilitarse definiendo la variable de entorno `OPENPDF_DISABLE_UPDATE_CHECK=1`.
+1. **Autonomía Offline en el Núcleo**: Las fuentes tipográficas, hojas de estilo, iconos y lógica de interfaz se sirven íntegramente desde el paquete estático local.
+2. **Verificación de Actualizaciones con *Fallback* Silencioso**: El endpoint `GET /api/v1/system/updates` realiza una consulta externa hacia GitHub Releases (con un tiempo límite estricto de `3 segundos` y almacenamiento en caché de `6 horas`). Si el entorno carece de conexión a internet, devuelve `{ "online": false, "update_available": false }` con estado HTTP `200 OK` sin interrumpir el flujo de trabajo. Puede deshabilitarse definiendo la variable de entorno `OPENPDF_DISABLE_UPDATE_CHECK=1`.
 3. **Asignación Dinámica de Puerto y Endurecimiento de Rutas**: Al iniciarse como ejecutable de escritorio, el servidor selecciona automáticamente el primer puerto disponible en el rango `8000–8010` (o el indicado en `OPENPDF_PORT`) y valida todas las rutas de archivos estáticos mediante `Path.resolve()` para impedir vulnerabilidades de *path traversal*.
 
 ---
@@ -179,7 +185,7 @@ npm run build
 
 ## Compilación y Empaquetado (.exe / Instalador)
 
-El repositorio incluye scripts automatizados para generar tanto el binario autónomo (`OpenPDF.exe`) como el instalador de Windows (`OpenPDF_Setup_v2.0.0.exe`):
+El repositorio incluye scripts automatizados para generar tanto el binario autónomo (`OpenPDF.exe`) como el instalador de Windows (`OpenPDF_Setup_v2.1.0.exe`):
 
 ```powershell
 # 1. Regenerar iconos y banners de alta resolución del instalador (opcional)

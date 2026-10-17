@@ -170,7 +170,7 @@ export default function OrganizePDFPage() {
 
   const restoreAllPages = () => {
     setPages(initialPages.map((p) => ({ ...p })));
-    toast('Orden y páginas originales restaurados', { icon: '↩️' });
+    toast.success('Orden y páginas originales restaurados.');
   };
 
   const handleDragStart = (_e: React.DragEvent<HTMLDivElement>, position: number) => {

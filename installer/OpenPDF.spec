@@ -24,7 +24,7 @@ for meta_pkg in ("python-multipart", "fastapi", "uvicorn", "pymupdf"):
         pass
 
 hidden_imports = []
-for sub_pkg in ("app", "python_multipart", "pdf2docx", "pymupdf4llm"):
+for sub_pkg in ("app", "python_multipart", "pdf2docx", "pymupdf4llm", "qrcode", "lxml"):
     try:
         hidden_imports += collect_submodules(sub_pkg)
     except Exception:
@@ -57,6 +57,9 @@ hidden_imports += [
     "anyio._backends._asyncio",
     "python_multipart",
     "httpx",
+    "qrcode",
+    "lxml",
+    "lxml.html",
     "packaging",
     "packaging.version",
     "email.mime.multipart",

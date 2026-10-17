@@ -54,6 +54,30 @@ export interface PdfInfoResponse {
   pages: PdfPageInfo[];
 }
 
+export interface QrVerifyUrlResponse {
+  url: string;
+  final_url: string;
+  reachable: boolean;
+  status_code: number | null;
+  content_type: string | null;
+  title: string | null;
+  elapsed_ms: number;
+  error: string | null;
+}
+
+export interface QrDetectedItem {
+  page: number;
+  data: string;
+  is_url: boolean;
+  online_check: QrVerifyUrlResponse | null;
+}
+
+export interface QrInspectResponse {
+  page_count: number;
+  qr_count: number;
+  items: QrDetectedItem[];
+}
+
 export const formatBytes = (bytes: number): string => {
   if (!Number.isFinite(bytes) || bytes <= 0) return '0 B';
   if (bytes < 1024) return `${bytes} B`;

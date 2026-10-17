@@ -157,6 +157,11 @@ export default function Header() {
                                 <span className="text-sm font-bold truncate">
                                   {tool.name}
                                 </span>
+                                {tool.requiresInternet && (
+                                  <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-sky-50 text-sky-700 dark:bg-sky-950/70 dark:text-sky-300">
+                                    Online
+                                  </span>
+                                )}
                                 {tool.isNew && (
                                   <span className="px-1.5 py-0.5 text-[10px] font-bold uppercase rounded bg-brand/10 text-brand dark:bg-brand/20">
                                     Nuevo

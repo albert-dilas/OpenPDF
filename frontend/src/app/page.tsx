@@ -10,6 +10,7 @@ import {
   Code2,
   AlertTriangle,
   ArrowUpRight,
+  Globe,
 } from 'lucide-react';
 import { tools, TOOL_CATEGORIES, ToolCategory } from '@/config/tools';
 import ToolIcon from '@/components/pdf/ToolIcon';
@@ -35,10 +36,12 @@ export default function Home() {
         selectedCategory === 'todas' || tool.category === selectedCategory;
       if (!matchesCategory) return false;
       if (!q) return true;
+      const internetKeyword = tool.requiresInternet ? 'online internet red web' : 'offline local';
       return (
         tool.name.toLowerCase().includes(q) ||
         tool.description.toLowerCase().includes(q) ||
-        CATEGORY_LABELS[tool.category].toLowerCase().includes(q)
+        CATEGORY_LABELS[tool.category].toLowerCase().includes(q) ||
+        internetKeyword.includes(q)
       );
     });
   }, [searchQuery, selectedCategory]);
@@ -50,7 +53,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-12 md:pt-14 md:pb-16 text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 dark:bg-brand/15 border border-red-200/70 dark:border-brand/30 text-brand dark:text-red-400 text-xs sm:text-sm font-semibold mb-6 shadow-sm">
             <ShieldCheck className="w-4 h-4 shrink-0" />
-            <span>100% Local-First · Tus archivos nunca salen de tu equipo</span>
+            <span>100% Local-First · Procesamiento en tu equipo + utilidades Online opcionales</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight text-balance max-w-4xl mx-auto leading-[1.1]">
@@ -61,8 +64,8 @@ export default function Home() {
           </h1>
 
           <p className="mt-5 max-w-2xl mx-auto text-base sm:text-lg text-gray-600 dark:text-slate-400 leading-relaxed">
-            Une, divide, organiza páginas, edita metadatos, comprime y convierte documentos PDF con
-            privacidad absoluta y sin límites de la nube.
+            Une, divide, firma, censura datos sensibles, comprime, traduce y captura páginas web a
+            PDF con privacidad estricta y control total.
           </p>
 
           {/* Search & Category Filter Bar */}
@@ -73,7 +76,7 @@ export default function Home() {
                 type="search"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar herramienta (ej. unir, organizar, comprimir, metadatos, OCR)..."
+                placeholder="Buscar herramienta (ej. firmar, censurar, traducir, URL, QR, comprimir, online)..."
                 aria-label="Buscar herramienta PDF"
                 className="w-full pl-12 pr-11 py-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-sm sm:text-base transition-all"
               />
@@ -167,11 +170,20 @@ export default function Home() {
                   href={tool.href}
                   className="group relative bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-200 border border-gray-200/80 dark:border-slate-800 hover:border-brand/50 dark:hover:border-brand/60 flex flex-col h-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
                 >
-                  <div className="flex items-start justify-between gap-3 mb-4">
+                  <div className="flex items-start justify-between gap-2 mb-4">
                     <div className="group-hover:scale-105 transition-transform duration-200">
                       <ToolIcon tool={tool} size="lg" />
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex flex-wrap items-center justify-end gap-1.5">
+                      {tool.requiresInternet && (
+                        <span
+                          title="Esta herramienta realiza consultas puntuales a Internet"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-50 text-sky-700 border border-sky-200/80 dark:bg-sky-950/70 dark:text-sky-300 dark:border-sky-800/70"
+                        >
+                          <Globe className="w-2.5 h-2.5" />
+                          Online
+                        </span>
+                      )}
                       {tool.isNew && (
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand dark:bg-brand/20 dark:text-red-400">
                           Nuevo

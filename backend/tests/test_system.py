@@ -10,7 +10,7 @@ def test_system_status():
     response = client.get("/api/v1/system/status")
     assert response.status_code == 200
     data = response.json()
-    assert data["version"] == "2.0.0"
+    assert data["version"] == "2.1.0"
     assert isinstance(data["capabilities"], dict)
     assert isinstance(data["capabilities"]["ocr"], bool)
     assert isinstance(data["capabilities"]["word_to_pdf"], bool)
@@ -40,7 +40,7 @@ def test_system_updates_online_newer(monkeypatch):
     assert response.status_code == 200
     data = response.json()
     assert data == {
-        "current": "2.0.0",
+        "current": "2.1.0",
         "latest": "2.5.0",
         "update_available": True,
         "online": True,
@@ -58,8 +58,8 @@ def test_system_updates_online_up_to_date_and_cached(monkeypatch):
 
         def json(self):
             return {
-                "tag_name": "v2.0.0",
-                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v2.0.0",
+                "tag_name": "v2.1.0",
+                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v2.1.0",
             }
 
     async def mock_get(self, url, **kwargs):
@@ -90,7 +90,7 @@ def test_system_updates_offline_fallback(monkeypatch):
     assert response.status_code == 200
     data = response.json()
     assert data == {
-        "current": "2.0.0",
+        "current": "2.1.0",
         "latest": None,
         "update_available": False,
         "online": False,

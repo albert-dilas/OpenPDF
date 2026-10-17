@@ -1,10 +1,10 @@
 """
-OpenPDF v2.0.0 - Master Build Pipeline
+OpenPDF v2.1.0 - Master Build Pipeline
 Orquesta el proceso completo de empaquetado:
   1. Genera iconos y banners del instalador (prepare_assets.py)
   2. Compila el frontend estático Next.js (frontend/out)
   3. Empaqueta el ejecutable monolítico con PyInstaller -> dist/OpenPDF.exe
-  4. Genera el instalador oficial con Inno Setup -> dist/OpenPDF_Setup_v2.0.0.exe
+  4. Genera el instalador oficial con Inno Setup -> dist/OpenPDF_Setup_v2.1.0.exe
 """
 import os
 import shutil
@@ -12,7 +12,7 @@ import subprocess
 import sys
 import time
 
-VERSION = "2.0.0"
+VERSION = "2.1.0"
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")

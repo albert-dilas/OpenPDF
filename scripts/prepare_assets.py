@@ -138,7 +138,7 @@ def generate_wizard_banner(dst_path: str) -> None:
 
     draw.text((40, 206), "OpenPDF", fill=(255, 255, 255), font=font_title)
     draw.rounded_rectangle([188, 213, 258, 237], radius=6, fill=(229, 50, 45))
-    draw.text((200, 216), "v2.0.0", fill=(255, 255, 255), font=font_ver)
+    draw.text((200, 216), "v2.1.0", fill=(255, 255, 255), font=font_ver)
 
     draw.text((40, 250), "Suite Documental Local-First", fill=(148, 163, 184), font=font_sub)
 
@@ -148,8 +148,8 @@ def generate_wizard_banner(dst_path: str) -> None:
     # Píldoras de especificaciones técnicas
     specs = [
         ("EJECUCION 100% LOCAL", "Sin envio de archivos a la nube"),
-        ("16 MODULOS INTEGRADOS", "Organizar, convertir, OCR y editar"),
-        ("SEGURIDAD AES-256", "Cifrado criptografico estandar"),
+        ("21 MODULOS INTEGRADOS", "Firmar, censurar, traducir, QR y mas"),
+        ("SEGURIDAD AES-256 + SSRF", "Cifrado y proteccion de red"),
         ("STREAMING OPTIMIZADO", "Validacion binaria y baja memoria"),
     ]
 

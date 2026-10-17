@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenPDF v2.0 | Suite Local-First de Procesamiento PDF</title>
-    <meta name="description" content="Plataforma de escritorio Local-First y de código abierto para unir, dividir, organizar, comprimir, convertir y cifrar documentos PDF sin conexión a la nube.">
+    <title>OpenPDF v2.1 | Suite Local-First de Procesamiento PDF</title>
+    <meta name="description" content="Plataforma de escritorio Local-First y de código abierto con 21 módulos para unir, dividir, organizar, firmar, censurar, comprimir, traducir y convertir documentos PDF.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
     <script>
@@ -51,14 +51,14 @@
                 <div class="flex items-center gap-2">
                     <span class="text-xl font-extrabold tracking-tight text-slate-900">Open<span class="text-brand">PDF</span></span>
                     <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[11px] font-mono font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-                        v2.0.0
+                        v2.1.0
                     </span>
                 </div>
             </a>
 
             <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-600">
                 <a href="#interfaz" class="hover:text-brand transition-colors">Interfaz</a>
-                <a href="#herramientas" class="hover:text-brand transition-colors">16 Módulos</a>
+                <a href="#herramientas" class="hover:text-brand transition-colors">21 Módulos</a>
                 <a href="#arquitectura" class="hover:text-brand transition-colors">Arquitectura</a>
                 <a href="#descarga" class="hover:text-brand transition-colors">Instalación</a>
             </nav>
@@ -73,7 +73,7 @@
                 </a>
                 <a href="https://github.com/albert-dilas/OpenPDF/releases/latest"
                    class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-brand hover:bg-brand-dark text-white shadow-sm transition-all">
-                    <span>Descargar v2.0</span>
+                    <span>Descargar v2.1</span>
                 </a>
             </div>
         </div>
@@ -86,7 +86,7 @@
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                 </svg>
-                <span>Arquitectura 100% Local-First · Sin Nube · Licencia MIT</span>
+                <span>Arquitectura 100% Local-First · 21 Módulos · Licencia MIT</span>
             </div>
 
             <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 max-w-4xl mx-auto leading-[1.12]">
@@ -94,19 +94,19 @@
             </h1>
 
             <p class="mt-6 text-lg sm:text-xl text-slate-600 max-w-3xl mx-auto leading-relaxed">
-                Une, divide, organiza páginas, edita metadatos, comprime en múltiples niveles, aplica OCR y cifra con AES-256. Empaquetado como aplicación nativa de escritorio con motor asíncrono FastAPI + PyMuPDF.
+                Une, divide, organiza páginas, firma documentos, censura datos sensibles de forma irreversible, comprime, convierte páginas web a PDF, traduce y audita códigos QR con motor asíncrono FastAPI + PyMuPDF.
             </p>
 
             <!-- Download CTA Buttons -->
             <div id="descarga" class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.0.0/OpenPDF_Setup_v2.0.0.exe"
+                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF_Setup_v2.1.0.exe"
                    class="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-brand hover:bg-brand-dark text-white font-bold px-7 py-4 rounded-xl shadow-lg shadow-red-600/20 transition-all text-base">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
-                    <span>Descargar Instalador Windows (v2.0.0)</span>
+                    <span>Descargar Instalador Windows (v2.1.0)</span>
                 </a>
-                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.0.0/OpenPDF.exe"
+                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF.exe"
                    class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white hover:bg-slate-100 text-slate-800 font-semibold px-6 py-4 rounded-xl border border-slate-300 shadow-sm transition-all text-base">
                     <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -151,13 +151,13 @@
                             <span class="w-3 h-3 rounded-full bg-slate-700"></span>
                         </div>
                         <div id="preview-caption" class="text-xs font-mono text-slate-400">
-                            http://127.0.0.1:8000 — Motor Local Activo (v2.0.0)
+                            http://127.0.0.1:8000 — Motor Local Activo (v2.1.0)
                         </div>
                         <div class="text-[11px] font-mono text-emerald-400 uppercase tracking-wider">
                             LOCALHOST
                         </div>
                     </div>
-                    <img id="preview-img" src="assets/overview.jpg" alt="Vista previa de OpenPDF v2.0" class="w-full object-cover">
+                    <img id="preview-img" src="assets/overview.jpg" alt="Vista previa de OpenPDF v2.1" class="w-full object-cover">
                 </div>
             </div>
         </div>
@@ -169,7 +169,7 @@
             <div class="max-w-3xl">
                 <p class="text-xs font-mono font-bold uppercase tracking-widest text-brand">Ingeniería de Software</p>
                 <h2 class="mt-2 text-3xl font-extrabold text-slate-900">Diseñado bajo estándares de seguridad y rendimiento</h2>
-                <p class="mt-3 text-slate-600">Cada componente de OpenPDF v2.0 prioriza el aislamiento de datos, la predictibilidad en el consumo de memoria y la resiliencia operativa.</p>
+                <p class="mt-3 text-slate-600">Cada componente de OpenPDF v2.1 prioriza el aislamiento de datos, la predictibilidad en el consumo de memoria y la resiliencia operativa.</p>
             </div>
 
             <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -181,7 +181,7 @@
                     </div>
                     <h3 class="text-lg font-bold text-slate-900 mb-2">Privacidad Estricta Local-First</h3>
                     <p class="text-sm text-slate-600 leading-relaxed">
-                        El procesamiento ocurre íntegramente en `127.0.0.1`. Sin telemetría, sin cuentas de usuario y con limpieza inmediata de archivos temporales al finalizar cada petición HTTP.
+                        El procesamiento ocurre en `127.0.0.1` con limpieza inmediata de archivos temporales, y los módulos asistidos por red están señalizados e integran protección anti-SSRF.
                     </p>
                 </div>
 
@@ -205,23 +205,23 @@
                     </div>
                     <h3 class="text-lg font-bold text-slate-900 mb-2">Binario Monolítico Auditado</h3>
                     <p class="text-sm text-slate-600 leading-relaxed">
-                        Compilado con PyInstaller e Inno Setup 6. Incluye protección contra *path traversal*, selección automática de puerto libre (`8000–8010`) y suite con más de 55 pruebas automatizadas.
+                        Compilado con PyInstaller e Inno Setup 6. Incluye protección contra *path traversal*, selección automática de puerto libre (`8000–8010`) y suite con 70 pruebas automatizadas.
                     </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- 16 Tools Catalog -->
+    <!-- 21 Tools Catalog -->
     <section id="herramientas" class="py-20 bg-slate-50 border-b border-slate-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
                 <div>
                     <p class="text-xs font-mono font-bold uppercase tracking-widest text-brand">Catálogo Completo</p>
-                    <h2 class="mt-2 text-3xl font-extrabold text-slate-900">16 Módulos Especializados</h2>
+                    <h2 class="mt-2 text-3xl font-extrabold text-slate-900">21 Módulos Especializados</h2>
                 </div>
                 <p class="text-sm text-slate-600 max-w-md">
-                    Todos los módulos operan sin conexión a internet y verifican la integridad estructural de los archivos de entrada.
+                    18 módulos operan 100% offline en tu equipo y 3 módulos integran funciones Online con validación anti-SSRF.
                 </p>
             </div>
 
@@ -236,11 +236,8 @@
                     <h3 class="mt-3 font-bold text-slate-900">2. Dividir PDF</h3>
                     <p class="mt-1 text-xs text-slate-600">Extracción de páginas individuales o por intervalos personalizados (`1,3-5,7`) en archivo ZIP.</p>
                 </div>
-                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
-                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Nuevo en v2.0</span>
-                    </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Organizar</span>
                     <h3 class="mt-3 font-bold text-slate-900">3. Organizar PDF</h3>
                     <p class="mt-1 text-xs text-slate-600">Previsualización de miniaturas reales para reordenar, rotar páginas individuales o descartar hojas.</p>
                 </div>
@@ -250,11 +247,8 @@
                     <p class="mt-1 text-xs text-slate-600">Rotación uniforme en incrementos de 90°, 180° o 270° sobre todas las páginas.</p>
                 </div>
 
-                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
-                    <div class="flex items-center justify-between">
-                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Optimizar</span>
-                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Mejorado</span>
-                    </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Optimizar</span>
                     <h3 class="mt-3 font-bold text-slate-900">5. Comprimir PDF</h3>
                     <p class="mt-1 text-xs text-slate-600">Tres niveles de compresión (`low`, `medium`, `high` con remuestreo de imágenes) y métricas de reducción.</p>
                 </div>
@@ -289,33 +283,71 @@
                     <h3 class="mt-3 font-bold text-slate-900">11. PDF a Markdown</h3>
                     <p class="mt-1 text-xs text-slate-600">Extracción estructurada a formato `.md` para flujos de ingeniería de datos, RAG y LLMs.</p>
                 </div>
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">12. Marca de Agua</h3>
-                    <p class="mt-1 text-xs text-slate-600">Estampado de texto diagonal semitransparente centrado en todas las páginas.</p>
+                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
+                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-sky-50 text-sky-700">Online · v2.1</span>
+                    </div>
+                    <h3 class="mt-3 font-bold text-slate-900">12. Web / URL a PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Captura y convierte artículos o páginas web públicas a un documento PDF limpio con protección anti-SSRF.</p>
                 </div>
 
+                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Convertir</span>
+                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-sky-50 text-sky-700">Online · v2.1</span>
+                    </div>
+                    <h3 class="mt-3 font-bold text-slate-900">13. Traducir PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Traduce los bloques de texto del documento a múltiples idiomas en formato directo o bilingüe.</p>
+                </div>
                 <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                     <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
-                    <h3 class="mt-3 font-bold text-slate-900">13. Números de Página</h3>
+                    <h3 class="mt-3 font-bold text-slate-900">14. Marca de Agua</h3>
+                    <p class="mt-1 text-xs text-slate-600">Estampado de texto diagonal semitransparente centrado en todas las páginas.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
+                    <h3 class="mt-3 font-bold text-slate-900">15. Números de Página</h3>
                     <p class="mt-1 text-xs text-slate-600">Paginación automática en el margen inferior con formato `Página X de Y`.</p>
                 </div>
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+                    <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
+                    <h3 class="mt-3 font-bold text-slate-900">16. Editar Metadatos</h3>
+                    <p class="mt-1 text-xs text-slate-600">Lectura, modificación y limpieza de atributos `Título`, `Autor`, `Asunto` y `Palabras clave`.</p>
+                </div>
+
                 <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
                     <div class="flex items-center justify-between">
                         <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Editar</span>
-                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Nuevo en v2.0</span>
+                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-sky-50 text-sky-700">Online · v2.1</span>
                     </div>
-                    <h3 class="mt-3 font-bold text-slate-900">14. Editar Metadatos</h3>
-                    <p class="mt-1 text-xs text-slate-600">Lectura, modificación y limpieza de atributos `Título`, `Autor`, `Asunto` y `Palabras clave`.</p>
+                    <h3 class="mt-3 font-bold text-slate-900">17. Código QR Web en PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Estampa códigos QR verificando en línea la URL destino o escanea y audita los códigos QR del PDF.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
+                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Nuevo en v2.1</span>
+                    </div>
+                    <h3 class="mt-3 font-bold text-slate-900">18. Firmar / Sellar PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Dibuja tu firma manuscrita en lienzo o sube la imagen de tu sello corporativo con pie de firma.</p>
+                </div>
+                <div class="bg-white p-5 rounded-xl border border-red-200 shadow-sm">
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
+                        <span class="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-red-50 text-brand">Nuevo en v2.1</span>
+                    </div>
+                    <h3 class="mt-3 font-bold text-slate-900">19. Censurar / Redactar PDF</h3>
+                    <p class="mt-1 text-xs text-slate-600">Purga física e irreversible de términos confidenciales, correos, teléfonos, identificadores y URLs.</p>
                 </div>
                 <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                     <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
-                    <h3 class="mt-3 font-bold text-slate-900">15. Proteger PDF</h3>
+                    <h3 class="mt-3 font-bold text-slate-900">20. Proteger PDF</h3>
                     <p class="mt-1 text-xs text-slate-600">Cifrado criptográfico bajo estándar AES-256 con clave de apertura.</p>
                 </div>
                 <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
                     <span class="text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded bg-slate-100 text-slate-700">Seguridad</span>
-                    <h3 class="mt-3 font-bold text-slate-900">16. Desbloquear PDF</h3>
+                    <h3 class="mt-3 font-bold text-slate-900">21. Desbloquear PDF</h3>
                     <p class="mt-1 text-xs text-slate-600">Descifrado y eliminación de restricciones de acceso mediante contraseña autorizada.</p>
                 </div>
             </div>
@@ -339,7 +371,7 @@
                         </li>
                         <li class="flex items-start gap-3">
                             <span class="mt-1 w-2 h-2 rounded-full bg-brand shrink-0"></span>
-                            <span><strong>Comprobador de versiones resiliente (`/api/v1/system/updates`):</strong> Único punto de red opcional con timeout de 3 segundos, caché de 6 horas y degradación silenciosa cuando el equipo opera sin internet.</span>
+                            <span><strong>Comprobador de versiones resiliente (`/api/v1/system/updates`):</strong> Consulta de versión con timeout de 3 segundos, caché de 6 horas y degradación silenciosa cuando el equipo opera sin internet.</span>
                         </li>
                         <li class="flex items-start gap-3">
                             <span class="mt-1 w-2 h-2 rounded-full bg-brand shrink-0"></span>
@@ -367,13 +399,13 @@
 | Motor Backend (FastAPI + Uvicorn)                     |
 |  - TempFileManager: Streaming en bloques de 1 MiB     |
 |  - Validación por firmas binarias (Magic Bytes)       |
-|  - Protección Path Traversal (Path.resolve)           |
+|  - Protección Path Traversal & SSRF Network Guard     |
 +-------------------------------------------------------+
                            |
                            v
 +-------------------------------------------------------+
 | Núcleo de Procesamiento Documental                    |
-|  - PyMuPDF (fitz) / pymupdf4llm / pdf2docx / Pillow   |
+|  - PyMuPDF (fitz) / OpenCV / qrcode / Pillow / lxml   |
 |  - Integración local: Tesseract OCR & LibreOffice     |
 +-------------------------------------------------------+</code></pre>
                     </div>
@@ -390,7 +422,7 @@
                     PDF
                 </div>
                 <span class="text-base font-bold text-white tracking-tight">OpenPDF Project</span>
-                <span class="text-xs font-mono text-slate-500">v2.0.0</span>
+                <span class="text-xs font-mono text-slate-500">v2.1.0</span>
             </div>
             <div class="flex items-center gap-6 text-xs font-medium">
                 <a href="https://github.com/albert-dilas/OpenPDF" class="hover:text-white transition-colors">Repositorio GitHub</a>
@@ -408,7 +440,7 @@
             },
             tools: {
                 src: 'assets/tools.jpg',
-                caption: 'http://127.0.0.1:8000 — Catálogo Completo de 16 Módulos en Modo Oscuro'
+                caption: 'http://127.0.0.1:8000 — Catálogo Completo de 21 Módulos en Modo Oscuro'
             },
             workflow: {
                 src: 'assets/workflow.jpg',
