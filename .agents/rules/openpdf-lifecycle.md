@@ -15,5 +15,6 @@ Antes de dar por finalizada cualquier solicitud de cambio en este workspace, lee
    - Si cambiaste UI o herramientas: actualiza capturas en `assets/` y `docs/assets/`, `README.md` y la web `docs/index.html`.
    - Si cambiaste código funcional o del instalador: ejecuta `.\backend\.venv\Scripts\python scripts/build_installer.py` para actualizar `dist/OpenPDF.exe` y `dist/OpenPDF_Setup_vX.Y.Z.exe` y realiza smoke test del `.exe`.
 4. **Publicación en GitHub**:
-   - Haz `git commit` y `git push origin main` (actualiza repositorio y GitHub Pages `albert-dilas.github.io/OpenPDF`).
-   - Sube los nuevos `.exe` (`OpenPDF_Setup_vX.Y.Z.exe` y `OpenPDF.exe`) a GitHub Releases.
+   - Ejecuta push de forma no interactiva para evitar bloqueos por diálogo de credenciales en Windows (`$env:GIT_TERMINAL_PROMPT="0"`, `$env:GCM_INTERACTIVE="never"` y cabecera en memoria con token de `gh`).
+   - Sincroniza `main` (actualiza repositorio y GitHub Pages `albert-dilas.github.io/OpenPDF`).
+   - Crea la Release y sube los nuevos `.exe` (`OpenPDF_Setup_vX.Y.Z.exe` y `OpenPDF.exe`) con sus hashes SHA-256 usando `gh release create` y `gh release upload --clobber`.

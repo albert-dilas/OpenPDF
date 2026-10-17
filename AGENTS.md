@@ -35,8 +35,18 @@ Después de aplicar y verificar cualquier cambio en local, **siempre** debes sin
    - Comprobar que no existan emojis en los archivos seguidos por Git.
    - Comprobar con `git status -s` que no se suban archivos temporales (`temp_files/`, `.venv/`, `node_modules/`).
 2. **Commit y Push a `main` (Código + GitHub Pages)**:
-   - Ejecutar `git add -A`, crear un commit con formato Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`) y hacer `git push origin main`.
+   - Ejecutar `git add -A`, crear un commit con formato Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`).
+   - **Prevención de Bloqueos por Diálogos Interactivos en Windows**: Nunca ejecutes `git push` sin variables no interactivas. Git Credential Manager (GCM) puede pausar la consola indefinidamente esperando una interfaz gráfica:
+     - Configura siempre: `$env:GIT_TERMINAL_PROMPT="0"; $env:GCM_INTERACTIVE="never"`.
+     - Si hay sesión activa en GitHub CLI (`gh auth status`), autentica el push en memoria pasando el token por cabecera sin alterar `.git/config`:
+       ```powershell
+       $token = (gh auth token).Trim()
+       $b64 = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("x-access-token:$token"))
+       git -c "http.https://github.com/.extraheader=AUTHORIZATION: basic $b64" push origin main
+       Remove-Variable token, b64 -ErrorAction SilentlyContinue
+       ```
    - Recordar que `https://albert-dilas.github.io/OpenPDF/` se despliega desde la rama `main` carpeta `/docs`, por lo que `docs/index.html` y `docs/assets/*` deben estar siempre al día en `main`.
 3. **Actualización de Binarios (`.exe`) en GitHub Releases**:
    - Siempre que cambie el código de la aplicación (`backend/`, `frontend/`, `installer/`), se debe compilar `dist/OpenPDF.exe` y `dist/OpenPDF_Setup_vX.Y.Z.exe` y subirlos a la Release correspondiente en GitHub Releases (`https://github.com/albert-dilas/OpenPDF/releases`) junto con su tabla de hashes `SHA-256`.
+   - Utilizar comandos `gh release create` y `gh release upload --clobber`.
    - Si `git push` o la API de GitHub Releases requieren autenticación y no hay sesión activa en `gh` ni token en variables de entorno, solicita el token temporal al usuario antes de dar por concluida la tarea y nunca guardes el token en archivos del repositorio ni en `.git/config`.
