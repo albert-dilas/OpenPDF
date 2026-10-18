@@ -11,10 +11,12 @@ import {
   Minimize2,
   SunMoon,
   CornerDownLeft,
+  Settings,
 } from 'lucide-react';
 import { tools, ToolItem } from '@/config/tools';
 import ToolIcon from '@/components/pdf/ToolIcon';
 import { useSystemStore } from '@/store/useSystemStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 interface QuickActionItem {
   id: string;
@@ -98,19 +100,22 @@ export default function CommandPalette() {
           setCommandPaletteOpen(false);
           const root = document.documentElement;
           const nextDark = !root.classList.contains('dark');
-          if (nextDark) {
-            root.classList.add('dark');
-            localStorage.setItem('openpdf-theme', 'dark');
-          } else {
-            root.classList.remove('dark');
-            localStorage.setItem('openpdf-theme', 'light');
-          }
-          window.dispatchEvent(new Event('openpdf-theme-change'));
+          useSettingsStore.getState().updateSetting('theme', nextDark ? 'dark' : 'light');
         },
         icon: <SunMoon className="w-4 h-4 text-brand" />,
       },
+      {
+        id: 'action-settings',
+        label: 'Ajustes y Personalización',
+        description: 'Personalizar tema, compresión, comprobar actualizaciones y dar opiniones',
+        onSelect: () => {
+          setCommandPaletteOpen(false);
+          router.push('/settings');
+        },
+        icon: <Settings className="w-4 h-4 text-brand" />,
+      },
     ],
-    [immersiveMode, setCommandPaletteOpen, setModulesModalOpen, toggleImmersiveMode]
+    [immersiveMode, router, setCommandPaletteOpen, setModulesModalOpen, toggleImmersiveMode]
   );
 
   const filteredTools = useMemo(() => {

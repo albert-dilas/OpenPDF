@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
 from app.services.system_service import SystemService, get_system_service
 
 router = APIRouter()
@@ -12,6 +12,33 @@ class ConfigureModuleRequest(BaseModel):
 
 class ModuleActionRequest(BaseModel):
     module: str
+
+
+class FeedbackRequest(BaseModel):
+    category: str = Field(default="opinion")
+    title: str = Field(..., min_length=2, max_length=200)
+    description: str = Field(..., min_length=5, max_length=10000)
+    email: str = Field(default="", max_length=150)
+    system_info: dict = Field(default_factory=dict)
+
+    @field_validator("title", "description", mode="before")
+    @classmethod
+    def strip_text(cls, v: str) -> str:
+        if isinstance(v, str):
+            stripped = v.strip()
+            if not stripped:
+                raise ValueError("El campo no puede estar vacío ni contener solo espacios.")
+            return stripped
+        return v
+
+    @field_validator("category")
+    @classmethod
+    def validate_category(cls, v: str) -> str:
+        allowed = {"feature", "bug", "opinion", "general"}
+        clean = (v or "opinion").strip().lower()
+        if clean not in allowed:
+            raise ValueError(f"Categoría inválida. Valores permitidos: {', '.join(allowed)}")
+        return clean
 
 
 @router.get("/status")
@@ -67,7 +94,18 @@ async def install_module_endpoint(
 
 @router.get("/updates")
 async def system_updates_endpoint(
+    force: bool = False,
     system_service: SystemService = Depends(get_system_service),
 ):
     """Comprueba actualizaciones en GitHub Releases con timeout corto y fallback offline silencioso."""
-    return await system_service.check_updates()
+    return await system_service.check_updates(force=force)
+
+
+@router.post("/feedback")
+async def system_feedback_endpoint(
+    req: FeedbackRequest,
+    system_service: SystemService = Depends(get_system_service),
+):
+    """Registra una opinion, sugerencia o reporte de error en el entorno local."""
+    return system_service.save_feedback(req.model_dump())
+

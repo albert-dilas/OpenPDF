@@ -14,6 +14,7 @@ import {
   Blocks,
   Maximize2,
   Minimize2,
+  Settings,
 } from 'lucide-react';
 import { tools, TOOL_CATEGORIES, ToolCategory } from '@/config/tools';
 import ToolIcon from '@/components/pdf/ToolIcon';
@@ -22,6 +23,7 @@ import {
   SystemStatusPoller,
   UpdateBanner,
 } from '@/components/system/SystemStatus';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import { useSystemStore } from '@/store/useSystemStore';
 
 function OpenPdfEmblem() {
@@ -141,13 +143,7 @@ export default function Header() {
   const toggleTheme = () => {
     const root = document.documentElement;
     const nextDark = !root.classList.contains('dark');
-    if (nextDark) {
-      root.classList.add('dark');
-      localStorage.setItem('openpdf-theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('openpdf-theme', 'light');
-    }
+    useSettingsStore.getState().updateSetting('theme', nextDark ? 'dark' : 'light');
     setIsDark(nextDark);
   };
 
@@ -324,6 +320,20 @@ export default function Header() {
             {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
           </button>
 
+          {/* Settings Page Button */}
+          <Link
+            href="/settings"
+            aria-label="Ajustes y Personalización"
+            title="Ajustes de la aplicación y comprobación de actualizaciones"
+            className={`p-2 rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+              pathname === '/settings'
+                ? 'bg-brand text-white border-brand'
+                : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 border-gray-200/80 dark:border-slate-700/80'
+            }`}
+          >
+            <Settings className="w-4 h-4" />
+          </Link>
+
           <a
             href="https://github.com/albert-dilas/OpenPDF"
             target="_blank"
@@ -386,6 +396,29 @@ export default function Header() {
               </div>
             );
           })}
+
+          {/* Settings in Mobile Drawer */}
+          <div className="pt-4 border-t border-gray-200 dark:border-slate-800">
+            <Link
+              href="/settings"
+              onClick={() => setMobileMenuOpen(false)}
+              className={`flex items-center gap-3 p-3 rounded-2xl transition-colors ${
+                pathname === '/settings'
+                  ? 'bg-red-50 dark:bg-slate-800 text-brand'
+                  : 'hover:bg-gray-50 dark:hover:bg-slate-800 text-gray-800 dark:text-slate-200'
+              }`}
+            >
+              <div className="p-2 rounded-xl bg-brand/10 text-brand">
+                <Settings className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold">Ajustes y Personalización</div>
+                <div className="text-xs text-gray-500 dark:text-slate-400">
+                  Comprobar actualizaciones, personalizar tema y soporte
+                </div>
+              </div>
+            </Link>
+          </div>
         </div>
       )}
     </header>

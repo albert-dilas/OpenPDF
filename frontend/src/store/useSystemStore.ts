@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import {
   apiClient,
+  FeedbackPayload,
   SystemModulesInfo,
   SystemStatusResponse,
   SystemUpdateResponse,
@@ -40,6 +41,8 @@ interface SystemState {
     module: 'ocr' | 'word_to_pdf' | 'ocr_lang_spa'
   ) => Promise<void>;
   checkUpdatesOnce: () => Promise<void>;
+  checkForUpdatesRealtime: () => Promise<SystemUpdateResponse>;
+  submitFeedback: (payload: FeedbackPayload) => Promise<{ status: string; message: string; stored_locally?: boolean }>;
   dismissUpdate: () => void;
 }
 
@@ -211,6 +214,40 @@ export const useSystemStore = create<SystemState>((set, get) => ({
     } catch {
       // Silencio total si falla o no hay red
     }
+  },
+
+  checkForUpdatesRealtime: async () => {
+    try {
+      const { data } = await apiClient.get<SystemUpdateResponse>(
+        '/system/updates?force=true',
+        { timeout: 5000 }
+      );
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem(UPDATE_CHECKED_KEY, JSON.stringify(data));
+        sessionStorage.removeItem(UPDATE_DISMISSED_KEY);
+      }
+      set({ updateInfo: data, updateDismissed: false });
+      return data;
+    } catch {
+      const fallback: SystemUpdateResponse = {
+        current: get().version || '2.2.0',
+        latest: null,
+        update_available: false,
+        online: false,
+        url: 'https://github.com/albert-dilas/OpenPDF/releases',
+      };
+      set({ updateInfo: fallback });
+      return fallback;
+    }
+  },
+
+  submitFeedback: async (payload: FeedbackPayload) => {
+    const { data } = await apiClient.post<{
+      status: string;
+      message: string;
+      stored_locally?: boolean;
+    }>('/system/feedback', payload, { timeout: 5000 });
+    return data;
   },
 
   dismissUpdate: () => {

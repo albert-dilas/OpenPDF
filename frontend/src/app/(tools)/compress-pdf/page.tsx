@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useFileStore } from '@/store/useFileStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import Uploader from '@/components/pdf/Uploader';
 import SaveDialog from '@/components/pdf/SaveDialog';
 import { useToolProcessor } from '@/hooks/useToolProcessor';
@@ -55,7 +56,8 @@ const COMPRESSION_LEVELS: {
 
 export default function CompressPDFPage() {
   const { files, addFiles, removeFile, clearFiles } = useFileStore();
-  const [level, setLevel] = useState<CompressionLevel>('medium');
+  const defaultComp = useSettingsStore((s) => s.defaultCompression);
+  const [level, setLevel] = useState<CompressionLevel>(defaultComp || 'medium');
   const {
     status,
     isProcessing,

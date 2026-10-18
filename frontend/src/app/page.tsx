@@ -15,6 +15,7 @@ import {
 import { tools, TOOL_CATEGORIES, ToolCategory } from '@/config/tools';
 import ToolIcon from '@/components/pdf/ToolIcon';
 import { useSystemStore } from '@/store/useSystemStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 const CATEGORY_LABELS: Record<ToolCategory, string> = {
   organizar: 'Organizar',
@@ -34,6 +35,7 @@ export default function Home() {
     immersiveMode,
     setModulesModalOpen,
   } = useSystemStore();
+  const compactGrid = useSettingsStore((s) => s.compactGrid);
 
   const anyMissingModule =
     hasCheckedOnce && online && (!capabilities.ocr || !capabilities.word_to_pdf);
@@ -192,7 +194,13 @@ export default function Home() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div
+            className={`grid ${
+              compactGrid
+                ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3'
+                : 'grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+            }`}
+          >
             {filteredTools.map((tool) => {
               const missingCap =
                 tool.requiredCapability &&
@@ -204,11 +212,13 @@ export default function Home() {
                 <Link
                   key={tool.id}
                   href={tool.href}
-                  className="group relative bg-white dark:bg-slate-900 rounded-2xl p-6 shadow-card hover:shadow-card-hover transition-all duration-200 border border-gray-200/80 dark:border-slate-800 hover:border-brand/50 dark:hover:border-brand/60 flex flex-col h-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+                  className={`group relative bg-white dark:bg-slate-900 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-200 border border-gray-200/80 dark:border-slate-800 hover:border-brand/50 dark:hover:border-brand/60 flex flex-col h-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+                    compactGrid ? 'p-3.5' : 'p-6'
+                  }`}
                 >
-                  <div className="flex items-start justify-between gap-2 mb-4">
+                  <div className={`flex items-start justify-between gap-2 ${compactGrid ? 'mb-2' : 'mb-4'}`}>
                     <div className="group-hover:scale-105 transition-transform duration-200">
-                      <ToolIcon tool={tool} size="lg" />
+                      <ToolIcon tool={tool} size={compactGrid ? 'sm' : 'lg'} />
                     </div>
                     <div className="flex flex-wrap items-center justify-end gap-1.5">
                       {tool.requiresInternet && (
@@ -217,7 +227,7 @@ export default function Home() {
                           className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-50 text-sky-700 border border-sky-200/80 dark:bg-sky-950/70 dark:text-sky-300 dark:border-sky-800/70"
                         >
                           <Globe className="w-2.5 h-2.5" />
-                          Online
+                          {!compactGrid && 'Online'}
                         </span>
                       )}
                       {tool.isNew && (
@@ -225,20 +235,30 @@ export default function Home() {
                           Nuevo
                         </span>
                       )}
-                      <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400">
-                        {CATEGORY_LABELS[tool.category]}
-                      </span>
+                      {!compactGrid && (
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400">
+                          {CATEGORY_LABELS[tool.category]}
+                        </span>
+                      )}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <h2 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-brand dark:group-hover:text-brand-500 transition-colors">
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <h2
+                      className={`font-bold text-gray-900 dark:text-white group-hover:text-brand dark:group-hover:text-brand-500 transition-colors line-clamp-1 ${
+                        compactGrid ? 'text-xs sm:text-sm' : 'text-lg'
+                      }`}
+                    >
                       {tool.name}
                     </h2>
                     <ArrowUpRight className="w-4 h-4 text-gray-300 dark:text-slate-600 group-hover:text-brand group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
                   </div>
 
-                  <p className="text-sm text-gray-500 dark:text-slate-400 leading-relaxed flex-grow">
+                  <p
+                    className={`text-gray-500 dark:text-slate-400 leading-relaxed flex-grow ${
+                      compactGrid ? 'text-[11px] line-clamp-2' : 'text-sm'
+                    }`}
+                  >
                     {tool.description}
                   </p>
 

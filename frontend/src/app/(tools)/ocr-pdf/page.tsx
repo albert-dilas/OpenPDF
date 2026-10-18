@@ -3,6 +3,7 @@
 import { useMemo } from 'react';
 import ToolPage from '@/components/pdf/ToolPage';
 import { useSystemStore } from '@/store/useSystemStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 const LANGUAGE_LABELS: Record<string, string> = {
   spa: 'Español (spa)',
@@ -18,6 +19,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
 
 export default function OCRPDFPage() {
   const ocrLanguages = useSystemStore((s) => s.ocrLanguages);
+  const preferredLang = useSettingsStore((s) => s.defaultOcrLanguage);
 
   const languageOptions = useMemo(() => {
     const langs = ocrLanguages && ocrLanguages.length > 0 ? ocrLanguages : ['spa', 'eng'];
@@ -28,9 +30,10 @@ export default function OCRPDFPage() {
   }, [ocrLanguages]);
 
   const defaultLang = useMemo(() => {
+    if (preferredLang && ocrLanguages.includes(preferredLang)) return preferredLang;
     if (ocrLanguages.includes('spa')) return 'spa';
     return ocrLanguages[0] || 'spa';
-  }, [ocrLanguages]);
+  }, [ocrLanguages, preferredLang]);
 
   return (
     <ToolPage

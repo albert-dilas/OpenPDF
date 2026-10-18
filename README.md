@@ -56,6 +56,7 @@ Para instalar y ejecutar **OpenPDF** en Windows sin compilar desde el código fu
 - **Experiencia de Escritorio Inmersiva**: Apertura en ventana de aplicación dedicada (`--app`), Modo Inmersivo a pantalla completa (`F11`), Paleta de Comandos instantánea (`Ctrl+K`), barra de estado de telemetría local y sistema iconográfico vectorial SVG unificado de alta densidad (icono HD de 256px *supersampled* desde 1024px).
 - **Ingesta en Streaming con Memoria Constante**: Validación de formato por *magic bytes* en cabecera y escritura en disco por bloques de `1 MiB`, con recolección y borrado garantizado de archivos temporales.
 - **Interfaz Técnica y Accesible**: Búsqueda en tiempo real, clasificación por categorías funcionales, soporte nativo para modo claro y modo oscuro con tipografías locales (*Geist Sans* y *Geist Mono*) 100% offline, barra de progreso por fases con cancelación activa (`AbortController`) y diagnóstico del motor local en vivo.
+- **Ajustes y Personalización Reactiva**: Panel de preferencias (`/settings`) para personalizar temas, modo inmersivo, cuadrícula compacta, opciones de procesamiento, comprobación de actualizaciones en tiempo real contra GitHub Releases (con diálogo interactivo Actualizar/Cancelar) y centro integrado de opiniones, propuestas de funciones y reporte de errores.
 
 ---
 
@@ -123,7 +124,8 @@ La versión `v2.2.0` incorpora un subsistema dedicado para diagnosticar, autodet
 | `/api/v1/system/configure-module` | `POST` | Valida y persiste manualmente la ruta a un ejecutable (`.exe` o carpeta de instalación) en la configuración local del usuario. |
 | `/api/v1/system/pick-module-binary` | `POST` | Abre el diálogo nativo de selección de archivos de Windows para elegir `tesseract.exe`, `WINWORD.EXE` o `soffice.exe` sin tocar variables de entorno. |
 | `/api/v1/system/install-module` | `POST` | Ejecuta la instalación desatendida en 1 clic mediante `winget` y descarga automáticamente el modelo de idioma Español (`spa.traineddata`) para Tesseract OCR. |
-| `/api/v1/system/updates` | `GET` | Consulta no bloqueante de nuevas versiones en GitHub Releases con *timeout* de `3s`, caché de `6h` y *fallback* silencioso offline. |
+| `/api/v1/system/updates` | `GET` | Consulta no bloqueante de nuevas versiones en GitHub Releases con *timeout* de `3s`, notas de versión, URL de descarga y *fallback* silencioso offline. |
+| `/api/v1/system/feedback` | `POST` | Registra retroalimentación local estructurada (propuestas de funciones, reportes de errores y opiniones) con validación estricta en Pydantic. |
 
 ---
 

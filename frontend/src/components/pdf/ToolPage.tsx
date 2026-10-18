@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useFileStore } from '@/store/useFileStore';
 import { useSystemStore } from '@/store/useSystemStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
 import Uploader from '@/components/pdf/Uploader';
 import SaveDialog from '@/components/pdf/SaveDialog';
 import { CapabilityWarningBanner } from '@/components/system/SystemStatus';
@@ -114,10 +115,15 @@ export default function ToolPage({
     }
 
     const baseName = files[0].name.replace(/\.[^.]+$/, '');
+    const pattern = useSettingsStore.getState().outputFilenamePattern || '{name}_procesado';
+    const formattedName = pattern.includes('{name}')
+      ? pattern.replace('{name}', baseName)
+      : `${baseName}_${pattern}`;
+
     await process({
       endpoint,
       formData,
-      fallbackFileName: `${baseName}_openpdf${outputExtension}`,
+      fallbackFileName: `${formattedName}${outputExtension}`,
     });
   };
 

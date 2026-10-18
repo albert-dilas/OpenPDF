@@ -11,6 +11,7 @@ import {
   ShieldCheck,
   Lock,
   Heart,
+  Settings,
 } from 'lucide-react';
 import { useSystemStore } from '@/store/useSystemStore';
 
@@ -40,6 +41,12 @@ export function DesktopFooter() {
           <div className="flex flex-wrap justify-center gap-6 text-sm font-medium text-gray-500 dark:text-slate-400">
             <Link href="/" className="hover:text-brand dark:hover:text-brand transition-colors">
               Herramientas
+            </Link>
+            <Link
+              href="/settings"
+              className="hover:text-brand dark:hover:text-brand transition-colors"
+            >
+              Ajustes y Novedades
             </Link>
             <Link
               href="/privacidad"
@@ -136,6 +143,17 @@ export default function DesktopStatusBar() {
           <Search className="w-3 h-3 text-brand" />
           <span>Ctrl+K Paleta rápida</span>
         </button>
+
+        <span className="hidden sm:inline text-gray-300 dark:text-slate-700">|</span>
+
+        <Link
+          href="/settings"
+          title="Ajustes y Novedades"
+          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded hover:bg-gray-100 dark:hover:bg-slate-800/80 hover:text-gray-900 dark:hover:text-white transition-colors"
+        >
+          <Settings className="w-3 h-3 text-brand" />
+          <span className="hidden md:inline">Ajustes</span>
+        </Link>
 
         <span className="hidden sm:inline text-gray-300 dark:text-slate-700">|</span>
 

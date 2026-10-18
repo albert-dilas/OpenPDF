@@ -351,7 +351,7 @@ class SystemService:
         return {"started": True, "module": mod, **SystemService.get_status()}
 
     @staticmethod
-    async def check_updates() -> Dict[str, Any]:
+    async def check_updates(force: bool = False) -> Dict[str, Any]:
         global _update_cache, _update_cache_timestamp
 
         fallback = {
@@ -367,7 +367,7 @@ class SystemService:
             return fallback
 
         now = time.time()
-        if _update_cache is not None and (now - _update_cache_timestamp) < UPDATE_CACHE_TTL_SECONDS:
+        if not force and _update_cache is not None and (now - _update_cache_timestamp) < UPDATE_CACHE_TTL_SECONDS:
             return dict(_update_cache)
 
         try:
@@ -393,6 +393,18 @@ class SystemService:
                 update_available = latest_ver > current_ver
 
                 html_url = str(data.get("html_url") or DEFAULT_RELEASES_URL)
+                body = str(data.get("body") or "").strip()
+                name = str(data.get("name") or "").strip()
+
+                download_url = None
+                assets = data.get("assets")
+                if isinstance(assets, list):
+                    for asset in assets:
+                        if isinstance(asset, dict):
+                            fname = str(asset.get("name") or "").lower()
+                            if fname.endswith(".exe"):
+                                download_url = asset.get("browser_download_url")
+                                break
 
                 result = {
                     "current": settings.VERSION,
@@ -401,11 +413,56 @@ class SystemService:
                     "online": True,
                     "url": html_url,
                 }
+                if body:
+                    result["notes"] = body
+                if download_url:
+                    result["download_url"] = download_url
+                if name:
+                    result["release_name"] = name
+
                 _update_cache = dict(result)
                 _update_cache_timestamp = time.time()
                 return result
         except (httpx.HTTPError, InvalidVersion, ValueError, KeyError, Exception):
             return fallback
+
+    @staticmethod
+    def save_feedback(payload: Dict[str, Any]) -> Dict[str, Any]:
+        feedback_dir = Path.home() / ".openpdf"
+        try:
+            feedback_dir.mkdir(parents=True, exist_ok=True)
+            feedback_file = feedback_dir / "feedback_log.json"
+
+            entries: List[Dict[str, Any]] = []
+            if feedback_file.is_file():
+                try:
+                    import json
+                    raw_content = feedback_file.read_text(encoding="utf-8")
+                    loaded = json.loads(raw_content)
+                    if isinstance(loaded, list):
+                        entries = loaded
+                except Exception:
+                    entries = []
+
+            entry = {
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                **payload,
+            }
+            entries.append(entry)
+
+            import json
+            feedback_file.write_text(
+                json.dumps(entries, indent=2, ensure_ascii=False),
+                encoding="utf-8",
+            )
+            return {
+                "status": "success",
+                "message": "Comentario registrado correctamente en el sistema local.",
+                "stored_locally": True,
+            }
+        except Exception as e:
+            from app.core.exceptions import PDFProcessingError
+            raise PDFProcessingError(f"No fue posible guardar el comentario localmente: {str(e)}")
 
 
 def get_system_service() -> SystemService:

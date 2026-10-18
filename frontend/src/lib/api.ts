@@ -46,7 +46,19 @@ export interface SystemUpdateResponse {
   update_available: boolean;
   online: boolean;
   url?: string | null;
+  notes?: string | null;
+  download_url?: string | null;
+  release_name?: string | null;
 }
+
+export interface FeedbackPayload {
+  category: 'feature' | 'bug' | 'opinion' | 'general';
+  title: string;
+  description: string;
+  email?: string;
+  system_info?: Record<string, unknown>;
+}
+
 
 export interface PdfPageInfo {
   index: number;

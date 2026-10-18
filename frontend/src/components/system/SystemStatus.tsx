@@ -15,17 +15,27 @@ import {
 import toast from 'react-hot-toast';
 import { useSystemStore } from '@/store/useSystemStore';
 
+import { initializeClientSettings } from '@/store/useSettingsStore';
+
 let pollerInitialized = false;
 
 export function SystemStatusPoller() {
   const checkStatus = useSystemStore((s) => s.checkStatus);
   const checkUpdatesOnce = useSystemStore((s) => s.checkUpdatesOnce);
+  const setImmersiveMode = useSystemStore((s) => s.setImmersiveMode);
 
   useEffect(() => {
+    const settings = initializeClientSettings();
+    if (settings.immersiveByDefault) {
+      setImmersiveMode(true);
+    }
+
     if (!pollerInitialized) {
       pollerInitialized = true;
       checkStatus();
-      checkUpdatesOnce();
+      if (settings.autoCheckUpdatesOnStart) {
+        checkUpdatesOnce();
+      }
     }
     const interval = setInterval(() => {
       checkStatus();
@@ -34,7 +44,7 @@ export function SystemStatusPoller() {
       clearInterval(interval);
       pollerInitialized = false;
     };
-  }, [checkStatus, checkUpdatesOnce]);
+  }, [checkStatus, checkUpdatesOnce, setImmersiveMode]);
 
   return null;
 }
