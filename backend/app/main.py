@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Optional
 import asyncio
 import os
+import shutil
 import socket
 import sys
 import python_multipart  # noqa: F401 - Requerido por PyInstaller para empaquetar python-multipart
@@ -206,11 +207,66 @@ def select_port(host: str = "127.0.0.1") -> int:
     raise RuntimeError("No se encontró ningún puerto libre en el rango 8000-8010.")
 
 
+def _find_chromium_app_browser() -> Optional[str]:
+    candidates = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+    ]
+    local_app_data = os.environ.get("LOCALAPPDATA")
+    if local_app_data:
+        candidates.append(os.path.join(local_app_data, "Microsoft", "Edge", "Application", "msedge.exe"))
+        candidates.append(os.path.join(local_app_data, "Google", "Chrome", "Application", "chrome.exe"))
+
+    for path in candidates:
+        if os.path.isfile(path):
+            return path
+
+    for bin_name in ("msedge", "chrome", "google-chrome", "chromium"):
+        found = shutil.which(bin_name)
+        if found and os.path.isfile(found):
+            return found
+
+    return None
+
+
+def launch_desktop_window(app_url: str, host: str, port: int) -> None:
+    """Espera a que el servidor local acepte conexiones y abre una ventana de escritorio dedicada (--app)."""
+    import shutil as _shutil  # noqa: F401
+    import subprocess
+    import time
+    import webbrowser
+
+    if os.environ.get("OPENPDF_NO_BROWSER", "").strip().lower() in ("1", "true", "yes"):
+        return
+
+    deadline = time.time() + 8.0
+    while time.time() < deadline:
+        try:
+            with socket.create_connection((host, port), timeout=0.25):
+                break
+        except OSError:
+            time.sleep(0.1)
+
+    browser_bin = _find_chromium_app_browser()
+    if browser_bin:
+        try:
+            subprocess.Popen(
+                [browser_bin, f"--app={app_url}", "--window-size=1400,900", "--new-window"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            return
+        except OSError:
+            pass
+
+    webbrowser.open(app_url)
+
+
 if __name__ == "__main__":
     import threading
-    import time
     import uvicorn
-    import webbrowser
 
     # PyInstaller windowless mode (console=False) sets sys.stdout and sys.stderr to None.
     # Uvicorn needs them to have an .isatty() method.
@@ -224,9 +280,9 @@ if __name__ == "__main__":
     app_url = f"http://{host}:{chosen_port}"
     logger.info("Iniciando OpenPDF v%s en %s", settings.VERSION, app_url)
 
-    def open_browser():
-        time.sleep(1.5)
-        webbrowser.open(app_url)
-
-    threading.Thread(target=open_browser, daemon=True).start()
+    threading.Thread(
+        target=launch_desktop_window,
+        args=(app_url, host, chosen_port),
+        daemon=True,
+    ).start()
     uvicorn.run(app, host=host, port=chosen_port, reload=False)

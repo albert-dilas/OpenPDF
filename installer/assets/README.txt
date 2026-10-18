@@ -1,5 +1,5 @@
 =========================================================================
-  OpenPDF v2.1.0 - Suite Local-First de Procesamiento Documental PDF
+  OpenPDF v2.2.0 - Suite Local-First de Procesamiento Documental PDF
   Plataforma de codigo abierto, privada y 100% local
 =========================================================================
 

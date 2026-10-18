@@ -1,17 +1,21 @@
 """
-Genera y prepara todos los recursos gráficos del instalador de OpenPDF v2.0:
-  - openpdf.ico (icono multi-resolución 16, 24, 32, 48, 64, 128, 256 px)
-  - openpdf_256.png (icono de alta resolución)
+Genera y prepara todos los recursos graficos del instalador y escritorio de OpenPDF v2.2.0:
+  - openpdf.ico (icono multi-resolucion verdadero 256, 128, 64, 48, 32, 24, 16 px)
+  - openpdf_256.png (icono de alta resolucion 256x256)
+  - frontend/src/app/favicon.ico y frontend/public/icon.png
   - wizard_banner.bmp (328x628 px - panel lateral de alta densidad para Inno Setup modern)
   - wizard_small.bmp (110x116 px - emblema superior derecho para Inno Setup modern)
 
 No requiere archivos externos fuera del repositorio.
 """
 import os
-from PIL import Image, ImageDraw, ImageFont
+import shutil
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 INSTALLER_DIR = os.path.join(PROJECT_ROOT, "installer")
+FRONTEND_APP_DIR = os.path.join(PROJECT_ROOT, "frontend", "src", "app")
+FRONTEND_PUBLIC_DIR = os.path.join(PROJECT_ROOT, "frontend", "public")
 os.makedirs(INSTALLER_DIR, exist_ok=True)
 
 
@@ -29,81 +33,175 @@ def _load_font(size: int, bold: bool = False):
     return ImageFont.load_default()
 
 
-def create_brand_emblem(size: int = 512) -> Image.Image:
-    """Genera un emblema vectorial limpio de alta resolución para el icono y el instalador."""
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
+def create_brand_emblem(size: int = 1024) -> Image.Image:
+    """Genera un emblema de escritorio de alta definicion (supersampled) para icono e instalador."""
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
 
-    pad = int(size * 0.06)
-    radius = int(size * 0.22)
+    pad = int(size * 0.055)
+    radius = int(size * 0.225)
+    box = [pad, pad, size - pad, size - pad]
 
-    # Sombra suave e insignia principal en rojo corporativo (#E5322D)
-    draw.rounded_rectangle(
-        [pad, pad, size - pad, size - pad],
+    # Sombra exterior suave del contenedor
+    shadow_layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    shadow_draw = ImageDraw.Draw(shadow_layer)
+    shadow_offset = max(2, int(size * 0.018))
+    shadow_draw.rounded_rectangle(
+        [pad, pad + shadow_offset, size - pad, size - pad + shadow_offset],
         radius=radius,
-        fill=(229, 50, 45, 255),
+        fill=(15, 23, 42, 95),
     )
+    blur_radius = max(1, int(size * 0.02))
+    shadow_layer = shadow_layer.filter(ImageFilter.GaussianBlur(blur_radius))
+    canvas = Image.alpha_composite(canvas, shadow_layer)
 
-    # Borde interior sutil
-    inner_pad = pad + max(2, int(size * 0.02))
-    draw.rounded_rectangle(
+    # Mascara redondeada y degradado vertical rojo corporativo (#EF4444 -> #B91C1C)
+    mask = Image.new("L", (size, size), 0)
+    mask_draw = ImageDraw.Draw(mask)
+    mask_draw.rounded_rectangle(box, radius=radius, fill=255)
+
+    grad = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    grad_draw = ImageDraw.Draw(grad)
+    top_color = (239, 68, 68)    # #EF4444
+    bot_color = (185, 28, 28)    # #B91C1C
+    span = max(1, (size - 2 * pad))
+    for y in range(pad, size - pad + 1):
+        t = (y - pad) / float(span)
+        r = int(top_color[0] * (1 - t) + bot_color[0] * t)
+        g = int(top_color[1] * (1 - t) + bot_color[1] * t)
+        b = int(top_color[2] * (1 - t) + bot_color[2] * t)
+        grad_draw.line([(pad, y), (size - pad, y)], fill=(r, g, b, 255))
+
+    bg_layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    bg_layer.paste(grad, (0, 0), mask)
+    canvas = Image.alpha_composite(canvas, bg_layer)
+
+    # Bisel / borde interior luminoso compuesto con alpha_composite
+    border_layer = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    border_draw = ImageDraw.Draw(border_layer)
+    inner_pad = pad + max(2, int(size * 0.016))
+    border_draw.rounded_rectangle(
         [inner_pad, inner_pad, size - inner_pad, size - inner_pad],
-        radius=max(4, radius - 4),
-        outline=(255, 255, 255, 55),
-        width=max(2, int(size * 0.012)),
+        radius=max(4, radius - int(size * 0.016)),
+        outline=(255, 255, 255, 65),
+        width=max(2, int(size * 0.01)),
     )
+    canvas = Image.alpha_composite(canvas, border_layer)
 
-    # Hoja de documento estilizada en blanco
-    doc_w = int(size * 0.46)
-    doc_h = int(size * 0.56)
+    draw = ImageDraw.Draw(canvas)
+
+    # Hoja de documento central con esquina superior derecha doblada (pliego)
+    doc_w = int(size * 0.48)
+    doc_h = int(size * 0.60)
     doc_x1 = (size - doc_w) // 2
-    doc_y1 = int(size * 0.22)
+    doc_y1 = int(size * 0.19)
     doc_x2 = doc_x1 + doc_w
     doc_y2 = doc_y1 + doc_h
+    fold = int(doc_w * 0.25)
+    doc_radius = int(size * 0.045)
 
-    draw.rounded_rectangle(
-        [doc_x1, doc_y1, doc_x2, doc_y2],
-        radius=int(size * 0.045),
-        fill=(255, 255, 255, 255),
+    # Sombra proyectada por la hoja sobre el fondo rojo
+    doc_shadow = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    ds_draw = ImageDraw.Draw(doc_shadow)
+    ds_off = max(2, int(size * 0.015))
+    ds_draw.rounded_rectangle(
+        [doc_x1, doc_y1 + ds_off, doc_x2, doc_y2 + ds_off],
+        radius=doc_radius,
+        fill=(69, 10, 10, 115),
     )
+    doc_shadow = doc_shadow.filter(ImageFilter.GaussianBlur(max(1, int(size * 0.016))))
+    canvas = Image.alpha_composite(canvas, doc_shadow)
 
-    # Banda "PDF" sobre el documento
-    band_h = int(size * 0.16)
-    band_y1 = doc_y1 + int(doc_h * 0.34)
+    # Cuerpo blanco de la hoja recortando la esquina doblada
+    doc_mask_base = Image.new("L", (size, size), 0)
+    dmb_draw = ImageDraw.Draw(doc_mask_base)
+    dmb_draw.rounded_rectangle([doc_x1, doc_y1, doc_x2, doc_y2], radius=doc_radius, fill=255)
+
+    cut_poly = Image.new("L", (size, size), 255)
+    cp_draw = ImageDraw.Draw(cut_poly)
+    cp_draw.polygon(
+        [(doc_x2 - fold, doc_y1 - 2), (doc_x2 + 2, doc_y1 - 2), (doc_x2 + 2, doc_y1 + fold)],
+        fill=0,
+    )
+    doc_mask = ImageChops.darker(doc_mask_base, cut_poly)
+
+    doc_layer = Image.new("RGBA", (size, size), (255, 255, 255, 255))
+    canvas.paste(doc_layer, (0, 0), doc_mask)
+    draw = ImageDraw.Draw(canvas)
+
+    # Solapa doblada (esquina superior derecha) con sombreado sutil
+    flap_pts = [
+        (doc_x2 - fold, doc_y1),
+        (doc_x2, doc_y1 + fold),
+        (doc_x2 - fold, doc_y1 + fold),
+    ]
+    draw.polygon(flap_pts, fill=(226, 232, 240, 255))
+
+    # Lineas de contenido simuladas en la parte superior de la hoja
+    line_margin = int(doc_w * 0.16)
+    line_h = max(3, int(size * 0.022))
+    for idx, rel_y in enumerate([0.16, 0.25]):
+        ly = doc_y1 + int(doc_h * rel_y)
+        max_x = (doc_x2 - fold - int(doc_w * 0.08)) if idx == 0 else (doc_x2 - line_margin)
+        draw.rounded_rectangle(
+            [doc_x1 + line_margin, ly, max_x, ly + line_h],
+            radius=max(2, line_h // 2),
+            fill=(203, 213, 225, 255),
+        )
+
+    # Lineas inferiores bajo la banda PDF
+    for idx, rel_y in enumerate([0.75, 0.85]):
+        ly = doc_y1 + int(doc_h * rel_y)
+        max_x = (doc_x2 - line_margin) if idx == 0 else (doc_x2 - int(doc_w * 0.34))
+        draw.rounded_rectangle(
+            [doc_x1 + line_margin, ly, max_x, ly + line_h],
+            radius=max(2, line_h // 2),
+            fill=(203, 213, 225, 255),
+        )
+
+    # Banda transversal oscura (#0F172A) con texto "PDF" de alto contraste
+    band_h = int(size * 0.175)
+    band_y1 = doc_y1 + int(doc_h * 0.38)
+    band_pad_x = int(size * 0.048)
+    band_box = [doc_x1 - band_pad_x, band_y1, doc_x2 + band_pad_x, band_y1 + band_h]
+
+    # Sombra de la banda
+    band_shadow = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    bs_draw = ImageDraw.Draw(band_shadow)
+    bs_off = max(2, int(size * 0.01))
+    bs_draw.rounded_rectangle(
+        [band_box[0], band_box[1] + bs_off, band_box[2], band_box[3] + bs_off],
+        radius=int(size * 0.036),
+        fill=(15, 23, 42, 110),
+    )
+    band_shadow = band_shadow.filter(ImageFilter.GaussianBlur(max(1, int(size * 0.01))))
+    canvas = Image.alpha_composite(canvas, band_shadow)
+    draw = ImageDraw.Draw(canvas)
+
     draw.rounded_rectangle(
-        [doc_x1 - int(size * 0.04), band_y1, doc_x2 + int(size * 0.04), band_y1 + band_h],
-        radius=int(size * 0.03),
+        band_box,
+        radius=int(size * 0.036),
         fill=(15, 23, 42, 255),
+        outline=(51, 65, 85, 255),
+        width=max(1, int(size * 0.006)),
     )
 
-    font = _load_font(int(size * 0.115), bold=True)
+    font = _load_font(int(size * 0.125), bold=True)
     text = "PDF"
     bbox = draw.textbbox((0, 0), text, font=font)
     tw = bbox[2] - bbox[0]
     th = bbox[3] - bbox[1]
     draw.text(
-        ((size - tw) / 2, band_y1 + (band_h - th) / 2 - bbox[1]),
+        ((size - tw) / 2 - bbox[0], band_y1 + (band_h - th) / 2 - bbox[1]),
         text,
         fill=(255, 255, 255, 255),
         font=font,
     )
 
-    # Líneas decorativas en la hoja
-    line_margin = int(doc_w * 0.2)
-    for idx, rel_y in enumerate([0.16, 0.24, 0.72, 0.82]):
-        ly = doc_y1 + int(doc_h * rel_y)
-        lx2 = doc_x2 - line_margin if idx != 3 else doc_x2 - int(doc_w * 0.38)
-        draw.rounded_rectangle(
-            [doc_x1 + line_margin, ly, lx2, ly + max(3, int(size * 0.022))],
-            radius=2,
-            fill=(203, 213, 225, 255),
-        )
-
-    return img
+    return canvas
 
 
 def generate_wizard_banner(dst_path: str) -> None:
-    """Genera el panel lateral del instalador (328x628 px, 24-bit BMP) con estética corporativa."""
+    """Genera el panel lateral del instalador (328x628 px, 24-bit BMP) con estetica corporativa."""
     w, h = 328, 628
     img = Image.new("RGB", (w, h), (15, 23, 42))
     draw = ImageDraw.Draw(img)
@@ -116,7 +214,7 @@ def generate_wizard_banner(dst_path: str) -> None:
         b = int(42 * (1 - ratio) + 28 * ratio)
         draw.line([(0, y), (w, y)], fill=(r, g, b))
 
-    # Retícula geométrica sutil
+    # Reticula geometrica sutil
     grid_step = 32
     for gx in range(0, w, grid_step):
         draw.line([(gx, 0), (gx, h)], fill=(30, 41, 59), width=1)
@@ -126,11 +224,11 @@ def generate_wizard_banner(dst_path: str) -> None:
     # Barra superior de acento corporativo (#E5322D)
     draw.rectangle([0, 0, w, 8], fill=(229, 50, 45))
 
-    # Emblema central superior
-    emblem = create_brand_emblem(136)
+    # Emblema central superior renderizado desde alta resolucion
+    emblem = create_brand_emblem(512).resize((136, 136), Image.Resampling.LANCZOS)
     img.paste(emblem, (34, 48), emblem)
 
-    # Título y versión
+    # Titulo y version
     font_title = _load_font(30, bold=True)
     font_ver = _load_font(14, bold=True)
     font_sub = _load_font(14, bold=False)
@@ -138,14 +236,14 @@ def generate_wizard_banner(dst_path: str) -> None:
 
     draw.text((40, 206), "OpenPDF", fill=(255, 255, 255), font=font_title)
     draw.rounded_rectangle([188, 213, 258, 237], radius=6, fill=(229, 50, 45))
-    draw.text((200, 216), "v2.1.0", fill=(255, 255, 255), font=font_ver)
+    draw.text((200, 216), "v2.2.0", fill=(255, 255, 255), font=font_ver)
 
     draw.text((40, 250), "Suite Documental Local-First", fill=(148, 163, 184), font=font_sub)
 
-    # Línea divisoria
+    # Linea divisoria
     draw.line([(40, 290), (w - 40, 290)], fill=(51, 65, 85), width=1)
 
-    # Píldoras de especificaciones técnicas
+    # Pildoras de especificaciones tecnicas
     specs = [
         ("EJECUCION 100% LOCAL", "Sin envio de archivos a la nube"),
         ("21 MODULOS INTEGRADOS", "Firmar, censurar, traducir, QR y mas"),
@@ -180,7 +278,7 @@ def generate_wizard_small(dst_path: str) -> None:
     """Genera el emblema superior derecho del wizard (110x116 px, 24-bit BMP)."""
     w, h = 110, 116
     img = Image.new("RGB", (w, h), (255, 255, 255))
-    emblem = create_brand_emblem(88)
+    emblem = create_brand_emblem(512).resize((88, 88), Image.Resampling.LANCZOS)
     img.paste(emblem, ((w - 88) // 2, (h - 88) // 2), emblem)
     img.save(dst_path, format="BMP")
 
@@ -191,16 +289,28 @@ def main() -> None:
     banner_path = os.path.join(INSTALLER_DIR, "wizard_banner.bmp")
     small_path = os.path.join(INSTALLER_DIR, "wizard_small.bmp")
 
-    if os.path.exists(png_256_path):
-        base_icon = Image.open(png_256_path).convert("RGBA")
-    else:
-        base_icon = create_brand_emblem(256)
-        base_icon.save(png_256_path, format="PNG")
+    # Siempre regenerar desde master supersampled 1024x1024
+    master_icon = create_brand_emblem(1024)
+    icon_256 = master_icon.resize((256, 256), Image.Resampling.LANCZOS)
+    icon_256.save(png_256_path, format="PNG")
 
-    sizes = [(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)]
-    frames = [base_icon.resize(s, Image.Resampling.LANCZOS) for s in sizes]
-    frames[0].save(ico_path, format="ICO", sizes=sizes, append_images=frames[1:])
-    print(f"[OK] Icono multi-resolucion actualizado: {ico_path}")
+    ico_sizes = [(256, 256), (128, 128), (64, 64), (48, 48), (32, 32), (24, 24), (16, 16)]
+    icon_256.save(ico_path, format="ICO", sizes=ico_sizes)
+    ico_bytes = os.path.getsize(ico_path)
+    if ico_bytes < 15000:
+        raise RuntimeError(f"El archivo ICO generado es demasiado pequeno ({ico_bytes} bytes)")
+    print(f"[OK] Icono multi-resolucion HD generado ({ico_bytes} bytes): {ico_path}")
+
+    # Sincronizar favicon e icono del frontend
+    if os.path.isdir(FRONTEND_APP_DIR):
+        favicon_dst = os.path.join(FRONTEND_APP_DIR, "favicon.ico")
+        shutil.copy2(ico_path, favicon_dst)
+        print(f"[OK] Favicon sincronizado: {favicon_dst}")
+
+    if os.path.isdir(FRONTEND_PUBLIC_DIR):
+        public_icon_dst = os.path.join(FRONTEND_PUBLIC_DIR, "icon.png")
+        icon_256.save(public_icon_dst, format="PNG")
+        print(f"[OK] Icono publico sincronizado: {public_icon_dst}")
 
     generate_wizard_banner(banner_path)
     print(f"[OK] Banner lateral del instalador generado (328x628): {banner_path}")

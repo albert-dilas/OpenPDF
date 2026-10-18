@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useFileStore } from '@/store/useFileStore';
+import { useSystemStore } from '@/store/useSystemStore';
 import Uploader from '@/components/pdf/Uploader';
 import SaveDialog from '@/components/pdf/SaveDialog';
 import { CapabilityWarningBanner } from '@/components/system/SystemStatus';
@@ -62,6 +63,7 @@ export default function ToolPage({
   capabilityRequired,
 }: ToolPageProps) {
   const { files, addFiles, removeFile, clearFiles } = useFileStore();
+  const immersiveMode = useSystemStore((s) => s.immersiveMode);
   const {
     status,
     isProcessing,
@@ -121,9 +123,15 @@ export default function ToolPage({
 
   if (files.length === 0) {
     return (
-      <div className="flex-grow py-10 sm:py-14 px-4">
+      <div
+        className={`flex-grow px-4 transition-all ${
+          immersiveMode
+            ? 'py-6 sm:py-8 bg-gradient-to-b from-slate-100/70 to-slate-50 dark:from-[#0b111e] dark:to-[#070a12]'
+            : 'py-10 sm:py-14'
+        }`}
+      >
         <div className="max-w-4xl mx-auto text-center">
-          <div className="mb-6 flex justify-center">
+          <div className="mb-5 flex justify-center">
             <Link
               href="/"
               className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-gray-500 dark:text-slate-400 hover:text-brand dark:hover:text-brand transition-colors"
@@ -158,9 +166,15 @@ export default function ToolPage({
         />
       )}
 
-      <div className="flex-grow flex flex-col lg:flex-row">
+      <div
+        className={`flex-grow flex flex-col lg:flex-row ${
+          immersiveMode
+            ? 'bg-gradient-to-br from-slate-100/70 via-slate-50 to-slate-100/50 dark:from-[#0b111e] dark:via-[#090d16] dark:to-[#060911]'
+            : ''
+        }`}
+      >
         {/* Main Workspace */}
-        <div className="flex-1 p-4 sm:p-8 overflow-y-auto">
+        <div className={`flex-1 overflow-y-auto ${immersiveMode ? 'p-4 sm:p-6' : 'p-4 sm:p-8'}`}>
           <div className="max-w-5xl mx-auto">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
               <div>

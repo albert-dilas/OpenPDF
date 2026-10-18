@@ -6,18 +6,18 @@ import pytesseract
 from PIL import Image  # noqa: F401 - needed by pytesseract
 from fastapi.concurrency import run_in_threadpool
 from app.core.exceptions import BusinessRuleError, PDFProcessingError
-from app.utils.binaries import find_tesseract, get_ocr_languages
+from app.utils.binaries import find_tesseract, get_effective_tessdata_dir, get_ocr_languages
 
 LANGUAGE_REGEX = re.compile(r"^[a-z_]{3,}(\+[a-z_]{3,})*$")
 
 
 def validate_ocr_language(language: str) -> str:
-    """Valida el formato del código de idioma OCR y verifica disponibilidad si es posible."""
+    """Valida el formato del codigo de idioma OCR y verifica disponibilidad si es posible."""
     lang = (language or "").strip()
     if not LANGUAGE_REGEX.match(lang):
         raise BusinessRuleError(
-            f"Código de idioma OCR inválido: '{language}'. "
-            "Usa códigos de 3+ letras minúsculas como 'spa', 'eng' o 'spa+eng'."
+            f"Codigo de idioma OCR invalido: '{language}'. "
+            "Usa codigos de 3+ letras minusculas como 'spa', 'eng' o 'spa+eng'."
         )
 
     installed = get_ocr_languages()
@@ -40,11 +40,13 @@ class OcrService:
         tess_path = find_tesseract()
         if not tess_path:
             raise PDFProcessingError(
-                "Tesseract no encontrado. Por favor, instala Tesseract-OCR en el sistema "
-                "o colócalo en backend/bin/Tesseract-OCR."
+                "Tesseract no encontrado. Por favor, instala Tesseract-OCR o vincula su ruta "
+                "desde el Gestor de Modulos de OpenPDF."
             )
 
         pytesseract.pytesseract.tesseract_cmd = tess_path
+        tessdata_dir = get_effective_tessdata_dir(tess_path)
+        tess_config = f'--tessdata-dir "{tessdata_dir}"' if tessdata_dir else ""
 
         try:
             doc = fitz.open(input_path)
@@ -73,7 +75,10 @@ class OcrService:
                     pix.save(img_path)
 
                     pdf_bytes = pytesseract.image_to_pdf_or_hocr(
-                        img_path, extension="pdf", lang=validated_lang
+                        img_path,
+                        extension="pdf",
+                        lang=validated_lang,
+                        config=tess_config,
                     )
 
                     temp_pdf_path = os.path.join(temp_dir, f"{uuid.uuid4().hex}.pdf")

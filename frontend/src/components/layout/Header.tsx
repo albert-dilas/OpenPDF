@@ -10,6 +10,10 @@ import {
   X,
   ChevronDown,
   ShieldCheck,
+  Search,
+  Blocks,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 import { tools, TOOL_CATEGORIES, ToolCategory } from '@/config/tools';
 import ToolIcon from '@/components/pdf/ToolIcon';
@@ -18,6 +22,56 @@ import {
   SystemStatusPoller,
   UpdateBanner,
 } from '@/components/system/SystemStatus';
+import { useSystemStore } from '@/store/useSystemStore';
+
+function OpenPdfEmblem() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 40 40"
+      className="w-9 h-9 shrink-0 shadow-sm rounded-xl group-hover:scale-105 transition-transform"
+      aria-hidden="true"
+    >
+      <defs>
+        <linearGradient id="openpdf-bg" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#ef4444" />
+          <stop offset="100%" stopColor="#b91c1c" />
+        </linearGradient>
+      </defs>
+      <rect width="40" height="40" rx="10" fill="url(#openpdf-bg)" />
+      <rect
+        x="1"
+        y="1"
+        width="38"
+        height="38"
+        rx="9"
+        fill="none"
+        stroke="rgba(255,255,255,0.22)"
+        strokeWidth="1"
+      />
+      {/* White folded page */}
+      <path
+        d="M11 7.5h11.5L29 14v18.5a2 2 0 0 1-2 2H11a2 2 0 0 1-2-2v-23a2 2 0 0 1 2-2z"
+        fill="#ffffff"
+      />
+      <path d="M22.5 7.5V14H29z" fill="#fecaca" />
+      {/* Dark PDF ribbon */}
+      <rect x="7.5" y="21" width="25" height="9.5" rx="2.5" fill="#0f172a" />
+      <text
+        x="20"
+        y="27.6"
+        textAnchor="middle"
+        fill="#ffffff"
+        fontSize="6.8"
+        fontWeight="900"
+        fontFamily="system-ui, sans-serif"
+        letterSpacing="0.6"
+      >
+        PDF
+      </text>
+    </svg>
+  );
+}
 
 function GithubIcon({ size = 20 }: { size?: number }) {
   return (
@@ -45,8 +99,26 @@ export default function Header() {
   const [activeCategory, setActiveCategory] = useState<ToolCategory | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
+  const {
+    capabilities,
+    hasCheckedOnce,
+    online,
+    immersiveMode,
+    toggleImmersiveMode,
+    setModulesModalOpen,
+    setCommandPaletteOpen,
+  } = useSystemStore();
+
+  const allModulesReady =
+    !hasCheckedOnce || !online || (capabilities.ocr && capabilities.word_to_pdf);
+
   useEffect(() => {
-    setIsDark(document.documentElement.classList.contains('dark'));
+    const syncTheme = () => {
+      setIsDark(document.documentElement.classList.contains('dark'));
+    };
+    syncTheme();
+    window.addEventListener('openpdf-theme-change', syncTheme);
+    return () => window.removeEventListener('openpdf-theme-change', syncTheme);
   }, []);
 
   useEffect(() => {
@@ -86,16 +158,14 @@ export default function Header() {
 
       <nav
         aria-label="Navegación principal"
-        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3"
       >
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-5">
           <Link
             href="/"
             className="flex items-center gap-2.5 group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand rounded-lg"
           >
-            <div className="w-9 h-9 rounded-xl bg-brand text-white flex items-center justify-center font-black text-lg shadow-sm group-hover:scale-105 transition-transform">
-              PDF
-            </div>
+            <OpenPdfEmblem />
             <div className="flex items-center gap-2">
               <span className="text-2xl font-black tracking-tight text-gray-900 dark:text-white">
                 Open<span className="text-brand">PDF</span>
@@ -108,7 +178,7 @@ export default function Header() {
           </Link>
 
           {/* Desktop Category Navigation */}
-          <div className="hidden lg:flex items-center gap-1" ref={navRef}>
+          <div className="hidden xl:flex items-center gap-1" ref={navRef}>
             {NAV_CATEGORIES.map((cat) => {
               const catTools = tools.filter((t) => t.category === cat.id);
               const isOpen = activeCategory === cat.id;
@@ -184,8 +254,65 @@ export default function Header() {
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Quick Command Palette Trigger */}
+          <button
+            type="button"
+            onClick={() => setCommandPaletteOpen(true)}
+            aria-label="Abrir buscador rápido de herramientas (Ctrl+K)"
+            title="Buscar herramienta o comando (Ctrl+K)"
+            className="inline-flex items-center gap-2 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-medium text-gray-500 dark:text-slate-400 bg-gray-100/80 dark:bg-slate-800/80 hover:bg-gray-200/70 dark:hover:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          >
+            <Search className="w-3.5 h-3.5 text-brand" />
+            <span className="hidden md:inline">Buscar...</span>
+            <kbd className="hidden md:inline-block px-1.5 py-0.5 text-[10px] font-mono font-bold bg-white dark:bg-slate-900 text-gray-500 dark:text-slate-400 rounded border border-gray-200 dark:border-slate-700">
+              Ctrl+K
+            </kbd>
+          </button>
+
+          {/* Modules Center Button */}
+          <button
+            type="button"
+            onClick={() => setModulesModalOpen(true)}
+            aria-label="Abrir Centro de Módulos Opcionales"
+            title="Configurar o instalar módulos locales (OCR y Word a PDF)"
+            className="relative inline-flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 border border-gray-200/80 dark:border-slate-700/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+          >
+            <Blocks className="w-3.5 h-3.5 text-brand" />
+            <span className="hidden sm:inline">Módulos</span>
+            <span
+              className={`h-2 w-2 rounded-full ${
+                allModulesReady ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
+              }`}
+            />
+          </button>
+
           <SystemStatusBadge />
+
+          {/* Immersive Mode Toggle */}
+          <button
+            type="button"
+            onClick={toggleImmersiveMode}
+            aria-label={
+              immersiveMode ? 'Salir de modo inmersivo' : 'Activar modo inmersivo'
+            }
+            title={
+              immersiveMode
+                ? 'Salir de modo inmersivo (Pantalla completa)'
+                : 'Modo inmersivo de escritorio (Pantalla completa)'
+            }
+            className={`hidden sm:inline-flex p-2 rounded-xl border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+              immersiveMode
+                ? 'bg-brand text-white border-brand'
+                : 'text-gray-600 dark:text-slate-300 hover:bg-gray-100 dark:hover:bg-slate-800 border-gray-200/80 dark:border-slate-700/80'
+            }`}
+          >
+            {immersiveMode ? (
+              <Minimize2 className="w-4 h-4" />
+            ) : (
+              <Maximize2 className="w-4 h-4" />
+            )}
+          </button>
 
           <button
             type="button"
@@ -213,7 +340,7 @@ export default function Header() {
             onClick={() => setMobileMenuOpen((v) => !v)}
             aria-label={mobileMenuOpen ? 'Cerrar menú de herramientas' : 'Abrir menú de herramientas'}
             aria-expanded={mobileMenuOpen}
-            className="lg:hidden p-2 rounded-xl text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 border border-gray-200 dark:border-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
+            className="xl:hidden p-2 rounded-xl text-gray-700 dark:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 border border-gray-200 dark:border-slate-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -222,7 +349,7 @@ export default function Header() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 max-h-[80vh] overflow-y-auto px-4 py-5 space-y-6 shadow-2xl animate-fade-in">
+        <div className="xl:hidden border-t border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900 max-h-[80vh] overflow-y-auto px-4 py-5 space-y-6 shadow-2xl animate-fade-in">
           {NAV_CATEGORIES.map((cat) => {
             const catTools = tools.filter((t) => t.category === cat.id);
             return (

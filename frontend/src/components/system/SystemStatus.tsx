@@ -9,7 +9,10 @@ import {
   X,
   ExternalLink,
   Cpu,
+  Blocks,
+  Search,
 } from 'lucide-react';
+import toast from 'react-hot-toast';
 import { useSystemStore } from '@/store/useSystemStore';
 
 let pollerInitialized = false;
@@ -45,6 +48,7 @@ export function SystemStatusBadge() {
     capabilities,
     maxFileSizeMb,
     checkStatus,
+    setModulesModalOpen,
   } = useSystemStore();
   const [open, setOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
@@ -153,26 +157,40 @@ export function SystemStatusBadge() {
                   <span className="text-gray-700 dark:text-slate-300">OCR (Tesseract)</span>
                   {capabilities.ocr ? (
                     <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Disponible
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Conectado
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                      <AlertTriangle className="w-3.5 h-3.5" /> No instalado
+                      <AlertTriangle className="w-3.5 h-3.5" /> Pendiente
                     </span>
                   )}
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-gray-700 dark:text-slate-300">Word a PDF (LibreOffice)</span>
+                  <span className="text-gray-700 dark:text-slate-300">Word a PDF</span>
                   {capabilities.word_to_pdf ? (
                     <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Disponible
+                      <CheckCircle2 className="w-3.5 h-3.5" /> Conectado
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                      <AlertTriangle className="w-3.5 h-3.5" /> No instalado
+                      <AlertTriangle className="w-3.5 h-3.5" /> Pendiente
                     </span>
                   )}
                 </div>
+              </div>
+
+              <div className="pt-2.5 border-t border-gray-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    setModulesModalOpen(true);
+                  }}
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-brand/10 hover:bg-brand/15 text-brand dark:bg-brand/20 dark:text-red-300 font-bold text-xs transition-colors"
+                >
+                  <Blocks className="w-3.5 h-3.5" />
+                  <span>Gestionar e instalar módulos opcionales</span>
+                </button>
               </div>
             </div>
           )}
@@ -230,31 +248,71 @@ export function CapabilityWarningBanner({
 }: {
   capability?: 'ocr' | 'word_to_pdf';
 }) {
-  const { hasCheckedOnce, online, capabilities } = useSystemStore();
+  const {
+    hasCheckedOnce,
+    online,
+    capabilities,
+    checking,
+    setModulesModalOpen,
+    detectModules,
+  } = useSystemStore();
 
   if (!capability || !hasCheckedOnce || !online) return null;
   if (capabilities[capability]) return null;
 
   const isOcr = capability === 'ocr';
 
+  const handleQuickDetect = async () => {
+    const res = await detectModules();
+    if (res?.capabilities?.[capability]) {
+      toast.success('Módulo detectado y conectado automáticamente.');
+    } else {
+      toast('No se detectó en las rutas estándar. Puedes instalarlo en 1 clic.', {
+        duration: 3500,
+      });
+    }
+  };
+
   return (
     <div
       role="alert"
       className="max-w-3xl mx-auto mb-6 rounded-2xl border border-amber-200 dark:border-amber-800/70 bg-amber-50/90 dark:bg-amber-950/40 px-5 py-4 text-left shadow-sm"
     >
-      <div className="flex items-start gap-3">
-        <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-        <div className="text-xs sm:text-sm text-amber-900 dark:text-amber-200 space-y-1">
-          <p className="font-semibold">
-            {isOcr
-              ? 'Requiere Tesseract OCR instalado localmente'
-              : 'Requiere LibreOffice instalado localmente'}
-          </p>
-          <p className="text-amber-700 dark:text-amber-300/90 leading-relaxed">
-            {isOcr
-              ? 'El motor local no detectó Tesseract OCR en tu sistema. Instálalo en tu equipo (añadiéndolo al PATH o en C:\\Program Files\\Tesseract-OCR) para procesar documentos escaneados.'
-              : 'El motor local no detectó LibreOffice ni Microsoft Word en tu equipo. Instala LibreOffice localmente para habilitar la conversión de documentos Word a PDF.'}
-          </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm text-amber-900 dark:text-amber-200 space-y-1">
+            <p className="font-bold">
+              {isOcr
+                ? 'Módulo Tesseract OCR pendiente de conectar'
+                : 'Módulo Word / LibreOffice pendiente de conectar'}
+            </p>
+            <p className="text-amber-700 dark:text-amber-300/90 leading-relaxed">
+              {isOcr
+                ? 'Puedes instalarlo automáticamente en 1 clic o vincularlo desde aquí sin abrir consolas ni configurar variables de entorno.'
+                : 'Puedes instalar LibreOffice automáticamente en 1 clic o autodetectar Microsoft Word / LibreOffice sin salir de esta ventana.'}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 shrink-0 sm:pl-2">
+          <button
+            type="button"
+            onClick={() => setModulesModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-bold shadow-sm transition-colors"
+          >
+            <Blocks className="w-3.5 h-3.5" />
+            <span>Instalar o conectar en 1 clic</span>
+          </button>
+          <button
+            type="button"
+            disabled={checking}
+            onClick={handleQuickDetect}
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-300 dark:border-amber-700 bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-900 text-amber-900 dark:text-amber-200 text-xs font-semibold transition-colors disabled:opacity-50"
+          >
+            <Search className="w-3.5 h-3.5" />
+            <span>Autodetectar ahora</span>
+          </button>
         </div>
       </div>
     </div>

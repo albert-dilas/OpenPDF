@@ -12,6 +12,23 @@ export const apiClient = axios.create({
   baseURL: API_BASE_URL,
 });
 
+export interface ModuleStatusInfo {
+  available: boolean;
+  engine: string | null;
+  binary_path: string | null;
+  source: string;
+  languages?: string[];
+  has_spanish?: boolean;
+  install_status: 'idle' | 'installing' | 'completed' | 'failed';
+  install_message?: string | null;
+}
+
+export interface SystemModulesInfo {
+  ocr: ModuleStatusInfo;
+  word_to_pdf: ModuleStatusInfo;
+  winget_available: boolean;
+}
+
 export interface SystemStatusResponse {
   version: string;
   capabilities: {
@@ -20,6 +37,7 @@ export interface SystemStatusResponse {
   };
   ocr_languages: string[];
   max_file_size_mb: number;
+  modules?: SystemModulesInfo;
 }
 
 export interface SystemUpdateResponse {

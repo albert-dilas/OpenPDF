@@ -1,11 +1,11 @@
 ; =============================================================================
-;  OpenPDF v2.1.0 - Script de Inno Setup 6
+;  OpenPDF v2.2.0 - Script de Inno Setup 6
 ;  Instalador corporativo con interfaz moderna, licencia, cierre automatico de
-;  instancias previas, accesos directos y desinstalador limpio.
+;  instancias previas, accesos directos HD y desinstalador limpio.
 ; =============================================================================
 
 #define AppName        "OpenPDF"
-#define AppVersion     "2.1.0"
+#define AppVersion     "2.2.0"
 #define AppPublisher   "OpenPDF Project"
 #define AppURL         "https://github.com/albert-dilas/OpenPDF"
 #define AppWebURL      "https://albert-dilas.github.io/OpenPDF"
@@ -35,7 +35,7 @@ PrivilegesRequiredOverridesAllowed=dialog
 OutputDir=..\dist
 OutputBaseFilename=OpenPDF_Setup_v{#AppVersion}
 SetupIconFile=openpdf.ico
-UninstallDisplayIcon={app}\{#AppExeName}
+UninstallDisplayIcon={app}\openpdf.ico
 UninstallDisplayName={#AppName} v{#AppVersion}
 
 LicenseFile=assets\LICENSE.txt
@@ -84,14 +84,15 @@ Name: "autostart";     Description: "Iniciar OpenPDF automaticamente al iniciar 
 ; =============================================================================
 [Files]
 Source: "..\dist\OpenPDF.exe";      DestDir: "{app}"; Flags: ignoreversion
+Source: "openpdf.ico";              DestDir: "{app}"; Flags: ignoreversion
 Source: "assets\LICENSE.txt";       DestDir: "{app}"; Flags: ignoreversion
 Source: "assets\README.txt";        DestDir: "{app}"; Flags: ignoreversion
 
 ; =============================================================================
 [Icons]
-Name: "{group}\{#AppName}";               Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\{#AppExeName}"; Comment: "{#AppDescription}"; Tasks: startmenuicon
+Name: "{group}\{#AppName}";               Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\openpdf.ico"; Comment: "{#AppDescription}"; Tasks: startmenuicon
 Name: "{group}\Desinstalar {#AppName}";   Filename: "{uninstallexe}"; Comment: "Desinstalar {#AppName}"; Tasks: startmenuicon
-Name: "{userdesktop}\{#AppName}";         Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\{#AppExeName}"; Comment: "{#AppDescription}"; Tasks: desktopicon
+Name: "{userdesktop}\{#AppName}";         Filename: "{app}\{#AppExeName}"; IconFilename: "{app}\openpdf.ico"; Comment: "{#AppDescription}"; Tasks: desktopicon
 
 ; =============================================================================
 [Registry]
@@ -111,6 +112,9 @@ Type: filesandordirs; Name: "{localappdata}\{#AppName}"
 ; =============================================================================
 [Code]
 
+procedure SHChangeNotify(wEventId: Integer; uFlags: Cardinal; dwItem1: Integer; dwItem2: Integer);
+  external 'SHChangeNotify@shell32.dll stdcall';
+
 procedure StopRunningOpenPDF();
 var
   ResultCode: Integer;
@@ -128,6 +132,14 @@ function InitializeUninstall(): Boolean;
 begin
   StopRunningOpenPDF();
   Result := True;
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    SHChangeNotify($08000000, $0000, 0, 0);
+  end;
 end;
 
 procedure InitializeWizard();

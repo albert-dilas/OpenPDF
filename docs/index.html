@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenPDF v2.1 | Suite de Procesamiento PDF en Local</title>
+    <title>OpenPDF v2.2.0 | Suite de Procesamiento PDF en Local</title>
     <meta name="description" content="Aplicación de escritorio de código abierto con 21 herramientas para unir, dividir, organizar, firmar, censurar, comprimir, traducir y convertir documentos PDF directamente en tu equipo.">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -511,13 +511,14 @@
                 <div class="flex items-center gap-2.5">
                     <span class="text-xl font-display font-bold tracking-tight text-white">Open<span class="text-brand">PDF</span></span>
                     <span class="hidden sm:inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-mono font-medium bg-white/5 text-slate-300 border border-white/10">
-                        v2.1.0
+                        v2.2.0
                     </span>
                 </div>
             </a>
 
             <nav class="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
                 <a href="#estacion-3d" class="hover:text-white transition-colors">Entorno 3D</a>
+                <a href="#novedades-v22" class="hover:text-white transition-colors">Novedades v2.2</a>
                 <a href="#laboratorio-3d" class="hover:text-white transition-colors">Inspector Interactivo</a>
                 <a href="#herramientas" class="hover:text-white transition-colors">21 Herramientas</a>
                 <a href="#arquitectura" class="hover:text-white transition-colors">Arquitectura</a>
@@ -531,12 +532,12 @@
                     </svg>
                     <span>GitHub</span>
                 </a>
-                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF_Setup_v2.1.0.exe"
+                <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.2.0/OpenPDF_Setup_v2.2.0.exe"
                    class="hidden sm:inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-brand hover:bg-brand-dark text-white shadow-lg shadow-brand/25 transition-all">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                     </svg>
-                    <span>Descargar v2.1</span>
+                    <span>Descargar v2.2.0</span>
                 </a>
             </div>
         </div>
@@ -573,14 +574,14 @@
 
                 <!-- Download Action Bar -->
                 <div id="descarga" class="mt-9 flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF_Setup_v2.1.0.exe"
+                    <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.2.0/OpenPDF_Setup_v2.2.0.exe"
                        class="w-full sm:w-auto inline-flex items-center justify-center gap-3 bg-brand hover:bg-brand-dark text-white font-bold px-7 py-4 rounded-xl shadow-xl shadow-brand/30 border border-red-400/30 transition-all hover:-translate-y-0.5 text-base">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
                         </svg>
-                        <span>Instalador Windows (v2.1.0)</span>
+                        <span>Instalador Windows (v2.2.0)</span>
                     </a>
-                    <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.1.0/OpenPDF.exe"
+                    <a href="https://github.com/albert-dilas/OpenPDF/releases/download/v2.2.0/OpenPDF.exe"
                        class="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 bg-white/[0.06] hover:bg-white/[0.12] text-white font-semibold px-6 py-4 rounded-xl border border-white/15 backdrop-blur-md transition-all hover:-translate-y-0.5 text-base">
                         <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
@@ -741,7 +742,7 @@
 
                             <!-- Application Screenshot -->
                             <div class="relative bg-obsidian-900 overflow-hidden">
-                                <img id="preview-img" src="assets/overview.jpg" alt="Interfaz de OpenPDF v2.1"
+                                <img id="preview-img" src="assets/overview.jpg" alt="Interfaz de OpenPDF v2.2.0"
                                      class="w-full object-cover transition-all duration-300">
                             </div>
                         </div>
@@ -751,6 +752,62 @@
                 <p class="text-center text-xs font-mono text-slate-400 mt-5">
                     Mueve el cursor sobre la ventana para inclinar la cámara en 3D o pulsa "Desplegar Capas Z" para inspeccionar el chasis interno.
                 </p>
+
+                <!-- v2.2.0 NEW CAPABILITIES HIGHLIGHT CARDS -->
+                <div id="novedades-v22" class="mt-16 pt-12 border-t border-white/10">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+                        <div>
+                            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-brand/15 border border-brand/35 text-brand-glow text-xs font-mono uppercase tracking-wider">
+                                Lanzamiento v2.2.0
+                            </div>
+                            <h2 class="text-2xl sm:text-3xl font-display font-bold text-white mt-2">
+                                Nuevas capacidades de ingeniería en escritorio
+                            </h2>
+                        </div>
+                        <span class="text-xs font-mono text-slate-400">Sin configuración manual de variables PATH</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Card 1: 1-Click Module Center -->
+                        <div class="p-6 rounded-2xl bg-obsidian-900/90 border border-white/10 hover:border-brand/40 transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-brand/15 border border-brand/35 text-brand-glow flex items-center justify-center mb-4">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-display font-bold text-white">Centro de Módulos Opcionales en 1 Clic</h3>
+                            <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                                Instalación desatendida con 1 clic mediante <code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">winget</code> junto con la descarga automática del paquete de idioma Español (<code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">spa.traineddata</code>), autodetección profunda en el Registro de Windows y selector gráfico nativo de ejecutables <code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">.exe</code> sin necesidad de configurar variables de entorno <code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">PATH</code>.
+                            </p>
+                        </div>
+
+                        <!-- Card 2: Dual Word to PDF -->
+                        <div class="p-6 rounded-2xl bg-obsidian-900/90 border border-white/10 hover:border-brand/40 transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-400 flex items-center justify-center mb-4">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-display font-bold text-white">Soporte Dual para Word a PDF</h3>
+                            <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                                Conversión local de documentos <code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">.doc</code> y <code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">.docx</code> compatible tanto con <strong>Microsoft Word</strong> (<code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">WINWORD.EXE</code> vía automatización COM nativa) como con <strong>LibreOffice</strong> (<code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">soffice.exe</code> en modo headless).
+                            </p>
+                        </div>
+
+                        <!-- Card 3: Immersive Desktop Experience -->
+                        <div class="p-6 rounded-2xl bg-obsidian-900/90 border border-white/10 hover:border-brand/40 transition-colors">
+                            <div class="w-10 h-10 rounded-xl bg-sky-500/15 border border-sky-500/35 text-sky-400 flex items-center justify-center mb-4">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <h3 class="text-lg font-display font-bold text-white">Experiencia de Escritorio Inmersiva</h3>
+                            <p class="mt-2 text-sm text-slate-300 leading-relaxed">
+                                Apertura en ventana de aplicación dedicada (<code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">--app</code>), Modo Inmersivo a pantalla completa (<code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">F11</code>), Paleta de Comandos instantánea (<code class="font-mono text-xs text-white bg-white/10 px-1.5 py-0.5 rounded">Ctrl+K</code>), barra de estado de telemetría local y sistema iconográfico vectorial SVG unificado de alta densidad (icono HD de 256px supersampled desde 1024px).
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -1071,10 +1128,10 @@
                                 </div>
                                 <div>
                                     <div class="font-display font-bold text-xl text-white">PyMuPDF + OpenCV</div>
-                                    <div class="text-xs font-mono text-sky-300 mt-1">Tesseract OCR & LibreOffice</div>
+                                    <div class="text-xs font-mono text-sky-300 mt-1">Tesseract OCR / MS Word COM / LibreOffice</div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-2 text-[10px] font-mono text-slate-300 border-t border-white/10 pt-3">
-                                    <span>70 Tests Pytest</span>
+                                    <span>80+ Tests Pytest</span>
                                     <span class="text-right">Cifrado AES-256</span>
                                 </div>
                             </div>
@@ -1090,9 +1147,9 @@
                             <span class="text-xs font-mono font-bold uppercase text-white">01. Capa de Presentación Offline</span>
                             <span class="text-xs font-mono text-slate-400">Next.js 14 + Tailwind</span>
                         </div>
-                        <h3 class="text-lg font-display font-bold text-white">Interfaz estática con fuentes e iconos integrados</h3>
+                        <h3 class="text-lg font-display font-bold text-white">Experiencia de escritorio inmersiva con fuentes e iconos SVG integrados</h3>
                         <p class="mt-2 text-sm text-slate-300 leading-relaxed">
-                            Los recursos gráficos, tipografías e iconos vectoriales se sirven directamente desde el paquete compilado sin consultar CDNs externos. Incluye modo claro y oscuro persistente, previsualización de páginas y cancelación inmediata de tareas en curso.
+                            Se abre en ventana de aplicación dedicada (--app) e incorpora Modo Inmersivo a pantalla completa (F11), Paleta de Comandos instantánea (Ctrl+K), barra de estado de telemetría local y sistema iconográfico vectorial SVG unificado (icono HD de 256px supersampled desde 1024px) 100% offline.
                         </p>
                     </div>
 
@@ -1111,12 +1168,12 @@
                     <div id="arch-card-3" onclick="selectArchLayer(3)" onmouseenter="selectArchLayer(3)"
                          class="cursor-pointer p-6 rounded-2xl border transition-all bg-white/[0.02] border-white/10 hover:bg-white/[0.04]">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-mono font-bold uppercase text-sky-400">03. Núcleo de Procesamiento Documental</span>
-                            <span class="text-xs font-mono text-slate-400">PyMuPDF / OpenCV / Pillow</span>
+                            <span class="text-xs font-mono font-bold uppercase text-sky-400">03. Núcleo de Procesamiento y Centro de Módulos</span>
+                            <span class="text-xs font-mono text-slate-400">PyMuPDF / OpenCV / COM</span>
                         </div>
-                        <h3 class="text-lg font-display font-bold text-white">Ejecución asíncrona y detección de motores opcionales</h3>
+                        <h3 class="text-lg font-display font-bold text-white">Centro de Módulos en 1 Clic y soporte dual Word/LibreOffice</h3>
                         <p class="mt-2 text-sm text-slate-300 leading-relaxed">
-                            Ejecuta las operaciones pesadas en hilos dedicados para no bloquear la interfaz. Detecta automáticamente si el equipo cuenta con Tesseract OCR o LibreOffice instalados y expone el estado en tiempo real a través de la ruta de diagnóstico del sistema.
+                            Autodetecta motores opcionales en el Registro de Windows, permite vincular ejecutables .exe mediante un selector gráfico nativo sin configurar PATH e instala Tesseract OCR (con spa.traineddata) o LibreOffice en 1 clic vía winget. Soporta conversión Word a PDF tanto con Microsoft Word (WINWORD.EXE vía COM) como con LibreOffice (soffice.exe).
                         </p>
                     </div>
                 </div>
@@ -1133,7 +1190,7 @@
                 </div>
                 <div>
                     <span class="text-base font-display font-bold text-white tracking-tight">OpenPDF</span>
-                    <span class="text-xs font-mono text-slate-500 ml-2">v2.1.0</span>
+                    <span class="text-xs font-mono text-slate-500 ml-2">v2.2.0</span>
                 </div>
             </div>
 
@@ -1152,7 +1209,7 @@
         const SCREENS = {
             overview: {
                 src: 'assets/overview.jpg',
-                caption: '127.0.0.1:8000 / Panel principal con buscador y filtro de categorías'
+                caption: '127.0.0.1:8000 / Panel principal con buscador, Paleta Ctrl+K y barra de estado'
             },
             tools: {
                 src: 'assets/tools.jpg',
@@ -1328,7 +1385,7 @@
                 name: 'OCR PDF',
                 category: 'Optimizar',
                 badge: 'Offline',
-                desc: 'Reconoce texto en documentos escaneados con Tesseract local para volverlos buscables y seleccionables.',
+                desc: 'Reconoce texto en documentos escaneados con Tesseract local (instalable en 1 clic con soporte spa.traineddata).',
                 icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'
             },
             {
@@ -1342,7 +1399,7 @@
                 name: 'Word a PDF',
                 category: 'Convertir',
                 badge: 'Offline',
-                desc: 'Convierte archivos .doc y .docx a estándar PDF conservando tipografías y márgenes con LibreOffice local.',
+                desc: 'Convierte archivos .doc y .docx a estándar PDF mediante Microsoft Word (WINWORD.EXE vía COM) o LibreOffice (soffice.exe).',
                 icon: '<path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>'
             },
             {
