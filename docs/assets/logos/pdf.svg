@@ -1,0 +1,53 @@
+<svg width="356" height="356" viewBox="0 0 356 356" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g filter="url(#f3d_pdf)">
+<mask id="m_pdf" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="43" y="27" width="280" height="280">
+<path d="M43.5938 125.768C43.5938 91.2821 43.5938 74.0391 50.3052 60.8673C56.2087 49.281 65.6286 39.861 77.2149 33.9575C90.3868 27.2461 107.63 27.2461 142.116 27.2461H224.072C258.558 27.2461 275.801 27.2461 288.973 33.9575C300.559 39.861 309.979 49.281 315.882 60.8673C322.594 74.0391 322.594 91.2821 322.594 125.768V207.724C322.594 242.21 322.594 259.453 315.882 272.625C309.979 284.211 300.559 293.631 288.973 299.535C275.801 306.246 258.558 306.246 224.072 306.246H142.116C107.63 306.246 90.3868 306.246 77.2149 299.535C65.6286 293.631 56.2087 284.211 50.3052 272.625C43.5938 259.453 43.5938 242.21 43.5938 207.724V125.768Z" fill="#14272C"/>
+</mask>
+<g mask="url(#m_pdf)">
+<rect x="43.5938" y="27.2461" width="279" height="279" rx="58.5787" fill="#FEFEFE"/>
+<rect x="81.59" y="65.25" width="204" height="204" rx="102" fill="white"/>
+<path d="M200.484 107.406H250.234V226.338L200.484 107.406ZM165.404 107.406H115.594V226.338L165.404 107.406ZM182.931 151.227L214.652 226.338H193.863L184.368 202.411H161.155L182.931 151.227Z" fill-rule="evenodd" clip-rule="evenodd" fill="#FA0C00"/>
+<g opacity="0.42" filter="url(#fr_pdf)">
+<path d="M314.692 90.457C314.692 60.2139 296.074 50.7686 291.806 46.0459C294.894 53.2207 304.066 75.4717 304.066 90.457V235.134C304.066 250.61 298.799 277.184 296.982 284.994C299.979 280.181 314.692 271.099 314.692 235.134V90.457Z" fill="white"/>
+</g>
+<g opacity="0.82" filter="url(#ft_pdf)">
+<path d="M104.08 35.1475C89.2582 35.1475 76.1074 43.6846 71.3848 47.9531C78.5596 44.8652 89.6396 38.6895 104.08 38.6895H248.757C264.233 38.6895 283.723 42.3223 291.533 44.1387C286.72 41.1416 271.426 35.1475 248.757 35.1475H104.08Z" fill="white"/>
+</g>
+</g>
+</g>
+<defs>
+
+<filter id="f3d_pdf" x="0" y="0" width="355.289" height="355.289" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dx="-4" dy="10"/>
+<feGaussianBlur stdDeviation="15"/>
+<feComposite in2="hardAlpha" operator="out"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.05 0 0 0 0 0.06 0 0 0 0 0.08 0 0 0 0.42 0"/>
+<feBlend mode="normal" in2="BackgroundImageFix" result="effect1"/>
+<feBlend mode="normal" in="SourceGraphic" in2="effect1" result="shape"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dx="10.8984" dy="-10.8984"/>
+<feGaussianBlur stdDeviation="8.17383"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 0.003 0 0 0 0 0.066 0 0 0 0 0.083 0 0 0 0.58 0"/>
+<feBlend mode="normal" in2="shape" result="effect2"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset dx="-5.44922" dy="5.44922"/>
+<feGaussianBlur stdDeviation="5.44922"/>
+<feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1"/>
+<feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.28 0"/>
+<feBlend mode="normal" in2="effect2" result="effect3"/>
+</filter>
+<filter id="fr_pdf" x="286.901" y="41.1416" width="32.6953" height="248.757" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="2.45215" result="blur"/>
+</filter>
+<filter id="ft_pdf" x="67.5703" y="31.333" width="227.777" height="20.4346" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="1.90723" result="blur"/>
+</filter>
+</defs>
+</svg>
