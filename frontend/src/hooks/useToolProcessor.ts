@@ -238,12 +238,16 @@ export function useToolProcessor() {
         const res = await saveOutputToFixedFolder(machine.pendingBlob, fileName);
         setMachine({ status: 'idle' });
         onAfterSave?.();
+        const savedLabel =
+          res.extracted_count && res.extracted_count > 0
+            ? `Guardados ${res.extracted_count} archivos en ${res.filename}`
+            : `Guardado en ${res.filename}`;
         toast.success(
           (tInstance) =>
             React.createElement(
               'div',
               { className: 'flex items-center gap-3 text-xs' },
-              React.createElement('span', null, `Guardado en ${res.filename}`),
+              React.createElement('span', null, savedLabel),
               React.createElement(
                 'button',
                 {

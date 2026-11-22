@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Compass, CheckCircle2, Clock, ArrowUpRight, Blocks } from 'lucide-react';
+import { Compass, CheckCircle2, Clock, ArrowUpRight, Blocks, MessageSquarePlus } from 'lucide-react';
 import {
   ALL_STUDIO_TOOLS,
   DEFAULT_STUDIO_ORDER,
@@ -13,9 +13,10 @@ import { selectEngineCapabilities, useSystemStore } from '@/store/useSystemStore
 import { useI18n } from '@/i18n';
 
 export default function RoadmapPage() {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
   const capabilities = useSystemStore(selectEngineCapabilities);
   const setModulesModalOpen = useSystemStore((s) => s.setModulesModalOpen);
+  const setFeedbackModalOpen = useSystemStore((s) => s.setFeedbackModalOpen);
   const [studioFilter, setStudioFilter] = useState<StudioId | 'all'>('all');
 
   const activeCount = useMemo(
@@ -44,14 +45,25 @@ export default function RoadmapPage() {
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setModulesModalOpen(true)}
-          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] text-xs font-medium text-[var(--fg)] shrink-0"
-        >
-          <Blocks className="w-3.5 h-3.5" />
-          {t.settings.modules.openCenterBtn}
-        </button>
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setFeedbackModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--accent)] text-xs font-medium text-[var(--fg)] transition-colors"
+          >
+            <MessageSquarePlus className="w-3.5 h-3.5" />
+            {locale === 'en' ? 'Suggest tool' : 'Proponer herramienta'}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setModulesModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] text-xs font-medium text-[var(--fg)]"
+          >
+            <Blocks className="w-3.5 h-3.5" />
+            {t.settings.modules.openCenterBtn}
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -63,9 +75,15 @@ export default function RoadmapPage() {
         </div>
         <div className="p-4 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)]">
           <span className="text-[11px] font-mono uppercase text-[var(--fg-muted)]">
-            {t.roadmap.upcomingPhase2}
+            {phase2Count === 0
+              ? locale === 'en'
+                ? 'Integrated Studios'
+                : 'Estudios integrados'
+              : t.roadmap.upcomingPhase2}
           </span>
-          <p className="text-2xl font-bold font-mono text-[var(--fg)] mt-1">{phase2Count}</p>
+          <p className="text-2xl font-bold font-mono text-[var(--fg)] mt-1">
+            {phase2Count === 0 ? DEFAULT_STUDIO_ORDER.length : phase2Count}
+          </p>
         </div>
         <div className="p-4 rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)]">
           <span className="text-[11px] font-mono uppercase text-[var(--fg-muted)]">

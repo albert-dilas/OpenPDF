@@ -4,15 +4,18 @@ from __future__ import annotations
 import contextvars
 import hashlib
 import hmac
+import io
 import json
 import os
 import re
 import shutil
+import stat
 import subprocess
 import sys
 import threading
 import time
-from pathlib import Path
+import zipfile
+from pathlib import Path, PurePosixPath
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import urljoin, urlparse
 
@@ -461,8 +464,13 @@ def save_output_file(
     content: bytes,
     target_dir: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Guarda un archivo en carpeta fija evitando sobreescribir con sufijos numericos (1), (2)..."""
-    raw_dir = (target_dir or get_desktop_config()["default_output_dir"]).strip()
+    """
+    Guarda un archivo en carpeta fija evitando sobreescribir con sufijos numericos (1), (2)...
+    Si smart_zip_downloads esta desactivado y la salida es un archivo .zip valido,
+    desempaqueta de forma segura su contenido dentro de una subcarpeta dedicada.
+    """
+    cfg = get_desktop_config()
+    raw_dir = (target_dir or cfg["default_output_dir"]).strip()
     if not raw_dir:
         raise BusinessRuleError("La carpeta de destino no puede estar vacia.")
 
@@ -470,14 +478,92 @@ def save_output_file(
     dest_dir.mkdir(parents=True, exist_ok=True)
 
     clean_name = sanitize_output_filename(filename)
+    stem = Path(clean_name).stem or "resultado_tornio"
+    suffix = Path(clean_name).suffix
+
+    smart_zip = bool(cfg.get("smart_zip_downloads", True))
+    if not smart_zip and clean_name.lower().endswith(".zip") and zipfile.is_zipfile(io.BytesIO(content)):
+        max_members = 2000
+        max_uncompressed = 2 * 1024 * 1024 * 1024
+        safe_entries: List[Tuple[Tuple[str, ...], zipfile.ZipInfo]] = []
+        cumulative_size = 0
+        exceeded_limits = False
+
+        with zipfile.ZipFile(io.BytesIO(content), "r") as zf:
+            for info in zf.infolist():
+                if info.is_dir():
+                    continue
+                if stat.S_ISLNK(info.external_attr >> 16):
+                    continue
+                raw_entry = info.filename.replace("\\", "/").strip()
+                if not raw_entry or raw_entry.startswith("/"):
+                    continue
+                posix_parts = PurePosixPath(raw_entry).parts
+                if not posix_parts or ":" in posix_parts[0]:
+                    continue
+                if any(part in ("", ".", "..") for part in posix_parts):
+                    continue
+
+                clean_parts = tuple(sanitize_output_filename(part) for part in posix_parts)
+                cumulative_size += max(0, int(info.file_size))
+                if len(safe_entries) >= max_members or cumulative_size > max_uncompressed:
+                    exceeded_limits = True
+                    break
+                safe_entries.append((clean_parts, info))
+
+            if safe_entries and not exceeded_limits:
+                extract_dir = (dest_dir / stem).resolve()
+                extract_counter = 1
+                while extract_dir.exists():
+                    extract_dir = (dest_dir / f"{stem} ({extract_counter})").resolve()
+                    extract_counter += 1
+                try:
+                    extract_dir.relative_to(dest_dir)
+                except ValueError as exc:
+                    raise BusinessRuleError("Subcarpeta de extraccion invalida fuera del directorio permitido.") from exc
+
+                extract_dir.mkdir(parents=True, exist_ok=True)
+                extracted_names: List[str] = []
+                total_written = 0
+
+                for parts, info in safe_entries:
+                    member_target = extract_dir.joinpath(*parts).resolve()
+                    try:
+                        member_target.relative_to(extract_dir)
+                    except ValueError:
+                        continue
+                    member_target.parent.mkdir(parents=True, exist_ok=True)
+                    member_bytes = zf.read(info)
+                    tmp_member = member_target.with_name(f".{member_target.name}.{time.time_ns()}.tmp")
+                    try:
+                        tmp_member.write_bytes(member_bytes)
+                        tmp_member.replace(member_target)
+                    finally:
+                        if tmp_member.exists():
+                            try:
+                                tmp_member.unlink()
+                            except OSError:
+                                pass
+                    extracted_names.append("/".join(parts))
+                    total_written += len(member_bytes)
+
+                if extracted_names:
+                    return {
+                        "saved": True,
+                        "saved_path": str(extract_dir),
+                        "directory": str(extract_dir),
+                        "filename": extract_dir.name,
+                        "size_bytes": total_written,
+                        "extracted_files": extracted_names,
+                        "extracted_count": len(extracted_names),
+                    }
+
     candidate = (dest_dir / clean_name).resolve()
     try:
         candidate.relative_to(dest_dir)
     except ValueError as exc:
         raise BusinessRuleError("Nombre de archivo invalido fuera del directorio permitido.") from exc
 
-    stem = Path(clean_name).stem or "resultado_tornio"
-    suffix = Path(clean_name).suffix
     counter = 1
     while candidate.exists():
         numbered = f"{stem} ({counter}){suffix}"

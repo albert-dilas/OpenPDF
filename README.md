@@ -1,15 +1,21 @@
 <div align="center">
-  <img src="assets/banner.png" alt="Tornio v3.0.0 - Local-First Document and Media Workbench" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/banner.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/banner-light.png">
+    <img src="assets/banner.png" alt="Tornio v3.0.0 - Local-First Document and Media Workbench" width="100%">
+  </picture>
   <br><br>
 
   <h1>Tornio <small>(formerly OpenPDF)</small></h1>
 
   <p>
-    <a href="README.es.md">Leer en Espanol</a>
+    <a href="README.es.md">Leer en Español</a>
     &nbsp;|&nbsp;
     <a href="https://albert-dilas.github.io/OpenPDF/">Live Website</a>
     &nbsp;|&nbsp;
     <a href="https://github.com/albert-dilas/OpenPDF/releases/tag/v3.0.0">Releases (v3.0.0)</a>
+    &nbsp;|&nbsp;
+    <a href="https://github.com/albert-dilas/OpenPDF/discussions">Discussions</a>
   </p>
 
   <p>
@@ -35,8 +41,8 @@ Prebuilt Windows x64 binaries package the Python FastAPI engine, domain librarie
 
 | Artifact | Format | Size | SHA-256 Digest | Download |
 | :--- | :--- | :---: | :--- | :---: |
-| **`Tornio_Setup_v3.0.0.exe`** | Per-user Windows Installer (3-step wizard, no UAC) | `158.0 MB` | `0c848775e54b30a7028b3aa8896388016b8c6e3fba96f0230f6640a8b6509cc7` | [Download Installer](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/Tornio_Setup_v3.0.0.exe) |
-| **`Tornio.exe`** | Standalone Portable Executable | `161.1 MB` | `026f22a99469b4cb5e2e7514819382648469647e8afefa5454804ac1c12bbbf1` | [Download Portable](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/Tornio.exe) |
+| **`Tornio_Setup_v3.0.0.exe`** | Per-user Windows Installer (3-step wizard, no UAC) | `158.0 MB` | `7c31f607896a47992bc0781cf0b0c890a40cb884fe3a5ac7978865c7a4738f24` | [Download Installer](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/Tornio_Setup_v3.0.0.exe) |
+| **`Tornio.exe`** | Standalone Portable Executable | `161.1 MB` | `e0d3d05bcbd70438c3348bc0973256bd9e856138aa92a7979dc28f124c10d4f9` | [Download Portable](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/Tornio.exe) |
 | **`SHA256SUMS.txt`** | Release Integrity Manifest (used by Self-Updater) | — | — | [View Manifest](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/SHA256SUMS.txt) |
 
 Verify integrity locally in PowerShell before running:
@@ -49,10 +55,14 @@ Get-FileHash .\Tornio_Setup_v3.0.0.exe -Algorithm SHA256
 
 ---
 
-## Interface Preview
+## Interface Showcase (Adaptive Light & Dark)
 
 <div align="center">
-  <img src="assets/overview.jpg" alt="Tornio Home Launchpad and Precision Core" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/overview-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/overview-light.png">
+    <img src="assets/overview-dark.png" alt="Tornio Home Launchpad and Precision Core" width="100%">
+  </picture>
   <br>
   <em>Figure 1: Tornio Home featuring the calibrated Precision Core (6-engine telemetry &amp; drop zone), 7 Studios, career workspace presets, and Alt+1..9 shortcuts.</em>
 </div>
@@ -60,7 +70,11 @@ Get-FileHash .\Tornio_Setup_v3.0.0.exe -Algorithm SHA256
 <br>
 
 <div align="center">
-  <img src="assets/tools.jpg" alt="Documents and PDF Studio" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/tools-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/tools-light.png">
+    <img src="assets/tools-dark.png" alt="Documents and PDF Studio" width="100%">
+  </picture>
   <br>
   <em>Figure 2: Documents &amp; PDF Studio with live local capability badges (OCR / Word-to-PDF) and Dual-Tone architectural tool cards.</em>
 </div>
@@ -68,7 +82,11 @@ Get-FileHash .\Tornio_Setup_v3.0.0.exe -Algorithm SHA256
 <br>
 
 <div align="center">
-  <img src="assets/workflow.jpg" alt="Automated Local Pipelines" width="100%">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/workflow-dark.png">
+    <source media="(prefers-color-scheme: light)" srcset="assets/workflow-light.png">
+    <img src="assets/workflow-dark.png" alt="Automated Local Pipelines" width="100%">
+  </picture>
   <br>
   <em>Figure 3: Multi-step local pipeline builder executing sequential file transformations privately in memory and local temp storage.</em>
 </div>
@@ -100,7 +118,7 @@ Tornio organizes 58 active tools (`TOOL_COUNT = 58`) across 7 specialized Studio
   - **Windows Startup &amp; Explorer Integration**: Toggle per-user HKCU Windows autostart and `"Abrir con Tornio"` Explorer context menu from the installer or *Settings -> System &amp; Desktop* without admin privileges.
   - **Single-Instance Wake**: Opening `Tornio.exe` or Explorer-selected files while running routes cleanly to the active instance via `/api/v1/system/open-window`.
 - **Cryptographic Self-Updater (`SelfUpdaterManager`)**: Supports `notify`, `auto`, and offline `manual` modes (`<= 3s` check timeout, 6-hour local cache). Enforces strict GitHub HTTPS host allowlists and constant-time `SHA-256` digest verification against `SHA256SUMS.txt` before execution.
-- **Safety &amp; Performance Guards**: `1 MiB` streaming uploads with magic-byte verification, pre-execution **Disk Space Quota Guard**, collision-safe numbered saving, millisecond subprocess cancellation via `X-Request-Id`, and explicit frontend Finite State Machines (`fsm.ts`).
+- **Safety &amp; Performance Guards**: `1 MiB` streaming uploads with magic-byte verification, pre-execution **Disk Space Quota Guard**, collision-safe numbered saving, configurable **Smart ZIP** archive toggle with Zip-Slip-safe unpacking into dedicated subfolders, millisecond subprocess cancellation via `X-Request-Id`, and explicit frontend Finite State Machines (`fsm.ts`).
 
 ---
 
@@ -146,6 +164,7 @@ To run test suites or build standalone Windows `.exe` / installer binaries, see 
 ## Documentation Index
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — System topology, loopback isolation, Anti-SSRF `safe_public_get`, quota guards, and FSM architecture
+- [ROADMAP.md](ROADMAP.md) — Shipped `v3.0.0` milestones, upcoming `v3.1.x` deliverables, and future vision
 - [BUILD_GUIDE.md](BUILD_GUIDE.md) — Local environment setup, test verification, PyInstaller, and Inno Setup packaging pipeline
 - [CHANGELOG.md](CHANGELOG.md) — Detailed history of changes across `v2.2.0` and `v3.0.0`
 - [CONTRIBUTING.md](CONTRIBUTING.md) — Coding rules, zero-emoji policy, and PR checklist
@@ -164,4 +183,4 @@ Tornio original source code is licensed under the **Apache License, Version 2.0*
 
 ## Support
 
-Tornio is free, open-source software with zero ads, paywalls, or telemetry. If it saves your team time or keeps sensitive documents off external clouds, you can support ongoing development through [GitHub Sponsors](https://github.com/sponsors/albert-dilas).
+Tornio is free, open-source software with zero ads, paywalls, or telemetry. If it saves your team time or keeps sensitive documents off external clouds, you can support ongoing development through [GitHub Sponsors](https://github.com/sponsors/albert-dilas) or propose improvements in [GitHub Discussions](https://github.com/albert-dilas/OpenPDF/discussions).

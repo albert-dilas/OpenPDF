@@ -288,3 +288,66 @@ def test_cancel_active_request_terminates_subprocess_quickly():
     assert payload["terminated_count"] >= 1
     assert elapsed < 2.0
     assert not t.is_alive()
+
+
+def test_save_output_file_smart_zip_toggle(tmp_path, monkeypatch):
+    import io
+    import zipfile
+
+    cfg_file = tmp_path / "config.json"
+    out_dir = tmp_path / "Salidas"
+    monkeypatch.setenv("TORNIO_CONFIG_PATH", str(cfg_file))
+    monkeypatch.setenv("TORNIO_DISABLE_REGISTRY_SYNC", "1")
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("pagina_1.jpg", b"JPG1")
+        zf.writestr("subcarpeta/pagina_2.jpg", b"JPG2")
+    zip_bytes = buf.getvalue()
+
+    # Con smart_zip_downloads=True (default): guarda el archivo .zip intacto
+    res_zip = desktop_service.save_output_file("imagenes_export.zip", zip_bytes, target_dir=str(out_dir))
+    assert res_zip["saved"] is True
+    assert res_zip["filename"] == "imagenes_export.zip"
+    assert "extracted_count" not in res_zip
+    assert (out_dir / "imagenes_export.zip").is_file()
+
+    # Desactivar smart_zip_downloads -> desempaqueta en subcarpeta segura
+    client.put("/api/v1/system/desktop-config", json={"smart_zip_downloads": False})
+    res_unpacked = desktop_service.save_output_file("imagenes_export.zip", zip_bytes, target_dir=str(out_dir))
+    assert res_unpacked["saved"] is True
+    assert res_unpacked["extracted_count"] == 2
+    assert res_unpacked["filename"] == "imagenes_export"
+    extract_root = out_dir / "imagenes_export"
+    assert (extract_root / "pagina_1.jpg").read_bytes() == b"JPG1"
+    assert (extract_root / "subcarpeta" / "pagina_2.jpg").read_bytes() == b"JPG2"
+
+    # Colision de nombre en segunda extraccion usa sufijo numerico (1)
+    res_second = desktop_service.save_output_file("imagenes_export.zip", zip_bytes, target_dir=str(out_dir))
+    assert res_second["filename"] == "imagenes_export (1)"
+    assert (out_dir / "imagenes_export (1)" / "pagina_1.jpg").is_file()
+
+
+def test_save_output_file_blocks_zip_slip(tmp_path, monkeypatch):
+    import io
+    import zipfile
+
+    cfg_file = tmp_path / "config.json"
+    out_dir = tmp_path / "SalidasSeguras"
+    monkeypatch.setenv("TORNIO_CONFIG_PATH", str(cfg_file))
+    monkeypatch.setenv("TORNIO_DISABLE_REGISTRY_SYNC", "1")
+    client.put("/api/v1/system/desktop-config", json={"smart_zip_downloads": False})
+
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", compression=zipfile.ZIP_DEFLATED) as zf:
+        zf.writestr("../escape.txt", b"MALICIOUS")
+        zf.writestr("/abs/evil.txt", b"ABS")
+        zf.writestr("safe.txt", b"CLEAN")
+
+    res = desktop_service.save_output_file("audit.zip", buf.getvalue(), target_dir=str(out_dir))
+    assert res["saved"] is True
+    assert res["extracted_count"] == 1
+    assert res["extracted_files"] == ["safe.txt"]
+    assert (out_dir / "audit" / "safe.txt").read_bytes() == b"CLEAN"
+    assert not (tmp_path / "escape.txt").exists()
+    assert not (out_dir / "escape.txt").exists()

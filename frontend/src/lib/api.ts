@@ -128,6 +128,8 @@ export interface SaveFixedOutputResult {
   directory: string;
   filename: string;
   size_bytes: number;
+  extracted_files?: string[];
+  extracted_count?: number;
 }
 
 export interface SystemStatusResponse {
