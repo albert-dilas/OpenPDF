@@ -88,7 +88,7 @@ export default function PrivacidadPage() {
             <span>Código fuente 100% abierto bajo Apache 2.0 y auditable públicamente.</span>
           </div>
           <a
-            href="https://github.com/albert-dilas/OpenPDF"
+            href="https://github.com/albert-dilas/Tornio"
             target="_blank"
             rel="noreferrer"
             className="px-4 py-2 rounded-[var(--radius-control)] text-xs font-semibold"

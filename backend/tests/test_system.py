@@ -42,7 +42,7 @@ def test_system_updates_online_newer(monkeypatch):
         def json(self):
             return {
                 "tag_name": "v3.2.0",
-                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.2.0",
+                "html_url": "https://github.com/albert-dilas/Tornio/releases/tag/v3.2.0",
             }
 
     async def mock_get(self, url, **kwargs):
@@ -58,7 +58,7 @@ def test_system_updates_online_newer(monkeypatch):
         "latest": "3.2.0",
         "update_available": True,
         "online": True,
-        "url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.2.0",
+        "url": "https://github.com/albert-dilas/Tornio/releases/tag/v3.2.0",
     }
 
 
@@ -74,7 +74,7 @@ def test_system_updates_online_up_to_date_and_cached(monkeypatch):
         def json(self):
             return {
                 "tag_name": "v3.0.0",
-                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.0.0",
+                "html_url": "https://github.com/albert-dilas/Tornio/releases/tag/v3.0.0",
             }
 
     async def mock_get(self, url, **kwargs):
@@ -143,7 +143,7 @@ def test_system_updates_force_bypass_cache(monkeypatch):
         def json(self):
             return {
                 "tag_name": "v3.3.0",
-                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.3.0",
+                "html_url": "https://github.com/albert-dilas/Tornio/releases/tag/v3.3.0",
             }
 
     async def mock_get(self, url, **kwargs):
@@ -219,12 +219,12 @@ def test_system_updates_parses_notes_and_assets(monkeypatch):
             return {
                 "tag_name": "v3.1.0",
                 "name": "Tornio v3.1.0 Release",
-                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.1.0",
+                "html_url": "https://github.com/albert-dilas/Tornio/releases/tag/v3.1.0",
                 "body": "Novedades y mejoras importantes.",
                 "assets": [
                     {
                         "name": "Tornio_Setup_v3.1.0.exe",
-                        "browser_download_url": "https://github.com/albert-dilas/OpenPDF/releases/download/v3.1.0/Tornio_Setup_v3.1.0.exe",
+                        "browser_download_url": "https://github.com/albert-dilas/Tornio/releases/download/v3.1.0/Tornio_Setup_v3.1.0.exe",
                     }
                 ],
             }

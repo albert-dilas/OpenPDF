@@ -64,7 +64,7 @@ export default function TerminosPage() {
             <p>
               El código original de Tornio está licenciado bajo{' '}
               <a
-                href="https://github.com/albert-dilas/OpenPDF/blob/main/LICENSE"
+                href="https://github.com/albert-dilas/Tornio/blob/main/LICENSE"
                 className="font-semibold text-[var(--fg)] underline"
                 target="_blank"
                 rel="noreferrer"
@@ -74,7 +74,7 @@ export default function TerminosPage() {
               . Eres libre de estudiar, auditar, modificar y redistribuir el código conforme a sus
               términos, respetando los derechos de marca y el archivo{' '}
               <a
-                href="https://github.com/albert-dilas/OpenPDF/blob/main/NOTICE"
+                href="https://github.com/albert-dilas/Tornio/blob/main/NOTICE"
                 className="font-semibold text-[var(--fg)] underline"
                 target="_blank"
                 rel="noreferrer"
@@ -96,7 +96,7 @@ export default function TerminosPage() {
               correspondiente se publica íntegramente en el repositorio oficial). Consulta el
               inventario completo y transparente en{' '}
               <a
-                href="https://github.com/albert-dilas/OpenPDF/blob/main/THIRD_PARTY_NOTICES.md"
+                href="https://github.com/albert-dilas/Tornio/blob/main/THIRD_PARTY_NOTICES.md"
                 className="font-semibold text-[var(--fg)] underline"
                 target="_blank"
                 rel="noreferrer"

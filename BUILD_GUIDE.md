@@ -17,8 +17,8 @@ This guide explains how to run Tornio from source and package standalone Windows
 
 ```powershell
 # 1. Clone the repository
-git clone https://github.com/albert-dilas/OpenPDF.git
-cd OpenPDF
+git clone https://github.com/albert-dilas/Tornio.git
+cd Tornio
 
 # 2. Install frontend dependencies
 npm --prefix frontend ci

@@ -29,7 +29,7 @@ Please report suspected security vulnerabilities responsibly:
 
 1. **Do not** disclose unpatched vulnerabilities publicly in comments or social channels before mitigation.
 2. Report privately via GitHub Security Advisories at:
-   https://github.com/albert-dilas/OpenPDF/security/advisories/new
+   https://github.com/albert-dilas/Tornio/security/advisories/new
    (or open a minimal issue requesting private contact if GitHub Security Advisories are unavailable).
 3. Include:
    - Tornio version and operating system

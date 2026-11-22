@@ -229,7 +229,7 @@ class URLToPDFService:
             raise BusinessRuleError("El tamaño de página debe ser 'a4' o 'letter'.")
 
         headers = {
-            "User-Agent": f"Tornio/{settings.VERSION} (+https://github.com/albert-dilas/OpenPDF)",
+            "User-Agent": f"Tornio/{settings.VERSION} (+https://github.com/albert-dilas/Tornio)",
             "Accept": "text/html,application/xhtml+xml,application/pdf,text/plain;q=0.9,*/*;q=0.8",
         }
 

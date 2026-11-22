@@ -195,7 +195,7 @@ def test_self_updater_allowlist_and_sha256_verification(tmp_path, monkeypatch):
 
     # Rechazo estricto de hosts fuera del allowlist y esquemas inseguros
     for bad_url in (
-        "http://github.com/albert-dilas/OpenPDF/releases/download/v3.1.0/Tornio_Setup_v3.1.0.exe",
+        "http://github.com/albert-dilas/Tornio/releases/download/v3.1.0/Tornio_Setup_v3.1.0.exe",
         "https://evil-mirror.example.com/Tornio_Setup_v3.1.0.exe",
         "https://127.0.0.1/Tornio_Setup_v3.1.0.exe",
     ):
@@ -206,7 +206,7 @@ def test_self_updater_allowlist_and_sha256_verification(tmp_path, monkeypatch):
             pass
 
     good_url = validate_update_url(
-        "https://github.com/albert-dilas/OpenPDF/releases/download/v3.1.0/Tornio_Setup_v3.1.0.exe"
+        "https://github.com/albert-dilas/Tornio/releases/download/v3.1.0/Tornio_Setup_v3.1.0.exe"
     )
     assert good_url.startswith("https://github.com/")
 

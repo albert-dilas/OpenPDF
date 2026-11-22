@@ -150,7 +150,7 @@ async def check_url_reachability(raw_url: str, timeout: float = 5.0) -> Dict[str
     validated_url = validate_public_http_url(raw_url)
     start = time.perf_counter()
     headers = {
-        "User-Agent": f"Tornio/{settings.VERSION} (+https://github.com/albert-dilas/OpenPDF)",
+        "User-Agent": f"Tornio/{settings.VERSION} (+https://github.com/albert-dilas/Tornio)",
         "Accept": "text/html,application/xhtml+xml,application/pdf,*/*;q=0.8",
     }
 

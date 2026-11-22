@@ -29,7 +29,7 @@ Cada vez que se modifique el proyecto, evalua que capas fueron afectadas y ejecu
 | :--- | :--- |
 | **Backend (`backend/`)** | 1. Anadir/actualizar tests en `backend/tests/`.<br>2. Ejecutar `.\backend\.venv\Scripts\python -m pytest -q` (0 fallos).<br>3. Recompilar el ejecutable e instalador si el cambio afecta produccion. |
 | **Frontend (`frontend/`)** | 1. Ejecutar `npm --prefix frontend run lint` y `npx --prefix frontend tsc -p frontend/tsconfig.json --noEmit` (0 errores).<br>2. Ejecutar `npm --prefix frontend run build` para regenerar `frontend/out`.<br>3. Verificar en navegador real (`0` errores en consola). |
-| **UI/UX, Identidad Visual o Catalogo de Studios** | 1. Regenerar iconos y activos del instalador con `.\backend\.venv\Scripts\python scripts/prepare_assets.py`.<br>2. Con el servidor local corriendo, regenerar las capturas reales (`banner.png`, `overview.jpg`, `tools.jpg`, `workflow.jpg`) usando Playwright y guardarlas tanto en `assets/` como en `docs/assets/`.<br>3. Actualizar `README.md` y la fanpage `docs/index.html` (`https://albert-dilas.github.io/OpenPDF/`). |
+| **UI/UX, Identidad Visual o Catalogo de Studios** | 1. Regenerar iconos y activos del instalador con `.\backend\.venv\Scripts\python scripts/prepare_assets.py`.<br>2. Con el servidor local corriendo, regenerar las capturas reales (`banner.png`, `overview.jpg`, `tools.jpg`, `workflow.jpg`) usando Playwright y guardarlas tanto en `assets/` como en `docs/assets/`.<br>3. Actualizar `README.md` y la fanpage `docs/index.html` (`https://albert-dilas.github.io/Tornio/`). |
 | **Nueva Version, Modulos o Instalador (`installer/`, `scripts/`)** | 1. Sincronizar el numero de version SemVer (`X.Y.Z`) en toda la Matriz de Versionado (Seccion 3).<br>2. Verificar que `installer/*.iss` sincronice las preferencias iniciales en `%LOCALAPPDATA%\Tornio\config.json` (`desktop`: `keep_in_background`, `start_with_windows`, `context_menu_enabled`, `update_mode`).<br>3. Ejecutar `.\backend\.venv\Scripts\python scripts/build_installer.py` para generar los binarios y `dist/SHA256SUMS.txt`.<br>4. Verificar mediante *smoke test* que el `.exe` compilado responde `200 OK` en `/api/v1/system/status`. |
 
 ---
@@ -83,7 +83,7 @@ Nunca ejecutes `git add` o `git push` sin validar primero:
 Cada lanzamiento o actualizacion mayor debe dejar el repositorio de GitHub con calidad de portafolio profesional:
 
 1. **Metadatos, Descripcion y Topics del Repositorio (`gh repo edit`)**:
-   - Mantener actualizada la descripcion oficial del repositorio, el sitio web (`https://albert-dilas.github.io/OpenPDF/`) y las etiquetas (*topics*) de descubrimiento con `gh repo edit`:
+   - Mantener actualizada la descripcion oficial del repositorio, el sitio web (`https://albert-dilas.github.io/Tornio/`) y las etiquetas (*topics*) de descubrimiento con `gh repo edit`:
      - Topics base requeridos: `local-first`, `desktop-app`, `windows`, `fastapi`, `nextjs`, `typescript`, `python`, `pdf-tools`, `video-processing`, `audio-processing`, `image-processing`, `offline-ai`, `media-workbench`.
 2. **Imagenes y Capturas Reales (`assets/` y `docs/assets/`)**:
    - Prohibido usar capturas desactualizadas o mockups ficticios.
@@ -102,7 +102,7 @@ Cada lanzamiento o actualizacion mayor debe dejar el repositorio de GitHub con c
 
 ## 6. Gobernanza y Arquitectura de la Fanpage Oficial (`docs/index.html` - GitHub Pages)
 
-La fanpage publica se sirve desde la rama `main` carpeta `/docs` en `https://albert-dilas.github.io/OpenPDF/` y es el punto de aterrizaje principal para trafico de redes sociales y portafolio:
+La fanpage publica se sirve desde la rama `main` carpeta `/docs` en `https://albert-dilas.github.io/Tornio/` y es el punto de aterrizaje principal para trafico de redes sociales y portafolio:
 
 1. **Identidad Visual: App Design System + Escenografia 3D Interactiva**:
    - Mantener coherencia estética con la aplicacion web (minimalismo editorial, teoria del color 60-30-10, acento bermellon `#E04826`, paletas analogas por Studio y cero emojis / cero cliches de IA), elevada con **escenografia 3D interactiva y animaciones fluidas** (perspectiva CSS 3D con seguimiento de cursor, vista explotada de capas de arquitectura, esculturas 3D por Studio y orbe iridiscente).
@@ -119,4 +119,4 @@ La fanpage publica se sirve desde la rama `main` carpeta `/docs` en `https://alb
      - Catalogo de Studios/herramientas y bloques modulares extensibles (benchmarks, preguntas frecuentes, seguridad, hoja de ruta).
 4. **SEO, OpenGraph para Redes Sociales y Verificacion Post-Despliegue**:
    - Metadatos completos (`<title>`, `description`, `og:title`, `og:description`, `og:image`, `twitter:card`) apuntando a `assets/banner.png` y rutas relativas limpias (`assets/...`) dentro de `docs/assets/`.
-   - Tras hacer push a `main`, verificar con `gh api repos/albert-dilas/OpenPDF/pages/builds/latest` que el despliegue de GitHub Pages finalice en `status: "built"`.
+   - Tras hacer push a `main`, verificar con `gh api repos/albert-dilas/Tornio/pages/builds/latest` que el despliegue de GitHub Pages finalice en `status: "built"`.

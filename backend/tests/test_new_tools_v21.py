@@ -224,8 +224,8 @@ def test_translate_pdf_success(monkeypatch, sample_pdf_bytes):
 def test_qr_stamp_and_inspect_roundtrip(monkeypatch, sample_pdf_bytes):
     async def mock_check_url(raw_url: str, timeout: float = 5.0):
         return {
-            "url": "https://albert-dilas.github.io/OpenPDF/",
-            "final_url": "https://albert-dilas.github.io/OpenPDF/",
+            "url": "https://albert-dilas.github.io/Tornio/",
+            "final_url": "https://albert-dilas.github.io/Tornio/",
             "reachable": True,
             "status_code": 200,
             "content_type": "text/html",
@@ -243,7 +243,7 @@ def test_qr_stamp_and_inspect_roundtrip(monkeypatch, sample_pdf_bytes):
     # 1. Verificar endpoint /qr/verify-url
     verify_res = client.post(
         "/api/v1/qr/verify-url",
-        data={"url": "https://albert-dilas.github.io/OpenPDF/"},
+        data={"url": "https://albert-dilas.github.io/Tornio/"},
     )
     assert verify_res.status_code == 200
     assert verify_res.json()["reachable"] is True
@@ -253,7 +253,7 @@ def test_qr_stamp_and_inspect_roundtrip(monkeypatch, sample_pdf_bytes):
         "/api/v1/qr/stamp",
         files=[("file", ("doc.pdf", sample_pdf_bytes, "application/pdf"))],
         data={
-            "payload": "https://albert-dilas.github.io/OpenPDF/",
+            "payload": "https://albert-dilas.github.io/Tornio/",
             "verify_online": "true",
             "pages": "first",
             "position": "bottom-right",
@@ -275,5 +275,5 @@ def test_qr_stamp_and_inspect_roundtrip(monkeypatch, sample_pdf_bytes):
     payload = inspect_res.json()
     assert payload["qr_count"] >= 1
     assert payload["items"][0]["page"] == 1
-    assert payload["items"][0]["data"] == "https://albert-dilas.github.io/OpenPDF/"
+    assert payload["items"][0]["data"] == "https://albert-dilas.github.io/Tornio/"
     assert payload["items"][0]["online_check"]["reachable"] is True

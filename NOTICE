@@ -2,7 +2,7 @@ Tornio (formerly OpenPDF)
 Copyright 2026 Albert Dilas / Tornio Project
 
 This product includes original software developed for the Tornio Local-First
-Document and Media Workbench project (https://github.com/albert-dilas/OpenPDF).
+Document and Media Workbench project (https://github.com/albert-dilas/Tornio).
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -19,5 +19,5 @@ Combined Distribution Notice:
 Official compiled executables bundle third-party open-source components,
 notably PyMuPDF and pymupdf4llm under GNU AGPL v3.0. In full compliance
 with AGPL-3.0, the complete corresponding source code and dependency build
-configuration are published at https://github.com/albert-dilas/OpenPDF.
+configuration are published at https://github.com/albert-dilas/Tornio.
 See THIRD_PARTY_NOTICES.md for the complete inventory of dependencies.

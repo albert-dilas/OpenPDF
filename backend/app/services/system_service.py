@@ -38,8 +38,8 @@ from app.utils.binaries import (
     set_custom_binary_path,
 )
 
-GITHUB_LATEST_RELEASE_API = "https://api.github.com/repos/albert-dilas/OpenPDF/releases/latest"
-DEFAULT_RELEASES_URL = "https://github.com/albert-dilas/OpenPDF/releases"
+GITHUB_LATEST_RELEASE_API = "https://api.github.com/repos/albert-dilas/Tornio/releases/latest"
+DEFAULT_RELEASES_URL = "https://github.com/albert-dilas/Tornio/releases"
 TESSDATA_FAST_BASE_URL = "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main"
 REMBG_U2NETP_URL = "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx"
 YT_DLP_WIN_URL = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"

@@ -87,7 +87,7 @@ export default function QuickFeedbackModal() {
       (details.trim() || qf.detailsPlaceholder) + `\n\nTornio v${version}`;
     const prefix =
       category === 'feature' ? 'feat: ' : category === 'bug' ? 'fix: ' : 'feedback: ';
-    const url = `https://github.com/albert-dilas/OpenPDF/issues/new?title=${encodeURIComponent(
+    const url = `https://github.com/albert-dilas/Tornio/issues/new?title=${encodeURIComponent(
       prefix + cleanTitle
     )}&body=${encodeURIComponent(cleanBody)}`;
     window.open(url, '_blank', 'noopener,noreferrer');

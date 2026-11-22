@@ -188,7 +188,7 @@ export default function UpdatesPanel({ onCheckForUpdates }: UpdatesPanelProps) {
             {t.settings.updates.manualDownloadsHint}
           </span>
           <a
-            href="https://github.com/albert-dilas/OpenPDF/releases"
+            href="https://github.com/albert-dilas/Tornio/releases"
             target="_blank"
             rel="noreferrer"
             className="inline-flex items-center gap-1 font-semibold text-[var(--fg)] hover:underline"

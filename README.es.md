@@ -11,17 +11,17 @@
   <p>
     <a href="README.md">Read in English</a>
     &nbsp;|&nbsp;
-    <a href="https://albert-dilas.github.io/OpenPDF/">Sitio Web Oficial</a>
+    <a href="https://albert-dilas.github.io/Tornio/">Sitio Web Oficial</a>
     &nbsp;|&nbsp;
-    <a href="https://github.com/albert-dilas/OpenPDF/releases/tag/v3.0.0">Descargas y Releases (v3.0.0)</a>
+    <a href="https://github.com/albert-dilas/Tornio/releases/tag/v3.0.0">Descargas y Releases (v3.0.0)</a>
     &nbsp;|&nbsp;
-    <a href="https://github.com/albert-dilas/OpenPDF/discussions">Comunidad y Debates</a>
+    <a href="https://github.com/albert-dilas/Tornio/discussions">Comunidad y Debates</a>
   </p>
 
   <p>
-    <a href="https://github.com/albert-dilas/OpenPDF/releases/tag/v3.0.0"><img src="https://img.shields.io/badge/Release-v3.0.0-E04826.svg" alt="Release v3.0.0"></a>
+    <a href="https://github.com/albert-dilas/Tornio/releases/tag/v3.0.0"><img src="https://img.shields.io/badge/Release-v3.0.0-E04826.svg" alt="Release v3.0.0"></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-2563EB.svg" alt="Licencia Apache 2.0"></a>
-    <a href="https://github.com/albert-dilas/OpenPDF/actions/workflows/ci.yml"><img src="https://github.com/albert-dilas/OpenPDF/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+    <a href="https://github.com/albert-dilas/Tornio/actions/workflows/ci.yml"><img src="https://github.com/albert-dilas/Tornio/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
     <img src="https://img.shields.io/badge/Platform-Windows%20x64%20%7C%20C%C3%B3digo%20Fuente-18181B.svg" alt="Plataforma Windows x64">
     <img src="https://img.shields.io/badge/Architecture-Local--First%20(127.0.0.1)-10B981.svg" alt="Arquitectura Local-First">
     <img src="https://img.shields.io/badge/Suite-7%20Studios%20%C2%B7%2058%20Herramientas-3F3F46.svg" alt="7 Studios y 58 Herramientas">
@@ -41,9 +41,9 @@ Los binarios oficiales para Windows x64 empaquetan el motor FastAPI en Python, l
 
 | Archivo | Formato | Tamaño | Digest SHA-256 | Descarga |
 | :--- | :--- | :---: | :--- | :---: |
-| **`Tornio_Setup_v3.0.0.exe`** | Instalador Windows por usuario (asistente de 3 pasos, sin UAC) | `158.0 MB` | `7c31f607896a47992bc0781cf0b0c890a40cb884fe3a5ac7978865c7a4738f24` | [Descargar Instalador](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/Tornio_Setup_v3.0.0.exe) |
-| **`Tornio.exe`** | Ejecutable Portátil Independiente | `161.1 MB` | `e0d3d05bcbd70438c3348bc0973256bd9e856138aa92a7979dc28f124c10d4f9` | [Descargar Portátil](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/Tornio.exe) |
-| **`SHA256SUMS.txt`** | Manifiesto de Integridad (verificado por el auto-actualizador) | — | — | [Ver Manifiesto](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/SHA256SUMS.txt) |
+| **`Tornio_Setup_v3.0.0.exe`** | Instalador Windows por usuario (asistente de 3 pasos, sin UAC) | `158.0 MB` | `01bb6bace0d2c9117c458a8e20e1b14f1b433ac3ed87ac087e72071c79e91b0f` | [Descargar Instalador](https://github.com/albert-dilas/Tornio/releases/download/v3.0.0/Tornio_Setup_v3.0.0.exe) |
+| **`Tornio.exe`** | Ejecutable Portátil Independiente | `161.1 MB` | `fd01ed51c06ebfe9d2598c764488a9e6975c589a5f54d5cc4cfa2cb7eb4df684` | [Descargar Portátil](https://github.com/albert-dilas/Tornio/releases/download/v3.0.0/Tornio.exe) |
+| **`SHA256SUMS.txt`** | Manifiesto de Integridad (verificado por el auto-actualizador) | — | — | [Ver Manifiesto](https://github.com/albert-dilas/Tornio/releases/download/v3.0.0/SHA256SUMS.txt) |
 
 Verifica la integridad en PowerShell antes de ejecutar:
 
@@ -139,8 +139,8 @@ Tornio agrupa 58 herramientas activas (`TOOL_COUNT = 58`) en 7 Studios especiali
 Requisitos: **Python 3.12+**, **Node.js 20 LTS** y (solo para compilar el instalador) **Inno Setup 6**.
 
 ```powershell
-git clone https://github.com/albert-dilas/OpenPDF.git
-cd OpenPDF
+git clone https://github.com/albert-dilas/Tornio.git
+cd Tornio
 
 # 1. Instalar dependencias de frontend y generar bundle estático
 npm --prefix frontend ci
@@ -183,4 +183,4 @@ El código original de Tornio se distribuye bajo la licencia **Apache License, V
 
 ## Apoyo al Proyecto
 
-Tornio es software libre y gratuito sin publicidad, muros de pago ni telemetría. Si resulta útil para tu trabajo diario o protege documentos confidenciales de tu equipo, puedes apoyar su mantenimiento continuo mediante [GitHub Sponsors](https://github.com/sponsors/albert-dilas) o compartir sugerencias en [GitHub Discussions](https://github.com/albert-dilas/OpenPDF/discussions).
+Tornio es software libre y gratuito sin publicidad, muros de pago ni telemetría. Si resulta útil para tu trabajo diario o protege documentos confidenciales de tu equipo, puedes apoyar su mantenimiento continuo mediante [GitHub Sponsors](https://github.com/sponsors/albert-dilas) o compartir sugerencias en [GitHub Discussions](https://github.com/albert-dilas/Tornio/discussions).

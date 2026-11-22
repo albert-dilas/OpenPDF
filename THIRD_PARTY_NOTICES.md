@@ -5,7 +5,7 @@ Prebuilt Windows executables and installers incorporate open-source libraries
 governed by their own licenses, as documented below.
 
 The complete corresponding source code of Tornio and build instructions are
-available at: https://github.com/albert-dilas/OpenPDF
+available at: https://github.com/albert-dilas/Tornio
 
 ---
 
@@ -18,7 +18,7 @@ available at: https://github.com/albert-dilas/OpenPDF
 | `pymupdf-layout` | `1.28.2` | **GNU AGPL v3.0** | Document layout extraction support |
 | `pymupdf4llm` | `1.28.2` | **GNU AGPL v3.0** | PDF to structured Markdown conversion |
 
-> **AGPL-3.0 Compliance Disclosure**: Because prebuilt desktop binaries bundle PyMuPDF, combined binary distributions as a whole are made available alongside the complete corresponding source code of Tornio in the public GitHub repository (`https://github.com/albert-dilas/OpenPDF`). Downstream redistributors of compiled binaries incorporating PyMuPDF must likewise comply with GNU AGPL v3.0 obligations or obtain a commercial license from Artifex Software.
+> **AGPL-3.0 Compliance Disclosure**: Because prebuilt desktop binaries bundle PyMuPDF, combined binary distributions as a whole are made available alongside the complete corresponding source code of Tornio in the public GitHub repository (`https://github.com/albert-dilas/Tornio`). Downstream redistributors of compiled binaries incorporating PyMuPDF must likewise comply with GNU AGPL v3.0 obligations or obtain a commercial license from Artifex Software.
 
 ### Backend Runtime, Security & Media Libraries
 | Component | Version (Manifest) | License | Purpose |

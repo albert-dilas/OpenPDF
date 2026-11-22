@@ -507,7 +507,7 @@ export const useSystemStore = create<SystemState>((set, get) => ({
         latest: null,
         update_available: false,
         online: false,
-        url: 'https://github.com/albert-dilas/OpenPDF/releases',
+        url: 'https://github.com/albert-dilas/Tornio/releases',
       };
       set({ updateState: { status: 'offline', data: fallback } });
       return fallback;

@@ -187,7 +187,7 @@ respective licenses, including:
 
 - PyMuPDF / pymupdf4llm (GNU AGPL v3.0): Complete corresponding source code
   for Tornio and its dependency manifests are publicly available at:
-  https://github.com/albert-dilas/OpenPDF
+  https://github.com/albert-dilas/Tornio
 
 Full third-party license disclosures and attributions are listed in:
 THIRD_PARTY_NOTICES.md and NOTICE in the repository root.

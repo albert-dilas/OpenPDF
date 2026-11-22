@@ -285,7 +285,7 @@ export default function QrPDFPage() {
                       type="text"
                       value={payload}
                       onChange={(e) => setPayload(e.target.value)}
-                      placeholder="https://albert-dilas.github.io/OpenPDF/"
+                      placeholder="https://albert-dilas.github.io/Tornio/"
                       className="flex-1 px-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 text-sm"
                     />
                     <button

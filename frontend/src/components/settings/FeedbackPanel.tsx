@@ -123,7 +123,7 @@ export default function FeedbackPanel() {
       navigator.clipboard?.writeText(rawReport).catch(() => {});
       toast.success(t.common.copied);
       window.open(
-        `https://github.com/albert-dilas/OpenPDF/issues/new?title=${fullTitle}`,
+        `https://github.com/albert-dilas/Tornio/issues/new?title=${fullTitle}`,
         '_blank',
         'noopener,noreferrer'
       );
@@ -131,7 +131,7 @@ export default function FeedbackPanel() {
     }
 
     window.open(
-      `https://github.com/albert-dilas/OpenPDF/issues/new?title=${fullTitle}&body=${encodedBody}`,
+      `https://github.com/albert-dilas/Tornio/issues/new?title=${fullTitle}&body=${encodedBody}`,
       '_blank',
       'noopener,noreferrer'
     );
@@ -282,7 +282,7 @@ export default function FeedbackPanel() {
             {t.settings.feedback.communityTitle}:
           </span>
           <a
-            href="https://github.com/albert-dilas/OpenPDF"
+            href="https://github.com/albert-dilas/Tornio"
             target="_blank"
             rel="noreferrer"
             className="hover:text-[var(--fg)] inline-flex items-center gap-1"
@@ -291,7 +291,7 @@ export default function FeedbackPanel() {
           </a>
           <span>·</span>
           <a
-            href="https://github.com/albert-dilas/OpenPDF/issues"
+            href="https://github.com/albert-dilas/Tornio/issues"
             target="_blank"
             rel="noreferrer"
             className="hover:text-[var(--fg)] inline-flex items-center gap-1"

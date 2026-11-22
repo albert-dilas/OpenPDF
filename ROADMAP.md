@@ -22,7 +22,7 @@ Tornio follows a local-first, privacy-first roadmap centered on reliability, zer
 ## Planned (`v3.1.x`)
 
 - **Official Interactive Fanpage Reconstruction (`docs/index.html`)**: Tornio design tokens (`Porcelain Light` / `Carbon Dark` automatic + manual toggle), bilingual switcher (`ES`/`EN`), interactive 3D Studio stage, live searchable 58-tool explorer, and modular changelog feed.
-- **Community-Proposed Tools**: Prioritizing document, media, and security workflows submitted by users through in-app feedback, [GitHub Discussions](https://github.com/albert-dilas/OpenPDF/discussions), and Issues.
+- **Community-Proposed Tools**: Prioritizing document, media, and security workflows submitted by users through in-app feedback, [GitHub Discussions](https://github.com/albert-dilas/Tornio/discussions), and Issues.
 - **Cross-Platform Packaging**: Native macOS (`.dmg`) and Linux (AppImage / Flatpak) distribution scripts alongside Windows x64.
 - **Batch Queue Enhancements**: Drag-and-drop multi-file batch queues across Audio, Image, and Documents tools.
 
@@ -38,4 +38,4 @@ Tornio follows a local-first, privacy-first roadmap centered on reliability, zer
 
 ## Suggest a Tool or Vote on Priorities
 
-Have a daily file workflow you want processed offline? Open a thread in [GitHub Discussions](https://github.com/albert-dilas/OpenPDF/discussions) or submit a request via [GitHub Issues](https://github.com/albert-dilas/OpenPDF/issues/new?template=feature_request.md).
+Have a daily file workflow you want processed offline? Open a thread in [GitHub Discussions](https://github.com/albert-dilas/Tornio/discussions) or submit a request via [GitHub Issues](https://github.com/albert-dilas/Tornio/issues/new?template=feature_request.md).

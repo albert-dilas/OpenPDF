@@ -21,7 +21,7 @@ TRADEMARK & THIRD-PARTY COMPONENTS NOTICE
 
 1. "Tornio" name and emblem are governed by Section 6 of Apache License 2.0.
 2. Complete corresponding source code and full license text are hosted at:
-   https://github.com/albert-dilas/OpenPDF
+   https://github.com/albert-dilas/Tornio
 3. Bundled Third-Party Components:
    - PyMuPDF / pymupdf4llm (GNU AGPL v3.0) - Full source published on GitHub
    - FastAPI, Next.js, React, Tailwind CSS, Zustand, pdf2docx, onnxruntime (MIT)

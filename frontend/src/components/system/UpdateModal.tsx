@@ -88,7 +88,7 @@ export default function UpdateModal({
   const releaseUrl =
     updateData?.url ||
     updateData?.download_url ||
-    'https://github.com/albert-dilas/OpenPDF/releases';
+    'https://github.com/albert-dilas/Tornio/releases';
 
   const handleStartInAppDownload = async () => {
     try {

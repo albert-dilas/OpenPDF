@@ -448,7 +448,7 @@ function resolveToolRuntimeConfig(toolId: string): ToolRuntimeConfig {
             key: 'raw_items',
             label: 'Lista de enlaces o códigos (uno por línea)',
             type: 'textarea',
-            defaultValue: 'https://albert-dilas.github.io/OpenPDF/\nINVENTARIO-2026-001',
+            defaultValue: 'https://albert-dilas.github.io/Tornio/\nINVENTARIO-2026-001',
             placeholder: 'Escribe una URL o código por línea...',
           },
         ],

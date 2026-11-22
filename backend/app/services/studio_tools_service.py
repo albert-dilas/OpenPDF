@@ -1082,7 +1082,7 @@ def process_qr_barcode_batch(
                 entries.append(clean)
 
     if not entries:
-        entries = ["https://albert-dilas.github.io/OpenPDF/"]
+        entries = ["https://albert-dilas.github.io/Tornio/"]
 
     with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         for idx, item in enumerate(entries[:100], start=1):
