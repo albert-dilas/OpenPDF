@@ -16,14 +16,15 @@ Tornio follows a local-first, privacy-first roadmap centered on reliability, zer
   - Optional `ctypes` system tray, optional HKCU Windows startup and `"Abrir con Tornio"` Explorer context menu, Single-Instance file wake, Disk Space Quota Guard, Smart ZIP toggle with Zip-Slip-safe unpack, millisecond subprocess cancellation (`X-Request-Id`), and `SHA-256` verified self-updater (`SHA256SUMS.txt`).
 - **Open Source & Legal Governance**:
   - Apache License 2.0 for original Tornio code with transparent `NOTICE` and `THIRD_PARTY_NOTICES.md` (`PyMuPDF` `GNU AGPL v3.0`), `SECURITY.md`, and `CODE_OF_CONDUCT.md`.
+- **Official 3D GitHub Pages Website (`docs/index.html`)**:
+  - Launched `https://albert-dilas.github.io/Tornio/` with Tornio design tokens (`Porcelain Light` / `Carbon Dark` automatic + manual toggle), bilingual `ES`/`EN` switcher, WebGL 3D Studio scenes and base64 Figma format carousel, searchable 58-tool console, and Windows/Linux download hub with a 4-step real installer guide.
 
 ---
 
 ## Planned (`v3.1.x`)
 
-- **Official Interactive Fanpage Reconstruction (`docs/index.html`)**: Tornio design tokens (`Porcelain Light` / `Carbon Dark` automatic + manual toggle), bilingual switcher (`ES`/`EN`), interactive 3D Studio stage, live searchable 58-tool explorer, and modular changelog feed.
+- **Cross-Platform Packaging**: Native macOS (`.dmg`) and Linux (`.AppImage` / `.deb` / Flatpak) distribution builds alongside Windows x64.
 - **Community-Proposed Tools**: Prioritizing document, media, and security workflows submitted by users through in-app feedback, [GitHub Discussions](https://github.com/albert-dilas/Tornio/discussions), and Issues.
-- **Cross-Platform Packaging**: Native macOS (`.dmg`) and Linux (AppImage / Flatpak) distribution scripts alongside Windows x64.
 - **Batch Queue Enhancements**: Drag-and-drop multi-file batch queues across Audio, Image, and Documents tools.
 
 ---

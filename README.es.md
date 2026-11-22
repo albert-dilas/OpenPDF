@@ -166,7 +166,7 @@ Para ejecutar pruebas y compilar binarios Windows, consulta [BUILD_GUIDE.md](BUI
 - [ARCHITECTURE.md](ARCHITECTURE.md) — Topología del sistema, aislamiento en `127.0.0.1`, protección Anti-SSRF `safe_public_get` y FSM
 - [ROADMAP.md](ROADMAP.md) — Hitos publicados en `v3.0.0`, novedades previstas para `v3.1.x` y visión a futuro
 - [BUILD_GUIDE.md](BUILD_GUIDE.md) — Configuración local, pruebas y pipeline completo PyInstaller + Inno Setup
-- [CHANGELOG.md](CHANGELOG.md) — Registro histórico de cambios de `v2.2.0` y `v3.0.0`
+- [CHANGELOG.md](CHANGELOG.md) — Registro histórico completo de cambios desde OpenPDF `v1.0.0` hasta Tornio `v3.0.0`
 - [CONTRIBUTING.md](CONTRIBUTING.md) — Reglas de ingeniería, política cero emojis y checklist de PR
 - [SECURITY.md](SECURITY.md) — Política de seguridad y reporte responsable de vulnerabilidades
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Código de conducta

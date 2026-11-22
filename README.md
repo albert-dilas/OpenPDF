@@ -166,7 +166,7 @@ To run test suites or build standalone Windows `.exe` / installer binaries, see 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — System topology, loopback isolation, Anti-SSRF `safe_public_get`, quota guards, and FSM architecture
 - [ROADMAP.md](ROADMAP.md) — Shipped `v3.0.0` milestones, upcoming `v3.1.x` deliverables, and future vision
 - [BUILD_GUIDE.md](BUILD_GUIDE.md) — Local environment setup, test verification, PyInstaller, and Inno Setup packaging pipeline
-- [CHANGELOG.md](CHANGELOG.md) — Detailed history of changes across `v2.2.0` and `v3.0.0`
+- [CHANGELOG.md](CHANGELOG.md) — Detailed history of changes from OpenPDF `v1.0.0` through Tornio `v3.0.0`
 - [CONTRIBUTING.md](CONTRIBUTING.md) — Coding rules, zero-emoji policy, and PR checklist
 - [SECURITY.md](SECURITY.md) — Supported versions, local threat model, and vulnerability reporting
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Community standards

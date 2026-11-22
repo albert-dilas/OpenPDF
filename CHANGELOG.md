@@ -25,6 +25,8 @@ All notable changes to Tornio (formerly OpenPDF) are documented in this file fol
   - Pre-flight Disk Space Quota Guard, Fixed-Folder quick save with collision-safe numbering, Smart ZIP toggle, real millisecond subprocess cancellation (`X-Request-Id`), and minimalist 3-step Inno Setup 6 installer (`Tornio_Installer.iss`) synced with `%LOCALAPPDATA%\Tornio\config.json`.
 - **Open Source & Legal Governance**:
   - Migrated Tornio original code to **Apache License 2.0**, accompanied by `NOTICE`, `THIRD_PARTY_NOTICES.md` (explicit `PyMuPDF` `GNU AGPL v3.0` combined binary compliance disclosure), `SECURITY.md`, and `CODE_OF_CONDUCT.md`.
+- **Official 3D GitHub Pages Landing (`docs/index.html`)**:
+  - Rebuilt interactive site at `https://albert-dilas.github.io/Tornio/` featuring automatic `Carbon Dark` / `Porcelain Light` theme parity, bilingual `ES`/`EN` support, WebGL 3D Precision Core & Shield/Star scenes, embedded base64 Figma 3D format icons, 5 interactive 2x Retina showcases, searchable 58-tool console with sliding studio tabs, OS selector (Windows ready + Linux `.AppImage`/`.deb` roadmap), and 4 real polished installer step screenshots (`install-step-1..4.png`).
 
 ## [2.2.0] - 2026-10-18
 
@@ -32,3 +34,23 @@ All notable changes to Tornio (formerly OpenPDF) are documented in this file fol
 - Initial 21-module Local-First PDF desktop suite (`OpenPDF.exe` and `OpenPDF_Setup_v2.2.0.exe`).
 - 1-Click Local Engines Center (`Tesseract OCR` + Spanish language download, `MS Word COM` + `LibreOffice` dual Word-to-PDF conversion).
 - Settings view, non-blocking GitHub Releases update checker, local feedback logger, and anti-SSRF online URL utilities.
+
+## [2.1.0] - 2026-10-17
+
+### Added
+- Expanded OpenPDF to 21 specialized local and online PDF modules, introducing hop-by-hop Anti-SSRF validation (`safe_public_get`) across web-to-PDF and online utilities.
+
+## [2.0.0] - 2026-10-17
+
+### Changed
+- Completed full `[LOCAL-FIRST]` architectural refactor running privately on `127.0.0.1` with 16 core PDF modules, dark mode UI, Playwright/backend E2E test suite, overhauled Windows installer, and strict zero-emoji repository engineering rules (`AGENTS.md`).
+
+## [1.1.6] - 2026-09-28
+
+### Fixed
+- Resolved critical Windows PyInstaller packaging issues across `v1.1.1` through `v1.1.6`: added explicit hidden imports for `python-multipart`, restored `numpy`/`cv2` bundling for `pdf2docx`, redirected `stdout`/`stderr` to `devnull` and passed the FastAPI `app` instance directly to Uvicorn to fix silent windowless startup crashes, and disabled UPX compression to prevent binary corruption.
+
+## [1.0.0] - 2026-09-26
+
+### Added
+- Initial public release of OpenPDF establishing the FastAPI backend + Next.js desktop PDF structure, visual brand assets, and initial web showcase.
