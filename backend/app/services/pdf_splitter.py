@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 import zipfile
 import os
 import tempfile
@@ -71,7 +71,7 @@ class PDFSplitterService:
     @staticmethod
     def _split_sync(input_path: str, output_path: str, page_ranges: Optional[str] = None) -> str:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error abriendo PDF: {str(e)}")
 
@@ -88,7 +88,7 @@ class PDFSplitterService:
 
             with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED) as zipf:
                 for i in page_indices:
-                    doc2 = fitz.open()
+                    doc2 = pymupdf.open()
                     fd, page_path = tempfile.mkstemp(suffix=f"_page_{i + 1}.pdf")
                     os.close(fd)
                     try:

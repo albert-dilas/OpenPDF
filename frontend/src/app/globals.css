@@ -2,35 +2,188 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
-  --surface: #ffffff;
-  --surface-elevated: #ffffff;
-  --surface-muted: #f1f5f9;
-  --border: #e2e8f0;
+:root,
+html[data-skin="porcelain"] {
+  --bg: #FAF9F7;
+  --background: #FAF9F7;
+  --surface: #FFFFFF;
+  --surface-elevated: #FFFFFF;
+  --surface-muted: #F2F1EC;
+  --fg: #111114;
+  --foreground: #111114;
+  --fg-muted: #5F5F69;
+  --border: rgba(17, 17, 20, 0.09);
+  --border-strong: rgba(17, 17, 20, 0.18);
+  --shimmer-sheen: rgba(255, 255, 255, 0.65);
+  --accent: #111114;
+  --accent-rgb: 17 17 20;
+  --accent-hover-rgb: 38 38 44;
+  --accent-fg: #FFFFFF;
+  --accent-soft: rgba(17, 17, 20, 0.07);
+  --accent-border: rgba(17, 17, 20, 0.22);
+  --brand-rgb: 17 17 20;
+  --brand-hover-rgb: 38 38 44;
+  --radius-card: 12px;
+  --radius-control: 8px;
+  --radius-pill: 9999px;
   color-scheme: light;
 }
 
+html[data-skin="carbon"],
 .dark {
-  --background: #090d16;
-  --foreground: #f8fafc;
-  --surface: #111827;
-  --surface-elevated: #1e293b;
-  --surface-muted: #0f172a;
-  --border: #1e293b;
+  --bg: #0C0C0E;
+  --background: #0C0C0E;
+  --surface: #141417;
+  --surface-elevated: #1B1B20;
+  --surface-muted: #19191E;
+  --fg: #F4F4F6;
+  --foreground: #F4F4F6;
+  --fg-muted: #9898A4;
+  --border: rgba(255, 255, 255, 0.085);
+  --border-strong: rgba(255, 255, 255, 0.17);
+  --shimmer-sheen: rgba(255, 255, 255, 0.08);
   color-scheme: dark;
 }
 
+html[data-skin="swiss"] {
+  --bg: #EEEDE8;
+  --background: #EEEDE8;
+  --surface: #F9F8F5;
+  --surface-elevated: #FFFFFF;
+  --surface-muted: #E3E1DA;
+  --fg: #111114;
+  --foreground: #111114;
+  --fg-muted: #585862;
+  --border: rgba(17, 17, 20, 0.11);
+  --border-strong: rgba(17, 17, 20, 0.21);
+  --shimmer-sheen: rgba(255, 255, 255, 0.55);
+  color-scheme: light;
+}
+
+[data-radius="sharp"] {
+  --radius-card: 4px;
+  --radius-control: 4px;
+  --radius-pill: 4px;
+}
+
+[data-radius="balanced"] {
+  --radius-card: 12px;
+  --radius-control: 8px;
+  --radius-pill: 9999px;
+}
+
+[data-radius="soft"] {
+  --radius-card: 20px;
+  --radius-control: 14px;
+  --radius-pill: 9999px;
+}
+
+html[data-density="compact"] {
+  font-size: 15px;
+}
+
+html[data-density="standard"] {
+  font-size: 16px;
+}
+
+html[data-density="comfortable"] {
+  font-size: 17.5px;
+}
+
 body {
-  color: var(--foreground);
-  background: var(--background);
+  color: var(--fg);
+  background: var(--bg);
   font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+}
+
+@keyframes tornio-shimmer-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes tornio-indeterminate-slide {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+@keyframes tornio-dot-pulse {
+  0%,
+  80%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.8);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-strong) transparent;
+  }
+
+  .tornio-shimmer {
+    position: relative;
+    overflow: hidden;
+    background-color: var(--surface-muted);
+  }
+
+  .tornio-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--shimmer-sheen) 50%,
+      transparent 100%
+    );
+    animation: tornio-shimmer-sweep 1.55s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    will-change: transform;
+  }
+
+  .tornio-indeterminate {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tornio-indeterminate::after {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    left: 0;
+    width: 36%;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      var(--accent) 45%,
+      var(--accent) 55%,
+      transparent 100%
+    );
+    animation: tornio-indeterminate-slide 1.25s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    will-change: transform;
+  }
+
+  .tornio-dot-pulse {
+    animation: tornio-dot-pulse 1.2s ease-in-out infinite;
+    will-change: transform, opacity;
   }
 }
 

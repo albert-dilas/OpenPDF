@@ -1,6 +1,6 @@
 """Pruebas de integración y seguridad para las 5 nuevas herramientas de OpenPDF v2.1.0."""
 import io
-import fitz
+import pymupdf
 import httpx
 import pytest
 from PIL import Image
@@ -22,7 +22,7 @@ def _create_signature_png_bytes() -> bytes:
 
 
 def _create_sensitive_pdf_bytes() -> bytes:
-    doc = fitz.open()
+    doc = pymupdf.open()
     page = doc.new_page(width=595, height=842)
     page.insert_text((72, 100), "Contrato Confidencial - CLAVE-SECRETA-7788", fontsize=12)
     page.insert_text((72, 130), "Contacto: soporte@corporacion.com | Tel: +51 987-654-321", fontsize=11)
@@ -51,7 +51,7 @@ def test_sign_pdf_success(sample_pdf_bytes):
     assert response.status_code == 200
     assert response.content[:4] == b"%PDF"
 
-    out_doc = fitz.open(stream=response.content, filetype="pdf")
+    out_doc = pymupdf.open(stream=response.content, filetype="pdf")
     try:
         assert len(out_doc) == 3
         assert len(out_doc[0].get_images()) >= 1
@@ -93,7 +93,7 @@ def test_redact_pdf_purges_sensitive_text():
     redacted_count = int(response.headers.get("x-redacted-count", "0"))
     assert redacted_count >= 3
 
-    out_doc = fitz.open(stream=response.content, filetype="pdf")
+    out_doc = pymupdf.open(stream=response.content, filetype="pdf")
     try:
         extracted = out_doc[0].get_text("text")
         assert "CLAVE-SECRETA-7788" not in extracted
@@ -183,7 +183,7 @@ def test_url_to_pdf_renders_html_article(monkeypatch):
     assert response.status_code == 200
     assert response.content[:4] == b"%PDF"
 
-    doc = fitz.open(stream=response.content, filetype="pdf")
+    doc = pymupdf.open(stream=response.content, filetype="pdf")
     try:
         text = doc[0].get_text("text")
         assert "Guia Tecnica OpenPDF" in text
@@ -213,7 +213,7 @@ def test_translate_pdf_success(monkeypatch, sample_pdf_bytes):
     assert response.content[:4] == b"%PDF"
     assert int(response.headers.get("x-translated-pages", "0")) == 3
 
-    doc = fitz.open(stream=response.content, filetype="pdf")
+    doc = pymupdf.open(stream=response.content, filetype="pdf")
     try:
         text = doc[0].get_text("text")
         assert "Texto traducido al ingles correctamente." in text

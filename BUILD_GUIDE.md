@@ -1,68 +1,85 @@
-# Guía de Compilación de OpenPDF
+# Build Guide — Tornio v3.0.0
 
-Este documento detalla el procedimiento exacto para reconstruir el ejecutable autónomo (`OpenPDF.exe`) y el instalador oficial de Windows (`OpenPDF_Setup_v2.0.0.exe`) desde el código fuente.
+This guide explains how to run Tornio from source and package standalone Windows artifacts (`Tornio.exe`, `Tornio_Setup_v3.0.0.exe`, and `SHA256SUMS.txt`).
 
-## Prerrequisitos del Entorno
+---
 
-1. **Sistema Operativo:** Windows 10/11 (o entorno de integración continua Windows).
-2. **Node.js:** v18 o v20+.
-3. **Python:** v3.12+.
-4. **Inno Setup:** v6 (necesario para generar el instalador final).
+## Prerequisites
 
-## 1. Configuración Inicial del Entorno
+- **Operating System**: Windows 10 / 11 x64 (for PyInstaller `.exe` and Inno Setup packaging; source execution also works on Linux and macOS)
+- **Python**: 3.12+
+- **Node.js**: 20 LTS (or 18+)
+- **Inno Setup**: v6 (required only when building `Tornio_Setup_vX.Y.Z.exe`)
 
-Asegúrate de instalar las dependencias tanto del backend como del frontend:
+---
+
+## 1. Local Environment Setup
 
 ```powershell
-# 1. Clonar el repositorio y entrar
+# 1. Clone the repository
 git clone https://github.com/albert-dilas/OpenPDF.git
 cd OpenPDF
 
-# 2. Instalar dependencias del frontend
-cd frontend
-npm install
-cd ..
+# 2. Install frontend dependencies
+npm --prefix frontend ci
 
-# 3. Crear entorno virtual del backend e instalar dependencias
+# 3. Create backend virtual environment and install dependencies
 cd backend
 python -m venv .venv
-.\.venv\Scripts\Activate
-pip install -r requirements-dev.txt
-pip install pyinstaller  # Necesario para empaquetar el ejecutable
+.\.venv\Scripts\python -m pip install --upgrade pip
+.\.venv\Scripts\python -m pip install -r requirements-dev.txt
 cd ..
 ```
 
-## 2. Preparación de Assets del Instalador (Opcional)
+---
 
-Si el ícono o los banners del instalador han cambiado, regénéralos con Pillow:
+## 2. Running in Development Mode
 
-```powershell
-python scripts/prepare_assets.py
-```
-
-## 3. Ejecutar el Pipeline de Compilación
-
-Ejecuta en orden los dos scripts de empaquetado desde la raíz del proyecto:
+Terminal 1 (FastAPI Backend on `127.0.0.1:8000`):
 
 ```powershell
-# Paso 1: Compila el frontend estático (frontend/out) y empaqueta OpenPDF.exe con PyInstaller
-python scripts/build_exe.py
-
-# Paso 2: Empaqueta el instalador de Windows con Inno Setup (ISCC.exe)
-python scripts/build_installer.py
+.\backend\.venv\Scripts\python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000 --reload
 ```
 
-### ¿Qué hacen internamente estos scripts?
-1. **Frontend (`npm run build`):** Genera el export estático en `frontend/out` con fuentes locales e iconos embebidos (100% offline).
-2. **Backend (`installer/OpenPDF.spec`):**
-   - Empaqueta el servidor FastAPI + PyMuPDF + pdf2docx + pytesseract.
-   - Incluye explícitamente `python_multipart` y los módulos necesarios en `hiddenimports`.
-   - Incrusta `frontend/out` dentro del binario monolítico.
-3. **Instalador (`installer/OpenPDF_Installer.iss`):** Invoca Inno Setup para generar el asistente de instalación final.
+Terminal 2 (Next.js Frontend Dev Server on `http://localhost:3000`):
 
-## 4. Artefactos de Salida
+```powershell
+npm --prefix frontend run dev
+```
 
-Tras la compilación encontrarás los artefactos en el directorio `/dist`:
+---
 
-* `OpenPDF.exe`: Binario portátil autónomo.
-* `OpenPDF_Setup_v2.0.0.exe`: Instalador oficial distribuible en GitHub Releases.
+## 3. Running Verification Checks
+
+```powershell
+# Backend test suite
+.\backend\.venv\Scripts\python -m pytest backend/tests -q
+
+# Frontend lint, typecheck, and static export
+npm --prefix frontend run lint
+npx --prefix frontend tsc -p frontend/tsconfig.json --noEmit
+npm --prefix frontend run build
+```
+
+---
+
+## 4. Packaging Portable Binary & Minimalist 3-Step Installer
+
+Run the unified release build pipeline from the repository root:
+
+```powershell
+.\backend\.venv\Scripts\python scripts/build_installer.py
+```
+
+Internally, `scripts/build_installer.py` executes 5 steps:
+1. **Asset Preparation (`scripts/prepare_assets.py`)**: Supersamples `tornio.ico` (`16px..256px`), installer bitmaps (`wizard_banner.bmp`, `wizard_small.bmp`), `frontend/src/app/favicon.ico`, and `frontend/public/icon.png`.
+2. **Static Offline UI (`npm --prefix frontend run build`)**: Exports 76 static Next.js routes into `frontend/out` with embedded fonts and icons.
+3. **Portable Executable (`installer/Tornio.spec`)**: Packages FastAPI, domain libraries, `frontend/out`, and tray resources into `dist/Tornio.exe`.
+4. **Windows Installer (`installer/Tornio_Installer.iss`)**: Compiles the 3-step per-user Inno Setup 6 wizard (`PrivilegesRequired=lowest`) into `dist/Tornio_Setup_v3.0.0.exe`, syncing user choices into `%LOCALAPPDATA%\Tornio\config.json`.
+5. **Cryptographic Manifest (`dist/SHA256SUMS.txt`)**: Generates SHA-256 digests used by the in-app `SelfUpdaterManager` to verify downloaded releases before execution.
+
+For a portable executable only (skipping Inno Setup):
+
+```powershell
+.\backend\.venv\Scripts\python scripts/build_exe.py
+```

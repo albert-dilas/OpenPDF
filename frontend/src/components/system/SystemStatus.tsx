@@ -5,38 +5,70 @@ import {
   CheckCircle2,
   AlertTriangle,
   RefreshCw,
-  Sparkles,
+  Download,
   X,
   ExternalLink,
   Cpu,
   Blocks,
   Search,
+  ShieldCheck,
 } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { useSystemStore } from '@/store/useSystemStore';
-
-import { initializeClientSettings } from '@/store/useSettingsStore';
+import {
+  selectDesktopConfig,
+  selectEngineCapabilities,
+  selectEngineVersion,
+  selectHasCheckedEngine,
+  selectIsEngineChecking,
+  selectIsEngineOffline,
+  selectIsEngineOnline,
+  selectMaxFileSizeMb,
+  selectUpdateInfo,
+  useSystemStore,
+} from '@/store/useSystemStore';
+import { useSettingsStore } from '@/store/useSettingsStore';
+import { ModuleRequirement } from '@/config/studios';
+import { useI18n } from '@/i18n';
 
 let pollerInitialized = false;
 
 export function SystemStatusPoller() {
   const checkStatus = useSystemStore((s) => s.checkStatus);
   const checkUpdatesOnce = useSystemStore((s) => s.checkUpdatesOnce);
+  const refreshSelfUpdateStatus = useSystemStore((s) => s.refreshSelfUpdateStatus);
+  const beginSelfUpdateDownload = useSystemStore((s) => s.beginSelfUpdateDownload);
   const setImmersiveMode = useSystemStore((s) => s.setImmersiveMode);
 
   useEffect(() => {
-    const settings = initializeClientSettings();
+    useSettingsStore.getState().hydrateFromStorage();
+    const settings = useSettingsStore.getState();
     if (settings.immersiveByDefault) {
       setImmersiveMode(true);
     }
 
     if (!pollerInitialized) {
       pollerInitialized = true;
-      checkStatus();
-      if (settings.autoCheckUpdatesOnStart) {
-        checkUpdatesOnce();
-      }
+      (async () => {
+        const snapshot = await checkStatus();
+        await refreshSelfUpdateStatus().catch(() => null);
+        const mode = snapshot?.desktop?.update_mode ?? 'notify';
+        if (mode === 'manual') return;
+        const info = await checkUpdatesOnce();
+        if (
+          mode === 'auto' &&
+          info?.online &&
+          info.update_available &&
+          (info.installer_url || info.portable_url || info.download_url) &&
+          info.checksums_url
+        ) {
+          const st = useSystemStore.getState().selfUpdateStatus;
+          if (st.status === 'idle' || st.status === 'cancelled') {
+            beginSelfUpdateDownload(info).catch(() => {});
+          }
+        }
+      })();
     }
+
     const interval = setInterval(() => {
       checkStatus();
     }, 30000);
@@ -44,22 +76,28 @@ export function SystemStatusPoller() {
       clearInterval(interval);
       pollerInitialized = false;
     };
-  }, [checkStatus, checkUpdatesOnce, setImmersiveMode]);
+  }, [
+    beginSelfUpdateDownload,
+    checkStatus,
+    checkUpdatesOnce,
+    refreshSelfUpdateStatus,
+    setImmersiveMode,
+  ]);
 
   return null;
 }
 
 export function SystemStatusBadge() {
-  const {
-    online,
-    checking,
-    hasCheckedOnce,
-    version,
-    capabilities,
-    maxFileSizeMb,
-    checkStatus,
-    setModulesModalOpen,
-  } = useSystemStore();
+  const { t } = useI18n();
+  const isOffline = useSystemStore(selectIsEngineOffline);
+  const checking = useSystemStore(selectIsEngineChecking);
+  const hasCheckedOnce = useSystemStore(selectHasCheckedEngine);
+  const version = useSystemStore(selectEngineVersion);
+  const capabilities = useSystemStore(selectEngineCapabilities);
+  const maxFileSizeMb = useSystemStore(selectMaxFileSizeMb);
+  const checkStatus = useSystemStore((s) => s.checkStatus);
+  const setModulesModalOpen = useSystemStore((s) => s.setModulesModalOpen);
+
   const [open, setOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
 
@@ -75,133 +113,101 @@ export function SystemStatusBadge() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [open]);
 
-  const isOffline = hasCheckedOnce && !online;
-
   return (
     <div className="relative" ref={popoverRef}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        aria-label={
-          isOffline
-            ? 'Estado del sistema: Motor local desconectado'
-            : 'Estado del sistema: Motor local activo'
-        }
         aria-expanded={open}
-        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
+        className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium border transition-colors whitespace-nowrap ${
           isOffline
-            ? 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800/70'
-            : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100/80 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800/60'
+            ? 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-300'
+            : 'border-[var(--border)] bg-[var(--surface)] text-[var(--fg)] hover:border-[var(--border-strong)]'
         }`}
       >
-        <span className="relative flex h-2 w-2">
-          {!isOffline && (
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-          )}
-          <span
-            className={`relative inline-flex rounded-full h-2 w-2 ${
-              isOffline ? 'bg-amber-500' : 'bg-emerald-500'
-            }`}
-          />
-        </span>
-        <span className="hidden sm:inline">
+        <span
+          className={`w-2 h-2 rounded-full ${
+            isOffline ? 'bg-amber-500' : 'bg-emerald-500'
+          }`}
+        />
+        <span>
           {checking && !hasCheckedOnce
-            ? 'Verificando motor...'
+            ? t.brand.engineChipChecking
             : isOffline
-            ? 'Motor Desconectado'
-            : 'Motor Local Activo'}
+            ? t.brand.engineChipOffline
+            : t.brand.engineChipOnline}
         </span>
-        <span className="sm:hidden">{isOffline ? 'Offline' : 'Local'}</span>
       </button>
 
       {open && (
         <div
           role="dialog"
-          aria-label="Detalles del motor local"
-          className="absolute right-0 mt-2 w-72 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-xl p-4 z-50 text-left animate-fade-in"
+          className="absolute right-0 mt-2 w-72 rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-xl p-4 z-50 text-left animate-fade-in"
         >
-          <div className="flex items-center justify-between pb-3 mb-3 border-b border-gray-100 dark:border-slate-800">
+          <div className="flex items-center justify-between pb-3 mb-3 border-b border-[var(--border)]">
             <div className="flex items-center gap-2">
-              <Cpu className="w-4 h-4 text-brand" />
-              <span className="text-xs font-bold text-gray-900 dark:text-slate-100">
-                Motor OpenPDF v{version}
+              <Cpu className="w-4 h-4 text-[var(--fg)]" />
+              <span className="text-xs font-semibold text-[var(--fg)]">
+                {t.brand.name} v{version}
               </span>
             </div>
             <button
               type="button"
               onClick={() => checkStatus()}
-              title="Actualizar estado"
-              aria-label="Actualizar estado del motor"
-              className="p-1 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors"
+              aria-label={t.common.retry}
+              className="p-1 rounded-[var(--radius-control)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface-muted)]"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${checking ? 'animate-spin' : ''}`} />
             </button>
           </div>
 
           {isOffline ? (
-            <div className="space-y-2 text-xs text-amber-700 dark:text-amber-300 bg-amber-50/70 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-200/70 dark:border-amber-800/60">
-              <p className="font-semibold">No hay conexión con el servidor local.</p>
-              <p className="text-amber-600 dark:text-amber-400">
-                Asegúrate de que el proceso de OpenPDF (FastAPI) esté activo en tu equipo.
-              </p>
+            <div className="text-xs text-amber-600 dark:text-amber-300 bg-amber-500/10 p-3 rounded-[var(--radius-control)] border border-amber-500/20">
+              {t.brand.engineChipOffline}
             </div>
           ) : (
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between text-gray-600 dark:text-slate-400">
-                <span>Procesamiento</span>
-                <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                  100% En tu equipo
+            <div className="space-y-2 text-xs">
+              <div className="flex items-center justify-between text-[var(--fg-muted)]">
+                <span>127.0.0.1</span>
+                <span className="font-mono font-semibold text-[var(--fg)]">
+                  {maxFileSizeMb} MB max
                 </span>
               </div>
-              <div className="flex items-center justify-between text-gray-600 dark:text-slate-400">
-                <span>Límite por archivo</span>
-                <span className="font-semibold text-gray-900 dark:text-slate-200">
-                  {maxFileSizeMb} MB
-                </span>
+              <div className="pt-2 border-t border-[var(--border)] space-y-1">
+                {(['ocr', 'word_to_pdf', 'ffmpeg', 'yt_dlp', 'rembg_onnx', 'whisper_cpu'] as const).map(
+                  (key) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <span className="text-[var(--fg-muted)]">
+                        {t.modulesModal.items[key].shortTitle}
+                      </span>
+                      {capabilities[key] ? (
+                        <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                          <CheckCircle2 className="w-3 h-3" /> {t.common.ready}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
+                          <AlertTriangle className="w-3 h-3" /> {t.common.pending}
+                        </span>
+                      )}
+                    </div>
+                  )
+                )}
               </div>
-              <div className="pt-2 border-t border-gray-100 dark:border-slate-800 space-y-1.5">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-slate-500">
-                  Módulos opcionales
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-700 dark:text-slate-300">OCR (Tesseract)</span>
-                  {capabilities.ocr ? (
-                    <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Conectado
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                      <AlertTriangle className="w-3.5 h-3.5" /> Pendiente
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-700 dark:text-slate-300">Word a PDF</span>
-                  {capabilities.word_to_pdf ? (
-                    <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Conectado
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400 font-medium">
-                      <AlertTriangle className="w-3.5 h-3.5" /> Pendiente
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              <div className="pt-2.5 border-t border-gray-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    setModulesModalOpen(true);
-                  }}
-                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-brand/10 hover:bg-brand/15 text-brand dark:bg-brand/20 dark:text-red-300 font-bold text-xs transition-colors"
-                >
-                  <Blocks className="w-3.5 h-3.5" />
-                  <span>Gestionar e instalar módulos opcionales</span>
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setOpen(false);
+                  setModulesModalOpen(true);
+                }}
+                className="w-full mt-2 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-[var(--radius-control)] text-xs font-semibold"
+                style={{
+                  backgroundColor: 'var(--accent)',
+                  color: 'var(--accent-fg)',
+                }}
+              >
+                <Blocks className="w-3.5 h-3.5" />
+                <span>{t.settings.modules.openCenterBtn}</span>
+              </button>
             </div>
           )}
         </div>
@@ -211,42 +217,85 @@ export function SystemStatusBadge() {
 }
 
 export function UpdateBanner() {
-  const { updateInfo, updateDismissed, dismissUpdate } = useSystemStore();
+  const updateInfo = useSystemStore(selectUpdateInfo);
+  const desktopConfig = useSystemStore(selectDesktopConfig);
+  const selfUpdateStatus = useSystemStore((s) => s.selfUpdateStatus);
+  const updateDismissed = useSystemStore((s) => s.updateDismissed);
+  const dismissUpdate = useSystemStore((s) => s.dismissUpdate);
+  const setUpdateModalOpen = useSystemStore((s) => s.setUpdateModalOpen);
+  const { locale } = useI18n();
 
-  if (!updateInfo || !updateInfo.update_available || !updateInfo.online || updateDismissed) {
+  if (desktopConfig?.update_mode === 'manual') {
+    return null;
+  }
+
+  const readyToInstall =
+    selfUpdateStatus.status === 'ready_to_install' && selfUpdateStatus.verified;
+
+  if (
+    !readyToInstall &&
+    (!updateInfo || !updateInfo.update_available || !updateInfo.online || updateDismissed)
+  ) {
     return null;
   }
 
   return (
     <div
       role="status"
-      className="bg-gradient-to-r from-brand-dark via-brand to-orange-600 text-white px-4 py-2 text-xs sm:text-sm shadow-sm"
+      className="border-b border-[var(--border)] bg-[var(--surface-muted)] text-[var(--fg)] px-4 py-1.5 text-xs"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
         <div className="flex items-center gap-2 flex-wrap">
-          <Sparkles className="w-4 h-4 shrink-0" />
+          {readyToInstall ? (
+            <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-emerald-500" />
+          ) : (
+            <Download className="w-3.5 h-3.5 shrink-0" style={{ color: 'var(--accent)' }} />
+          )}
           <span>
-            Nueva versión de <strong>OpenPDF {updateInfo.latest}</strong> disponible (actual:{' '}
-            {updateInfo.current}).
+            {readyToInstall
+              ? locale === 'en'
+                ? `Tornio v${selfUpdateStatus.target_version} verified (SHA-256) and ready to install.`
+                : `Tornio v${selfUpdateStatus.target_version} verificado (SHA-256) y listo para instalar.`
+              : locale === 'en'
+              ? `New Tornio release v${updateInfo?.latest} available (v${updateInfo?.current}).`
+              : `Nueva versión de Tornio v${updateInfo?.latest} disponible (v${updateInfo?.current}).`}
           </span>
-          {updateInfo.url && (
+
+          <button
+            type="button"
+            onClick={() => setUpdateModalOpen(true)}
+            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[var(--radius-control)] font-semibold transition-opacity hover:opacity-90"
+            style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-fg)' }}
+          >
+            <span>
+              {readyToInstall
+                ? locale === 'en'
+                  ? 'Restart & install'
+                  : 'Reiniciar e instalar'
+                : locale === 'en'
+                ? '1-Click Update'
+                : 'Actualizar en 1 clic'}
+            </span>
+          </button>
+
+          {updateInfo?.url && (
             <a
               href={updateInfo.url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 underline font-semibold hover:opacity-90 ml-1"
+              className="inline-flex items-center gap-1 underline text-[var(--fg-muted)] hover:text-[var(--fg)]"
             >
-              Ver descarga <ExternalLink className="w-3.5 h-3.5" />
+              GitHub <ExternalLink className="w-3 h-3" />
             </a>
           )}
         </div>
         <button
           type="button"
           onClick={dismissUpdate}
-          aria-label="Descartar aviso de actualización"
-          className="p-1 rounded-lg hover:bg-white/15 transition-colors shrink-0"
+          aria-label="Dismiss update banner"
+          className="p-1 rounded-[var(--radius-control)] hover:bg-[var(--surface)] transition-colors shrink-0"
         >
-          <X className="w-4 h-4" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
@@ -256,72 +305,69 @@ export function UpdateBanner() {
 export function CapabilityWarningBanner({
   capability,
 }: {
-  capability?: 'ocr' | 'word_to_pdf';
+  capability?: ModuleRequirement;
 }) {
-  const {
-    hasCheckedOnce,
-    online,
-    capabilities,
-    checking,
-    setModulesModalOpen,
-    detectModules,
-  } = useSystemStore();
+  const { t, locale } = useI18n();
+  const hasCheckedOnce = useSystemStore(selectHasCheckedEngine);
+  const online = useSystemStore(selectIsEngineOnline);
+  const capabilities = useSystemStore(selectEngineCapabilities);
+  const checking = useSystemStore(selectIsEngineChecking);
+  const setModulesModalOpen = useSystemStore((s) => s.setModulesModalOpen);
+  const detectModules = useSystemStore((s) => s.detectModules);
 
   if (!capability || !hasCheckedOnce || !online) return null;
   if (capabilities[capability]) return null;
 
-  const isOcr = capability === 'ocr';
+  const modCopy = t.modulesModal.items[capability];
 
   const handleQuickDetect = async () => {
     const res = await detectModules();
     if (res?.capabilities?.[capability]) {
-      toast.success('Módulo detectado y conectado automáticamente.');
+      toast.success(t.modulesModal.binaryLinkedToast);
     } else {
-      toast('No se detectó en las rutas estándar. Puedes instalarlo en 1 clic.', {
-        duration: 3500,
-      });
+      toast(t.modulesModal.rescanDone, { duration: 3000 });
     }
   };
 
   return (
     <div
       role="alert"
-      className="max-w-3xl mx-auto mb-6 rounded-2xl border border-amber-200 dark:border-amber-800/70 bg-amber-50/90 dark:bg-amber-950/40 px-5 py-4 text-left shadow-sm"
+      className="max-w-4xl mx-auto mb-5 rounded-[var(--radius-card)] border border-amber-500/35 bg-amber-500/10 px-4 py-3.5 text-left"
     >
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-          <div className="text-xs sm:text-sm text-amber-900 dark:text-amber-200 space-y-1">
-            <p className="font-bold">
-              {isOcr
-                ? 'Módulo Tesseract OCR pendiente de conectar'
-                : 'Módulo Word / LibreOffice pendiente de conectar'}
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+          <div className="text-xs text-[var(--fg)] space-y-0.5">
+            <p className="font-semibold">
+              {modCopy.title} — {t.modulesModal.statusPending}
             </p>
-            <p className="text-amber-700 dark:text-amber-300/90 leading-relaxed">
-              {isOcr
-                ? 'Puedes instalarlo automáticamente en 1 clic o vincularlo desde aquí sin abrir consolas ni configurar variables de entorno.'
-                : 'Puedes instalar LibreOffice automáticamente en 1 clic o autodetectar Microsoft Word / LibreOffice sin salir de esta ventana.'}
-            </p>
+            <p className="text-[var(--fg-muted)] leading-relaxed">{modCopy.installDesc}</p>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 shrink-0 sm:pl-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
             type="button"
             onClick={() => setModulesModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-bold shadow-sm transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-control)] text-xs font-semibold transition-opacity hover:opacity-90"
+            style={{
+              backgroundColor: 'var(--accent)',
+              color: 'var(--accent-fg)',
+            }}
           >
             <Blocks className="w-3.5 h-3.5" />
-            <span>Instalar o conectar en 1 clic</span>
+            <span>
+              {locale === 'en' ? '1-Click Setup' : 'Instalar / Conectar'}
+            </span>
           </button>
           <button
             type="button"
             disabled={checking}
             onClick={handleQuickDetect}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-300 dark:border-amber-700 bg-white/80 dark:bg-slate-900/80 hover:bg-white dark:hover:bg-slate-900 text-amber-900 dark:text-amber-200 text-xs font-semibold transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] text-xs font-medium text-[var(--fg)] transition-colors disabled:opacity-50"
           >
             <Search className="w-3.5 h-3.5" />
-            <span>Autodetectar ahora</span>
+            <span>{t.modulesModal.optionBButton}</span>
           </button>
         </div>
       </div>

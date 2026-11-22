@@ -1,5 +1,5 @@
 import json
-import fitz
+import pymupdf
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -20,7 +20,7 @@ def test_organize_reorder_rotate_and_delete(sample_pdf_bytes):
     assert response.status_code == 200
     assert response.content[:4] == b"%PDF"
 
-    doc = fitz.open(stream=response.content, filetype="pdf")
+    doc = pymupdf.open(stream=response.content, filetype="pdf")
     try:
         assert len(doc) == 2
         assert "Page 3" in doc[0].get_text()

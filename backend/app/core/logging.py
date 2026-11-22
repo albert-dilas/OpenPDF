@@ -2,8 +2,8 @@ import logging
 import sys
 
 
-def get_logger(name: str = "openpdf") -> logging.Logger:
-    """Retorna un logger configurado para la aplicación."""
+def get_logger(name: str = "tornio") -> logging.Logger:
+    """Retorna un logger configurado para la aplicacion."""
     logger = logging.getLogger(name)
     if not logger.handlers:
         stream = sys.stderr if sys.stderr is not None else sys.stdout
@@ -19,4 +19,4 @@ def get_logger(name: str = "openpdf") -> logging.Logger:
     return logger
 
 
-logger = get_logger("openpdf")
+logger = get_logger("tornio")

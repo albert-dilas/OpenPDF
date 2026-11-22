@@ -1,25 +1,39 @@
+import json
 import os
+import shutil
 import subprocess
+import sys
 import threading
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 import httpx
+import psutil
 from packaging.version import Version, InvalidVersion
 
 from app.core.config import settings
-from app.core.exceptions import BusinessRuleError
+from app.core.exceptions import BusinessRuleError, PDFProcessingError
+from app.services.desktop_service import get_desktop_config
 from app.utils.binaries import (
     _get_user_tessdata_dir,
     clear_binaries_cache,
+    find_ffmpeg,
+    find_ffprobe,
     find_msword,
     find_soffice,
     find_tesseract,
     find_winget,
     find_word_converter,
+    find_yt_dlp,
+    get_ai_venv_dir,
+    get_ai_venv_python,
     get_effective_tessdata_dir,
+    get_ffmpeg_info,
     get_ocr_languages,
+    get_rembg_info,
     get_tesseract_info,
+    get_whisper_info,
+    get_yt_dlp_info,
     resolve_binary_candidate,
     set_custom_binary_path,
 )
@@ -27,14 +41,20 @@ from app.utils.binaries import (
 GITHUB_LATEST_RELEASE_API = "https://api.github.com/repos/albert-dilas/OpenPDF/releases/latest"
 DEFAULT_RELEASES_URL = "https://github.com/albert-dilas/OpenPDF/releases"
 TESSDATA_FAST_BASE_URL = "https://raw.githubusercontent.com/tesseract-ocr/tessdata_fast/main"
+REMBG_U2NETP_URL = "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2netp.onnx"
+YT_DLP_WIN_URL = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe"
+YT_DLP_POSIX_URL = "https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp"
 UPDATE_CACHE_TTL_SECONDS = 6 * 3600  # 6 horas
+
+ALL_MODULE_IDS = ("ocr", "word_to_pdf", "ffmpeg", "yt_dlp", "rembg_onnx", "whisper_cpu")
+BINARY_MODULE_IDS = ("ocr", "word_to_pdf", "ffmpeg", "yt_dlp")
+INSTALLABLE_MODULE_IDS = ("ocr", "ocr_lang_spa", "word_to_pdf", "ffmpeg", "yt_dlp", "rembg_onnx", "whisper_cpu")
 
 _update_cache: Optional[Dict[str, Any]] = None
 _update_cache_timestamp: float = 0.0
 
 _install_states: Dict[str, Dict[str, Optional[str]]] = {
-    "ocr": {"status": "idle", "message": None},
-    "word_to_pdf": {"status": "idle", "message": None},
+    mod_id: {"status": "idle", "message": None} for mod_id in ALL_MODULE_IDS
 }
 
 
@@ -43,6 +63,24 @@ def clear_update_cache() -> None:
     global _update_cache, _update_cache_timestamp
     _update_cache = None
     _update_cache_timestamp = 0.0
+
+
+def _is_update_check_disabled() -> bool:
+    flag = (
+        os.environ.get("TORNIO_DISABLE_UPDATE_CHECK", "").strip()
+        or os.environ.get("OPENPDF_DISABLE_UPDATE_CHECK", "").strip()
+    ).lower()
+    return flag in ("1", "true", "yes")
+
+
+def _get_feedback_dir() -> Path:
+    env_cfg = (
+        os.environ.get("TORNIO_CONFIG_PATH", "").strip()
+        or os.environ.get("OPENPDF_CONFIG_PATH", "").strip()
+    )
+    if env_cfg:
+        return Path(env_cfg).parent
+    return settings.USER_DATA_DIR
 
 
 def download_tessdata_languages(langs: List[str], timeout: float = 20.0) -> bool:
@@ -71,8 +109,63 @@ def download_tessdata_languages(langs: List[str], timeout: float = 20.0) -> bool
     return success
 
 
+def _download_file_streaming(url: str, target_path: Path, min_bytes: int = 1024, timeout: float = 180.0) -> None:
+    target_path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = target_path.with_suffix(target_path.suffix + ".tmp")
+    total_written = 0
+    try:
+        with httpx.Client(timeout=timeout, follow_redirects=True) as client:
+            with client.stream("GET", url, headers={"User-Agent": f"Tornio/{settings.VERSION}"}) as resp:
+                resp.raise_for_status()
+                with open(tmp_path, "wb") as out_f:
+                    for chunk in resp.iter_bytes(chunk_size=1024 * 64):
+                        if chunk:
+                            out_f.write(chunk)
+                            total_written += len(chunk)
+        if total_written < min_bytes:
+            raise RuntimeError("El archivo descargado esta incompleto o vacio.")
+        tmp_path.replace(target_path)
+    finally:
+        if tmp_path.exists():
+            try:
+                tmp_path.unlink()
+            except OSError:
+                pass
+
+
+def _run_winget_install(package_id: str, timeout: int = 600) -> subprocess.CompletedProcess:
+    winget_bin = find_winget() or "winget"
+    return subprocess.run(
+        [
+            winget_bin,
+            "install",
+            "--id",
+            package_id,
+            "-e",
+            "--silent",
+            "--accept-package-agreements",
+            "--accept-source-agreements",
+            "--disable-interactivity",
+        ],
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+    )
+
+
+def _find_host_python_for_venv() -> Optional[str]:
+    if not getattr(sys, "frozen", False) and sys.executable and os.path.isfile(sys.executable):
+        return sys.executable
+    for candidate in ("python", "python3"):
+        found = shutil.which(candidate)
+        if found and os.path.isfile(found):
+            return found
+    return None
+
+
 def _run_install_module_worker(module: str) -> None:
-    state_key = "ocr" if module in ("ocr", "ocr_lang_spa") else "word_to_pdf"
+    state_key = "ocr" if module in ("ocr", "ocr_lang_spa") else module
     try:
         if module == "ocr_lang_spa":
             _install_states[state_key] = {
@@ -87,7 +180,7 @@ def _run_install_module_worker(module: str) -> None:
                 }
             else:
                 _install_states[state_key] = {
-                    "status": "error",
+                    "status": "failed",
                     "message": "No se pudo descargar spa.traineddata. Verifica tu conexion a internet.",
                 }
             return
@@ -98,28 +191,11 @@ def _run_install_module_worker(module: str) -> None:
                     "status": "installing",
                     "message": "Instalando Tesseract OCR mediante WinGet...",
                 }
-                winget_bin = find_winget() or "winget"
-                proc = subprocess.run(
-                    [
-                        winget_bin,
-                        "install",
-                        "--id",
-                        "UB-Mannheim.TesseractOCR",
-                        "-e",
-                        "--silent",
-                        "--accept-package-agreements",
-                        "--accept-source-agreements",
-                        "--disable-interactivity",
-                    ],
-                    capture_output=True,
-                    text=True,
-                    timeout=600,
-                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-                )
+                proc = _run_winget_install("UB-Mannheim.TesseractOCR", timeout=600)
                 clear_binaries_cache()
                 if proc.returncode != 0 and find_tesseract() is None:
                     _install_states[state_key] = {
-                        "status": "error",
+                        "status": "failed",
                         "message": "WinGet no pudo completar la instalacion de Tesseract OCR.",
                     }
                     return
@@ -141,24 +217,7 @@ def _run_install_module_worker(module: str) -> None:
                 "status": "installing",
                 "message": "Instalando LibreOffice mediante WinGet...",
             }
-            winget_bin = find_winget() or "winget"
-            proc = subprocess.run(
-                [
-                    winget_bin,
-                    "install",
-                    "--id",
-                    "TheDocumentFoundation.LibreOffice",
-                    "-e",
-                    "--silent",
-                    "--accept-package-agreements",
-                    "--accept-source-agreements",
-                    "--disable-interactivity",
-                ],
-                capture_output=True,
-                text=True,
-                timeout=900,
-                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
-            )
+            proc = _run_winget_install("TheDocumentFoundation.LibreOffice", timeout=900)
             clear_binaries_cache()
             if proc.returncode == 0 or find_soffice() is not None or find_msword() is not None:
                 _install_states[state_key] = {
@@ -167,12 +226,142 @@ def _run_install_module_worker(module: str) -> None:
                 }
             else:
                 _install_states[state_key] = {
-                    "status": "error",
+                    "status": "failed",
                     "message": "WinGet no pudo completar la instalacion de LibreOffice.",
+                }
+            return
+
+        if module == "ffmpeg":
+            _install_states[state_key] = {
+                "status": "installing",
+                "message": "Instalando FFmpeg mediante WinGet (Gyan.FFmpeg)...",
+            }
+            proc = _run_winget_install("Gyan.FFmpeg", timeout=900)
+            clear_binaries_cache()
+            if proc.returncode == 0 or find_ffmpeg() is not None:
+                _install_states[state_key] = {
+                    "status": "completed",
+                    "message": "Motor FFmpeg instalado correctamente.",
+                }
+            else:
+                _install_states[state_key] = {
+                    "status": "failed",
+                    "message": "WinGet no pudo completar la instalacion de FFmpeg.",
+                }
+            return
+
+        if module == "yt_dlp":
+            _install_states[state_key] = {
+                "status": "installing",
+                "message": "Instalando yt-dlp mediante WinGet...",
+            }
+            installed = False
+            if find_winget() is not None:
+                try:
+                    proc = _run_winget_install("yt-dlp.yt-dlp", timeout=600)
+                    clear_binaries_cache()
+                    installed = proc.returncode == 0 or find_yt_dlp() is not None
+                except Exception:
+                    installed = False
+
+            if not installed:
+                _install_states[state_key] = {
+                    "status": "installing",
+                    "message": "Descargando binario oficial de yt-dlp en carpeta local de Tornio...",
+                }
+                exe_name = "yt-dlp.exe" if sys.platform == "win32" else "yt-dlp"
+                dl_url = YT_DLP_WIN_URL if sys.platform == "win32" else YT_DLP_POSIX_URL
+                target_bin = settings.USER_BIN_DIR / exe_name
+                _download_file_streaming(dl_url, target_bin, min_bytes=500_000, timeout=180.0)
+                if sys.platform != "win32":
+                    os.chmod(target_bin, 0o755)
+                clear_binaries_cache()
+
+            if find_yt_dlp() is not None:
+                _install_states[state_key] = {
+                    "status": "completed",
+                    "message": "Motor yt-dlp instalado y listo.",
+                }
+            else:
+                _install_states[state_key] = {
+                    "status": "failed",
+                    "message": "No se pudo completar la instalacion de yt-dlp.",
+                }
+            return
+
+        if module == "rembg_onnx":
+            _install_states[state_key] = {
+                "status": "installing",
+                "message": "Descargando modelo ONNX u2netp.onnx en almacenamiento local...",
+            }
+            model_target = settings.USER_MODELS_DIR / "u2netp.onnx"
+            _download_file_streaming(REMBG_U2NETP_URL, model_target, min_bytes=100_000, timeout=240.0)
+            clear_binaries_cache()
+            rembg_info = get_rembg_info()
+            if rembg_info["available"]:
+                _install_states[state_key] = {
+                    "status": "completed",
+                    "message": "Modelo u2netp.onnx listo para eliminacion de fondo local.",
+                }
+            else:
+                _install_states[state_key] = {
+                    "status": "failed",
+                    "message": "Modelo descargado, pero onnxruntime no esta disponible en el entorno Python.",
+                }
+            return
+
+        if module == "whisper_cpu":
+            host_python = _find_host_python_for_venv()
+            if not host_python:
+                _install_states[state_key] = {
+                    "status": "failed",
+                    "message": "No se encontro un interprete Python local para crear el entorno de Whisper.",
+                }
+                return
+
+            venv_dir = get_ai_venv_dir()
+            venv_python = get_ai_venv_python()
+            if not venv_python.is_file():
+                _install_states[state_key] = {
+                    "status": "installing",
+                    "message": "Creando entorno Python aislado para Whisper CPU...",
+                }
+                venv_dir.parent.mkdir(parents=True, exist_ok=True)
+                subprocess.run(
+                    [host_python, "-m", "venv", str(venv_dir)],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=180,
+                    creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                )
+
+            _install_states[state_key] = {
+                "status": "installing",
+                "message": "Instalando faster-whisper en entorno aislado...",
+            }
+            subprocess.run(
+                [str(venv_python), "-m", "pip", "install", "--upgrade", "faster-whisper"],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=900,
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+            clear_binaries_cache()
+            if get_whisper_info()["available"]:
+                _install_states[state_key] = {
+                    "status": "completed",
+                    "message": "Motor Whisper CPU (faster-whisper) instalado correctamente.",
+                }
+            else:
+                _install_states[state_key] = {
+                    "status": "failed",
+                    "message": "La instalacion termino pero faster-whisper no respondio en el entorno.",
                 }
     except Exception as exc:
         _install_states[state_key] = {
-            "status": "error",
+            "status": "failed",
             "message": f"Error durante la instalacion: {str(exc)}",
         }
 
@@ -198,14 +387,48 @@ class SystemService:
                 word_engine = "msword"
         word_to_pdf_available = word_bin is not None
 
+        ffmpeg_info = get_ffmpeg_info()
+        yt_dlp_info = get_yt_dlp_info()
+        rembg_info = get_rembg_info()
+        whisper_info = get_whisper_info()
+
+        ffmpeg_available = bool(ffmpeg_info["available"])
+        yt_dlp_available = bool(yt_dlp_info["available"])
+        rembg_available = bool(rembg_info["available"])
+        whisper_available = bool(whisper_info["available"])
+
         ocr_state = _install_states.get("ocr", {"status": "idle", "message": None})
         word_state = _install_states.get("word_to_pdf", {"status": "idle", "message": None})
+        ffmpeg_state = _install_states.get("ffmpeg", {"status": "idle", "message": None})
+        yt_dlp_state = _install_states.get("yt_dlp", {"status": "idle", "message": None})
+        rembg_state = _install_states.get("rembg_onnx", {"status": "idle", "message": None})
+        whisper_state = _install_states.get("whisper_cpu", {"status": "idle", "message": None})
+
+        try:
+            temp_files_count = len([
+                f for f in os.listdir(settings.TEMP_DIR)
+                if os.path.isfile(os.path.join(settings.TEMP_DIR, f))
+            ])
+        except Exception:
+            temp_files_count = 0
+
+        try:
+            cpu_percent = float(psutil.cpu_percent(interval=None))
+            memory_used_percent = float(psutil.virtual_memory().percent)
+        except Exception:
+            cpu_percent = 0.0
+            memory_used_percent = 0.0
 
         return {
             "version": settings.VERSION,
+            "project_name": settings.PROJECT_NAME,
             "capabilities": {
                 "ocr": ocr_available,
                 "word_to_pdf": word_to_pdf_available,
+                "ffmpeg": ffmpeg_available,
+                "yt_dlp": yt_dlp_available,
+                "rembg_onnx": rembg_available,
+                "whisper_cpu": whisper_available,
             },
             "ocr_languages": ocr_languages,
             "max_file_size_mb": settings.MAX_FILE_SIZE_MB,
@@ -228,8 +451,50 @@ class SystemService:
                     "install_status": word_state.get("status") or "idle",
                     "install_message": word_state.get("message"),
                 },
+                "ffmpeg": {
+                    "available": ffmpeg_available,
+                    "engine": ffmpeg_info.get("engine"),
+                    "binary_path": ffmpeg_info.get("binary_path"),
+                    "ffprobe_path": ffmpeg_info.get("ffprobe_path"),
+                    "source": ffmpeg_info.get("source", "auto"),
+                    "install_status": ffmpeg_state.get("status") or "idle",
+                    "install_message": ffmpeg_state.get("message"),
+                },
+                "yt_dlp": {
+                    "available": yt_dlp_available,
+                    "engine": yt_dlp_info.get("engine"),
+                    "binary_path": yt_dlp_info.get("binary_path"),
+                    "source": yt_dlp_info.get("source", "auto"),
+                    "install_status": yt_dlp_state.get("status") or "idle",
+                    "install_message": yt_dlp_state.get("message"),
+                },
+                "rembg_onnx": {
+                    "available": rembg_available,
+                    "engine": rembg_info.get("engine"),
+                    "onnxruntime_installed": rembg_info.get("onnxruntime_installed", False),
+                    "model_path": rembg_info.get("model_path"),
+                    "binary_path": rembg_info.get("binary_path"),
+                    "source": rembg_info.get("source", "auto"),
+                    "install_status": rembg_state.get("status") or "idle",
+                    "install_message": rembg_state.get("message"),
+                },
+                "whisper_cpu": {
+                    "available": whisper_available,
+                    "engine": whisper_info.get("engine"),
+                    "binary_path": whisper_info.get("binary_path"),
+                    "source": whisper_info.get("source", "auto"),
+                    "install_status": whisper_state.get("status") or "idle",
+                    "install_message": whisper_state.get("message"),
+                },
                 "winget_available": find_winget() is not None,
             },
+            "system": {
+                "cpu_count": os.cpu_count() or 1,
+                "cpu_percent": cpu_percent,
+                "memory_used_percent": memory_used_percent,
+                "temp_files_count": temp_files_count,
+            },
+            "desktop": get_desktop_config(),
         }
 
     @staticmethod
@@ -238,12 +503,7 @@ class SystemService:
         tess_path = find_tesseract()
         if tess_path:
             langs = get_ocr_languages()
-            disable_net = os.environ.get("OPENPDF_DISABLE_UPDATE_CHECK", "").strip().lower() in (
-                "1",
-                "true",
-                "yes",
-            )
-            if "spa" not in langs and not disable_net:
+            if "spa" not in langs and not _is_update_check_disabled():
                 download_tessdata_languages(["spa", "eng"], timeout=8.0)
                 clear_binaries_cache()
         return SystemService.get_status()
@@ -251,33 +511,39 @@ class SystemService:
     @staticmethod
     def configure_module(module: str, path: str) -> Dict[str, Any]:
         mod = (module or "").strip().lower()
-        if mod not in ("ocr", "word_to_pdf"):
-            raise BusinessRuleError("Modulo invalido. Debe ser 'ocr' o 'word_to_pdf'.")
+        if mod not in ALL_MODULE_IDS:
+            raise BusinessRuleError(
+                f"Modulo invalido. Valores permitidos: {', '.join(ALL_MODULE_IDS)}."
+            )
 
         cleaned_path = (path or "").strip()
         if not cleaned_path:
             set_custom_binary_path(mod, None)
             return SystemService.get_status()
 
-        if mod == "ocr":
-            resolved = resolve_binary_candidate(cleaned_path, ["tesseract.exe", "tesseract"])
-        else:
-            resolved = resolve_binary_candidate(
-                cleaned_path,
-                ["soffice.exe", "soffice", "libreoffice", "WINWORD.EXE", "winword.exe"],
-            )
+        candidates_map = {
+            "ocr": ["tesseract.exe", "tesseract"],
+            "word_to_pdf": ["soffice.exe", "soffice", "libreoffice", "WINWORD.EXE", "winword.exe"],
+            "ffmpeg": ["ffmpeg.exe", "ffmpeg"],
+            "yt_dlp": ["yt-dlp.exe", "yt-dlp"],
+            "rembg_onnx": ["u2netp.onnx"],
+            "whisper_cpu": ["python.exe", "python"],
+        }
+        resolved = resolve_binary_candidate(cleaned_path, candidates_map[mod])
 
         if not resolved or not os.path.isfile(resolved):
             raise BusinessRuleError(
-                "No se encontro un ejecutable valido en la ruta indicada. "
-                "Selecciona el archivo .exe o la carpeta de instalacion del programa."
+                "No se encontro un archivo valido en la ruta indicada. "
+                "Selecciona el archivo ejecutable o carpeta de instalacion del modulo."
             )
 
         ext = Path(resolved).suffix.lower()
-        if ext in (".pdf", ".docx", ".doc", ".txt", ".png", ".jpg", ".jpeg", ".json"):
-            raise BusinessRuleError(
-                "El archivo seleccionado no es un ejecutable valido."
-            )
+        if mod == "rembg_onnx":
+            if ext != ".onnx":
+                raise BusinessRuleError("El modelo de rembg_onnx debe ser un archivo .onnx valido.")
+        else:
+            if ext in (".pdf", ".docx", ".doc", ".txt", ".png", ".jpg", ".jpeg", ".json", ".onnx"):
+                raise BusinessRuleError("El archivo seleccionado no es un ejecutable valido.")
 
         set_custom_binary_path(mod, resolved)
         return SystemService.get_status()
@@ -285,19 +551,30 @@ class SystemService:
     @staticmethod
     def pick_module_binary(module: str) -> Dict[str, Any]:
         mod = (module or "").strip().lower()
-        if mod not in ("ocr", "word_to_pdf"):
-            raise BusinessRuleError("Modulo invalido. Debe ser 'ocr' o 'word_to_pdf'.")
+        if mod not in BINARY_MODULE_IDS:
+            raise BusinessRuleError(
+                f"Modulo invalido para seleccion de binario. Usa uno de: {', '.join(BINARY_MODULE_IDS)}."
+            )
 
-        title = (
-            "Seleccionar ejecutable de Tesseract OCR (tesseract.exe)"
-            if mod == "ocr"
-            else "Seleccionar LibreOffice (soffice.exe) o Microsoft Word (WINWORD.EXE)"
-        )
-        file_filter = (
-            "Tesseract OCR (tesseract.exe)|tesseract.exe|Ejecutables (*.exe)|*.exe"
-            if mod == "ocr"
-            else "Motores Word a PDF (soffice.exe;WINWORD.EXE)|soffice.exe;WINWORD.EXE|Ejecutables (*.exe)|*.exe"
-        )
+        dialog_specs = {
+            "ocr": (
+                "Seleccionar ejecutable de Tesseract OCR (tesseract.exe)",
+                "Tesseract OCR (tesseract.exe)|tesseract.exe|Ejecutables (*.exe)|*.exe",
+            ),
+            "word_to_pdf": (
+                "Seleccionar LibreOffice (soffice.exe) o Microsoft Word (WINWORD.EXE)",
+                "Motores Word a PDF (soffice.exe;WINWORD.EXE)|soffice.exe;WINWORD.EXE|Ejecutables (*.exe)|*.exe",
+            ),
+            "ffmpeg": (
+                "Seleccionar ejecutable de FFmpeg (ffmpeg.exe)",
+                "FFmpeg (ffmpeg.exe)|ffmpeg.exe|Ejecutables (*.exe)|*.exe",
+            ),
+            "yt_dlp": (
+                "Seleccionar ejecutable de yt-dlp (yt-dlp.exe)",
+                "yt-dlp (yt-dlp.exe)|yt-dlp.exe|Ejecutables (*.exe)|*.exe",
+            ),
+        }
+        title, file_filter = dialog_specs[mod]
 
         ps_script = (
             "Add-Type -AssemblyName System.Windows.Forms; "
@@ -334,12 +611,12 @@ class SystemService:
     @staticmethod
     def install_module(module: str) -> Dict[str, Any]:
         mod = (module or "").strip().lower()
-        if mod not in ("ocr", "word_to_pdf", "ocr_lang_spa"):
+        if mod not in INSTALLABLE_MODULE_IDS:
             raise BusinessRuleError(
-                "Modulo invalido. Usa 'ocr', 'ocr_lang_spa' o 'word_to_pdf'."
+                f"Modulo invalido. Usa uno de: {', '.join(INSTALLABLE_MODULE_IDS)}."
             )
 
-        state_key = "ocr" if mod in ("ocr", "ocr_lang_spa") else "word_to_pdf"
+        state_key = "ocr" if mod in ("ocr", "ocr_lang_spa") else mod
         _install_states[state_key] = {
             "status": "installing",
             "message": "Iniciando instalacion automatica...",
@@ -362,8 +639,11 @@ class SystemService:
             "url": DEFAULT_RELEASES_URL,
         }
 
-        disable_flag = os.environ.get("OPENPDF_DISABLE_UPDATE_CHECK", "").strip().lower()
-        if disable_flag in ("1", "true", "yes"):
+        if _is_update_check_disabled():
+            return fallback
+
+        desktop_cfg = get_desktop_config()
+        if not force and desktop_cfg.get("update_mode") == "manual":
             return fallback
 
         now = time.time()
@@ -373,7 +653,7 @@ class SystemService:
         try:
             headers = {
                 "Accept": "application/vnd.github+json",
-                "User-Agent": f"OpenPDF/{settings.VERSION}",
+                "User-Agent": f"Tornio/{settings.VERSION}",
             }
             async with httpx.AsyncClient(timeout=3.0, follow_redirects=True) as client:
                 response = await client.get(GITHUB_LATEST_RELEASE_API, headers=headers)
@@ -396,15 +676,32 @@ class SystemService:
                 body = str(data.get("body") or "").strip()
                 name = str(data.get("name") or "").strip()
 
-                download_url = None
+                installer_url = None
+                portable_url = None
+                checksums_url = None
+                asset_name = None
                 assets = data.get("assets")
                 if isinstance(assets, list):
                     for asset in assets:
-                        if isinstance(asset, dict):
-                            fname = str(asset.get("name") or "").lower()
-                            if fname.endswith(".exe"):
-                                download_url = asset.get("browser_download_url")
-                                break
+                        if not isinstance(asset, dict):
+                            continue
+                        raw_name = str(asset.get("name") or "").strip()
+                        fname = raw_name.lower()
+                        dl = asset.get("browser_download_url")
+                        if not dl:
+                            continue
+                        if fname == "sha256sums.txt":
+                            checksums_url = dl
+                        elif fname.endswith(".exe"):
+                            if "setup" in fname and installer_url is None:
+                                installer_url = dl
+                                asset_name = raw_name
+                            elif portable_url is None:
+                                portable_url = dl
+                                if asset_name is None:
+                                    asset_name = raw_name
+
+                download_url = installer_url or portable_url
 
                 result = {
                     "current": settings.VERSION,
@@ -417,6 +714,14 @@ class SystemService:
                     result["notes"] = body
                 if download_url:
                     result["download_url"] = download_url
+                if installer_url:
+                    result["installer_url"] = installer_url
+                if portable_url:
+                    result["portable_url"] = portable_url
+                if checksums_url:
+                    result["checksums_url"] = checksums_url
+                if asset_name:
+                    result["asset_name"] = asset_name
                 if name:
                     result["release_name"] = name
 
@@ -428,7 +733,7 @@ class SystemService:
 
     @staticmethod
     def save_feedback(payload: Dict[str, Any]) -> Dict[str, Any]:
-        feedback_dir = Path.home() / ".openpdf"
+        feedback_dir = _get_feedback_dir()
         try:
             feedback_dir.mkdir(parents=True, exist_ok=True)
             feedback_file = feedback_dir / "feedback_log.json"
@@ -436,7 +741,6 @@ class SystemService:
             entries: List[Dict[str, Any]] = []
             if feedback_file.is_file():
                 try:
-                    import json
                     raw_content = feedback_file.read_text(encoding="utf-8")
                     loaded = json.loads(raw_content)
                     if isinstance(loaded, list):
@@ -450,7 +754,6 @@ class SystemService:
             }
             entries.append(entry)
 
-            import json
             feedback_file.write_text(
                 json.dumps(entries, indent=2, ensure_ascii=False),
                 encoding="utf-8",
@@ -461,7 +764,6 @@ class SystemService:
                 "stored_locally": True,
             }
         except Exception as e:
-            from app.core.exceptions import PDFProcessingError
             raise PDFProcessingError(f"No fue posible guardar el comentario localmente: {str(e)}")
 
 

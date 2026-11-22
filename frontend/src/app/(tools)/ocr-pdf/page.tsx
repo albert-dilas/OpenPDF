@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import ToolPage from '@/components/pdf/ToolPage';
-import { useSystemStore } from '@/store/useSystemStore';
+import { selectOcrLanguages, useSystemStore } from '@/store/useSystemStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
 
 const LANGUAGE_LABELS: Record<string, string> = {
@@ -18,7 +18,7 @@ const LANGUAGE_LABELS: Record<string, string> = {
 };
 
 export default function OCRPDFPage() {
-  const ocrLanguages = useSystemStore((s) => s.ocrLanguages);
+  const ocrLanguages = useSystemStore(selectOcrLanguages);
   const preferredLang = useSettingsStore((s) => s.defaultOcrLanguage);
 
   const languageOptions = useMemo(() => {

@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 from fastapi.testclient import TestClient
 from app.main import app
 
@@ -20,7 +20,7 @@ def test_metadata_update_and_preserve(sample_pdf_bytes):
     assert response.status_code == 200
     updated_bytes = response.content
 
-    doc = fitz.open(stream=updated_bytes, filetype="pdf")
+    doc = pymupdf.open(stream=updated_bytes, filetype="pdf")
     try:
         assert doc.metadata["title"] == "Documento Privado"
         assert doc.metadata["author"] == "Ada Lovelace"
@@ -39,7 +39,7 @@ def test_metadata_update_and_preserve(sample_pdf_bytes):
         },
     )
     assert response2.status_code == 200
-    doc2 = fitz.open(stream=response2.content, filetype="pdf")
+    doc2 = pymupdf.open(stream=response2.content, filetype="pdf")
     try:
         assert doc2.metadata["title"] == "Documento Privado"
         assert doc2.metadata["author"] == "Ada Lovelace"

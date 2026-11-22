@@ -1,6 +1,6 @@
 import base64
 from typing import Any, Dict, List
-import fitz
+import pymupdf
 from fastapi.concurrency import run_in_threadpool
 from app.core.exceptions import PDFProcessingError
 
@@ -23,7 +23,7 @@ class PDFInfoService:
     @staticmethod
     def _get_info_sync(input_path: str) -> Dict[str, Any]:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error abriendo PDF: {str(e)}")
 
@@ -62,7 +62,7 @@ class PDFInfoService:
                 thumbnail = None
                 if idx < MAX_THUMBNAIL_PAGES:
                     scale = THUMBNAIL_TARGET_WIDTH / max(float(rect.width), 1.0)
-                    matrix = fitz.Matrix(scale, scale)
+                    matrix = pymupdf.Matrix(scale, scale)
                     pix = page.get_pixmap(matrix=matrix, alpha=False)
                     jpg_bytes = pix.tobytes("jpeg")
                     b64 = base64.b64encode(jpg_bytes).decode("ascii")

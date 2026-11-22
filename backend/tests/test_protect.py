@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
-import fitz, io
+import pymupdf, io
 
 client = TestClient(app)
 
@@ -15,7 +15,7 @@ def test_protect_ok(sample_pdf_bytes):
     # El PDF protegido debe seguir siendo un PDF válido
     assert response.content[:4] == b'%PDF'
     # Verificar que está encriptado abriendo con PyMuPDF
-    doc = fitz.open(stream=response.content, filetype="pdf")
+    doc = pymupdf.open(stream=response.content, filetype="pdf")
     assert doc.is_encrypted
     doc.close()
 

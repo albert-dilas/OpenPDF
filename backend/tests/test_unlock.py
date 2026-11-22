@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
-import fitz
+import pymupdf
 
 client = TestClient(app)
 
@@ -14,7 +14,7 @@ def test_unlock_ok(protected_pdf_bytes):
     assert response.status_code == 200
     assert response.content[:4] == b'%PDF'
     # El PDF resultante no debe estar encriptado
-    doc = fitz.open(stream=response.content, filetype="pdf")
+    doc = pymupdf.open(stream=response.content, filetype="pdf")
     assert not doc.is_encrypted
     doc.close()
 

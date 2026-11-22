@@ -1,41 +1,28 @@
-# Contributing to OpenPDF
+# Contributing to Tornio (formerly OpenPDF)
 
-First off, thank you for considering contributing to OpenPDF. It's people like you that make OpenPDF such a great tool.
+Thank you for helping improve Tornio. All contributors are expected to follow our [Code of Conduct](CODE_OF_CONDUCT.md) and architecture standards.
 
-## 1. Where do I go from here?
+---
 
-If you've noticed a bug or have a feature request, make sure to check our [Issues](../../issues) section to see if someone else in the community has already created a ticket. If not, go ahead and make one!
+## Architecture & Engineering Principles
 
-## 2. Fork & create a branch
+1. **Local-First by Default**: Core tools must execute 100% locally on `127.0.0.1` without uploading files or metadata to external services. Any intentional online tool must validate public URLs hop-by-hop via `safe_public_get` ([network.py](backend/app/utils/network.py)).
+2. **Zero Unicode Emojis**: Code, UI copy, toast notifications, docs, and installer scripts use clean monochrome SVG icons (`lucide-react`) rather than Unicode emojis.
+3. **Explicit Finite State Machines (`fsm.ts`)**: New frontend async flows must use discriminated union state machines (`AsyncResourceState`, `MutationState`) from `frontend/src/lib/fsm.ts` instead of loose `isLoading` booleans.
+4. **License Compatibility**: Original Tornio contributions are submitted under **Apache License, Version 2.0** ([LICENSE](LICENSE)). Any new third-party dependency must be documented in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
 
-If this is something you think you can fix, then fork OpenPDF and create a branch with a descriptive name.
+---
 
-A good branch name would be (where issue #325 is the ticket you're working on):
+## Submitting a Change
 
-```sh
-git checkout -b 325-add-watermark-feature
-```
-
-## 3. Implementation Guidelines
-
-### Backend (Python)
-- Follow **PEP 8** style guidelines.
-- Add type hints to all functions and classes.
-- Ensure all business logic is decoupled from the API layer.
-- Run tests and ensure existing document processing works successfully.
-
-### Frontend (React/Next.js)
-- Use function components and hooks.
-- Follow the existing Tailwind CSS utility-first approach.
-- Ensure the state is managed via Zustand where global access is required.
-
-## 4. Open a Pull Request
-
-At this point, you should switch back to your master branch, pull, and then merge your new branch:
-
-```sh
-git commit -m "feat: Add watermark feature"
-git push origin 325-add-watermark-feature
-```
-
-Finally, go to GitHub and open a Pull Request. Please use our provided template for your Pull Request description.
+1. Fork the repository and create a descriptive branch from `main`:
+   ```sh
+   git checkout -b feat/short-description
+   ```
+2. Implement your change along with tests under `backend/tests/` for backend changes.
+3. Verify all checks pass before pushing:
+   - `python -m pytest backend/tests -q`
+   - `npm --prefix frontend run lint`
+   - `npx --prefix frontend tsc -p frontend/tsconfig.json --noEmit`
+   - `npm --prefix frontend run build`
+4. Use [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `refactor:`, `docs:`, `chore:`) and open a Pull Request using our PR template.

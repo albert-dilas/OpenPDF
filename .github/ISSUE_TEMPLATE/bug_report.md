@@ -1,30 +1,27 @@
 ---
 name: Bug report
-about: Create a report to help us improve OpenPDF
+about: Report a reproducible technical issue in Tornio (formerly OpenPDF)
 title: '[BUG] '
 labels: 'bug'
 assignees: ''
 ---
 
 **Describe the bug**
-A clear and concise description of what the bug is.
+A clear and concise description of what went wrong.
 
 **To Reproduce**
 Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+1. Studio / Tool used (e.g. Video Studio, OCR PDF, Pipelines)
+2. Input file format and approximate size
+3. Steps taken before the error appeared
 
 **Expected behavior**
-A clear and concise description of what you expected to happen.
+What you expected to happen.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Environment (please complete the following information):**
- - OS: [e.g. Windows 11]
- - Version [e.g. 1.0.0]
+**Environment:**
+- OS: [e.g. Windows 11 x64]
+- Package: [Installer Setup / Portable .exe / Source]
+- Tornio Version: [e.g. v3.0.0]
 
 **Additional context**
-Add any other context about the problem here.
+Optional diagnostic summary from Settings -> Local Engines.

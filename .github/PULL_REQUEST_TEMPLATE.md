@@ -1,20 +1,18 @@
 ## Description
-Provide a brief description of the changes introduced by this pull request.
+Concise summary of the changes in this pull request.
 
 ## Related Issues
 Fixes # (issue number)
 
-## Changes
-- [ ] List the specific changes made in this PR
-- [ ] E.g., Added new endpoint for watermarking
-- [ ] E.g., Updated the UI for PDF conversion
+## Area of Change
+- [ ] Backend (`backend/`)
+- [ ] Frontend (`frontend/`)
+- [ ] Installer / Build scripts (`installer/`, `scripts/`)
+- [ ] Documentation (`README.md`, `ARCHITECTURE.md`, `docs/`)
 
-## Testing
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce.
-- [ ] Test A
-- [ ] Test B
-
-## Checklist:
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] My changes generate no new warnings
+## Verification Checklist
+- [ ] Backend `pytest` passes with 0 failures
+- [ ] Frontend `npm run lint`, `npx tsc --noEmit`, and `npm run build` pass cleanly
+- [ ] Zero Unicode emojis introduced anywhere in code, docs, UI, or toasts
+- [ ] New frontend async workflows use explicit FSM states (`frontend/src/lib/fsm.ts`)
+- [ ] Verified in live browser (`0` console errors, `0` failed requests `>= 400`)

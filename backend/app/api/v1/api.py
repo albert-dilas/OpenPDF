@@ -23,6 +23,11 @@ from app.api.v1.endpoints import (
     url_to_pdf,
     translate,
     qr,
+    jobs,
+    workspace,
+    video,
+    studio_tools,
+    pipelines,
 )
 
 api_router = APIRouter()
@@ -49,3 +54,8 @@ api_router.include_router(redact.router, prefix="/redact", tags=["Redact PDF"])
 api_router.include_router(url_to_pdf.router, prefix="/url-to-pdf", tags=["URL to PDF"])
 api_router.include_router(translate.router, prefix="/translate", tags=["Translate PDF"])
 api_router.include_router(qr.router, prefix="/qr", tags=["QR PDF"])
+api_router.include_router(jobs.router, prefix="/jobs", tags=["Jobs"])
+api_router.include_router(workspace.router, prefix="/workspace", tags=["Workspace"])
+api_router.include_router(video.router, prefix="/video", tags=["Video Studio"])
+api_router.include_router(studio_tools.router, prefix="/tools", tags=["Studio Tools"])
+api_router.include_router(pipelines.router, prefix="/pipelines", tags=["Pipelines"])

@@ -9,14 +9,19 @@ import {
   Blocks,
   Maximize2,
   Minimize2,
-  SunMoon,
+  Palette,
   CornerDownLeft,
   Settings,
+  Inbox,
+  Film,
+  Activity,
+  Languages,
 } from 'lucide-react';
-import { tools, ToolItem } from '@/config/tools';
-import ToolIcon from '@/components/pdf/ToolIcon';
+import { ALL_STUDIO_TOOLS, StudioToolItem } from '@/config/studios';
 import { useSystemStore } from '@/store/useSystemStore';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import { AppSkin } from '@/lib/appearance';
+import { useI18n } from '@/i18n';
 
 interface QuickActionItem {
   id: string;
@@ -26,8 +31,11 @@ interface QuickActionItem {
   icon: React.ReactNode;
 }
 
+const SKIN_CYCLE: AppSkin[] = ['porcelain', 'carbon', 'swiss'];
+
 export default function CommandPalette() {
   const router = useRouter();
+  const { t, toggleLocale } = useI18n();
   const {
     commandPaletteOpen,
     setCommandPaletteOpen,
@@ -35,6 +43,7 @@ export default function CommandPalette() {
     immersiveMode,
     toggleImmersiveMode,
   } = useSystemStore();
+  const { skin, jobDrawerOpen, updateSetting } = useSettingsStore();
 
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -67,67 +76,128 @@ export default function CommandPalette() {
   const quickActions: QuickActionItem[] = useMemo(
     () => [
       {
+        id: 'action-workspace',
+        label: t.commandPalette.actions.workspace.label,
+        description: t.commandPalette.actions.workspace.description,
+        onSelect: () => {
+          setCommandPaletteOpen(false);
+          router.push('/workspace');
+        },
+        icon: <Inbox className="w-4 h-4" />,
+      },
+      {
+        id: 'action-video',
+        label: t.commandPalette.actions.videoStudio.label,
+        description: t.commandPalette.actions.videoStudio.description,
+        onSelect: () => {
+          setCommandPaletteOpen(false);
+          router.push('/video-studio');
+        },
+        icon: <Film className="w-4 h-4" />,
+      },
+      {
         id: 'action-modules',
-        label: 'Abrir Centro de Módulos Opcionales',
-        description: 'Instalar o conectar Tesseract OCR y LibreOffice / Word en 1 clic',
+        label: t.commandPalette.actions.modules.label,
+        description: t.commandPalette.actions.modules.description,
         onSelect: () => {
           setCommandPaletteOpen(false);
           setModulesModalOpen(true);
         },
-        icon: <Blocks className="w-4 h-4 text-brand" />,
+        icon: <Blocks className="w-4 h-4" />,
+      },
+      {
+        id: 'action-jobs',
+        label: t.commandPalette.actions.jobDrawer.label,
+        description: t.commandPalette.actions.jobDrawer.description,
+        onSelect: () => {
+          setCommandPaletteOpen(false);
+          updateSetting('jobDrawerOpen', !jobDrawerOpen);
+        },
+        icon: <Activity className="w-4 h-4" />,
+      },
+      {
+        id: 'action-locale',
+        label: t.commandPalette.actions.toggleLocale.label,
+        description: t.commandPalette.actions.toggleLocale.description,
+        onSelect: () => {
+          setCommandPaletteOpen(false);
+          toggleLocale();
+        },
+        icon: <Languages className="w-4 h-4" />,
+      },
+      {
+        id: 'action-skin',
+        label: t.commandPalette.actions.cycleSkin.label,
+        description: t.commandPalette.actions.cycleSkin.description,
+        onSelect: () => {
+          setCommandPaletteOpen(false);
+          const idx = SKIN_CYCLE.indexOf(skin === 'system' ? 'porcelain' : skin);
+          updateSetting('skin', SKIN_CYCLE[(idx + 1) % SKIN_CYCLE.length]);
+        },
+        icon: <Palette className="w-4 h-4" />,
       },
       {
         id: 'action-immersive',
         label: immersiveMode
-          ? 'Desactivar Modo Inmersivo (Pantalla Completa)'
-          : 'Activar Modo Inmersivo (Pantalla Completa)',
-        description: 'Maximiza el espacio vertical de trabajo estilo aplicación de escritorio',
+          ? t.commandPalette.actions.immersiveOff.label
+          : t.commandPalette.actions.immersiveOn.label,
+        description: immersiveMode
+          ? t.commandPalette.actions.immersiveOff.description
+          : t.commandPalette.actions.immersiveOn.description,
         onSelect: () => {
           setCommandPaletteOpen(false);
           toggleImmersiveMode();
         },
         icon: immersiveMode ? (
-          <Minimize2 className="w-4 h-4 text-brand" />
+          <Minimize2 className="w-4 h-4" />
         ) : (
-          <Maximize2 className="w-4 h-4 text-brand" />
+          <Maximize2 className="w-4 h-4" />
         ),
       },
       {
-        id: 'action-theme',
-        label: 'Cambiar Tema Claro/Oscuro',
-        description: 'Alterna la apariencia visual de OpenPDF inmediatamente',
-        onSelect: () => {
-          setCommandPaletteOpen(false);
-          const root = document.documentElement;
-          const nextDark = !root.classList.contains('dark');
-          useSettingsStore.getState().updateSetting('theme', nextDark ? 'dark' : 'light');
-        },
-        icon: <SunMoon className="w-4 h-4 text-brand" />,
-      },
-      {
         id: 'action-settings',
-        label: 'Ajustes y Personalización',
-        description: 'Personalizar tema, compresión, comprobar actualizaciones y dar opiniones',
+        label: t.commandPalette.actions.settings.label,
+        description: t.commandPalette.actions.settings.description,
         onSelect: () => {
           setCommandPaletteOpen(false);
           router.push('/settings');
         },
-        icon: <Settings className="w-4 h-4 text-brand" />,
+        icon: <Settings className="w-4 h-4" />,
       },
     ],
-    [immersiveMode, router, setCommandPaletteOpen, setModulesModalOpen, toggleImmersiveMode]
+    [
+      immersiveMode,
+      jobDrawerOpen,
+      router,
+      setCommandPaletteOpen,
+      setModulesModalOpen,
+      skin,
+      t,
+      toggleImmersiveMode,
+      toggleLocale,
+      updateSetting,
+    ]
   );
 
   const filteredTools = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return tools;
-    return tools.filter(
-      (t) =>
-        t.name.toLowerCase().includes(q) ||
-        t.description.toLowerCase().includes(q) ||
-        t.category.toLowerCase().includes(q)
-    );
-  }, [query]);
+    const sorted = [...ALL_STUDIO_TOOLS].sort((a, b) => {
+      if (a.status === b.status) return 0;
+      return a.status === 'active' ? -1 : 1;
+    });
+    if (!q) return sorted;
+    return sorted.filter((tool) => {
+      const copy = t.tools[tool.id];
+      const studioName = t.studios[tool.studio].name.toLowerCase();
+      return (
+        tool.id.toLowerCase().includes(q) ||
+        (copy?.name.toLowerCase().includes(q) ?? false) ||
+        (copy?.description.toLowerCase().includes(q) ?? false) ||
+        studioName.includes(q) ||
+        tool.category.toLowerCase().includes(q)
+      );
+    });
+  }, [query, t]);
 
   const filteredActions = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -148,7 +218,7 @@ export default function CommandPalette() {
 
   const triggerAtIndex = (index: number) => {
     if (index < filteredTools.length) {
-      const tool: ToolItem | undefined = filteredTools[index];
+      const tool: StudioToolItem | undefined = filteredTools[index];
       if (tool) {
         setCommandPaletteOpen(false);
         router.push(tool.href);
@@ -179,83 +249,93 @@ export default function CommandPalette() {
     <div
       role="dialog"
       aria-modal="true"
-      aria-label="Paleta rápida de herramientas y comandos"
-      className="fixed inset-0 z-[110] flex items-start justify-center pt-14 sm:pt-24 px-4 bg-slate-950/60 backdrop-blur-sm animate-fade-in"
+      aria-label={t.commandPalette.ariaLabel}
+      className="fixed inset-0 z-[110] flex items-start justify-center pt-14 sm:pt-20 px-4 bg-black/60 backdrop-blur-[2px] animate-fade-in"
       onClick={(e) => {
         if (e.target === e.currentTarget) setCommandPaletteOpen(false);
       }}
     >
       <div
         onKeyDown={handleKeyDown}
-        className="w-full max-w-xl rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-2xl overflow-hidden"
+        className="w-full max-w-2xl rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-2xl overflow-hidden text-[var(--fg)]"
       >
         {/* Search Bar */}
-        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-gray-200 dark:border-slate-800">
-          <Search className="w-5 h-5 text-brand shrink-0" />
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-[var(--border)]">
+          <Search className="w-4 h-4 text-[var(--fg-muted)] shrink-0" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ir a herramienta o ejecutar comando (ej. OCR, firmar, módulos, pantalla completa)..."
-            aria-label="Buscar herramienta o comando"
-            className="w-full bg-transparent text-sm sm:text-base text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 focus:outline-none"
+            placeholder={t.commandPalette.placeholder}
+            aria-label={t.commandPalette.ariaLabel}
+            className="w-full bg-transparent text-sm text-[var(--fg)] placeholder-[var(--fg-muted)] focus:outline-none"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
-              className="p-1 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-slate-200"
-              aria-label="Limpiar texto"
+              className="p-1 rounded-[var(--radius-control)] text-[var(--fg-muted)] hover:text-[var(--fg)]"
+              aria-label={t.commandPalette.clearInput}
             >
               <X className="w-4 h-4" />
             </button>
           )}
-          <kbd className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-mono font-bold text-gray-500 dark:text-slate-400 bg-gray-100 dark:bg-slate-800 rounded border border-gray-200 dark:border-slate-700">
+          <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono font-semibold text-[var(--fg-muted)] bg-[var(--surface-muted)] rounded border border-[var(--border)]">
             ESC
           </kbd>
         </div>
 
         {/* Results */}
-        <div className="max-h-[62vh] overflow-y-auto p-2 space-y-3">
+        <div className="max-h-[60vh] overflow-y-auto p-2 space-y-3 scrollbar-thin">
           {totalCount === 0 ? (
-            <div className="py-10 text-center text-sm text-gray-500 dark:text-slate-400">
-              No se encontraron herramientas ni acciones para &ldquo;{query}&rdquo;.
+            <div className="py-10 text-center text-xs text-[var(--fg-muted)]">
+              {t.commandPalette.noResults} &ldquo;{query}&rdquo;.
             </div>
           ) : (
             <>
               {filteredTools.length > 0 && (
                 <div>
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500">
-                    Herramientas PDF ({filteredTools.length})
+                  <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-[var(--fg-muted)]">
+                    {t.commandPalette.toolsGroup} ({filteredTools.length})
                   </div>
                   <div className="space-y-0.5">
                     {filteredTools.map((tool, idx) => {
                       const active = selectedIndex === idx;
+                      const copy = t.tools[tool.id];
                       return (
                         <button
                           key={tool.id}
                           type="button"
                           onMouseEnter={() => setSelectedIndex(idx)}
                           onClick={() => triggerAtIndex(idx)}
-                          className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                          className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-[var(--radius-control)] text-left transition-colors ${
                             active
-                              ? 'bg-red-50/90 dark:bg-slate-800 text-brand'
-                              : 'text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800/60'
+                              ? 'bg-[var(--accent-soft)] text-[var(--fg)]'
+                              : 'text-[var(--fg)] hover:bg-[var(--surface-muted)]'
                           }`}
                         >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <ToolIcon tool={tool} size="sm" />
-                            <div className="min-w-0">
-                              <div className="text-sm font-bold truncate">{tool.name}</div>
-                              <div className="text-xs text-gray-500 dark:text-slate-400 truncate">
-                                {tool.description}
-                              </div>
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-semibold truncate">
+                                {copy?.name ?? tool.id}
+                              </span>
+                              <span className="text-[10px] font-mono text-[var(--fg-muted)]">
+                                {t.studios[tool.studio].name}
+                              </span>
+                              {tool.status === 'phase2' && (
+                                <span className="px-1.5 py-0.2 rounded-full text-[9px] font-mono uppercase border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--fg-muted)]">
+                                  {tool.phaseTarget || t.common.phase2}
+                                </span>
+                              )}
                             </div>
+                            <p className="text-[11px] text-[var(--fg-muted)] truncate mt-0.5">
+                              {copy?.description ?? ''}
+                            </p>
                           </div>
                           <ArrowRight
-                            className={`w-4 h-4 shrink-0 ${
-                              active ? 'text-brand' : 'text-gray-300 dark:text-slate-600'
+                            className={`w-3.5 h-3.5 shrink-0 ${
+                              active ? 'text-[var(--fg)]' : 'text-[var(--fg-muted)] opacity-50'
                             }`}
                           />
                         </button>
@@ -267,8 +347,8 @@ export default function CommandPalette() {
 
               {filteredActions.length > 0 && (
                 <div>
-                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-slate-500">
-                    Acciones Rápidas del Sistema
+                  <div className="px-3 py-1 text-[10px] font-mono uppercase tracking-wider text-[var(--fg-muted)]">
+                    {t.commandPalette.actionsGroup}
                   </div>
                   <div className="space-y-0.5">
                     {filteredActions.map((act, i) => {
@@ -280,26 +360,26 @@ export default function CommandPalette() {
                           type="button"
                           onMouseEnter={() => setSelectedIndex(idx)}
                           onClick={() => triggerAtIndex(idx)}
-                          className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                          className={`w-full flex items-center justify-between gap-3 px-3 py-2 rounded-[var(--radius-control)] text-left transition-colors ${
                             active
-                              ? 'bg-red-50/90 dark:bg-slate-800 text-brand'
-                              : 'text-gray-800 dark:text-slate-200 hover:bg-gray-50 dark:hover:bg-slate-800/60'
+                              ? 'bg-[var(--accent-soft)] text-[var(--fg)]'
+                              : 'text-[var(--fg)] hover:bg-[var(--surface-muted)]'
                           }`}
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <div className="h-9 w-9 rounded-xl bg-gray-100 dark:bg-slate-800 flex items-center justify-center shrink-0">
+                            <div className="h-8 w-8 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--bg)] flex items-center justify-center shrink-0">
                               {act.icon}
                             </div>
                             <div className="min-w-0">
-                              <div className="text-sm font-bold truncate">{act.label}</div>
-                              <div className="text-xs text-gray-500 dark:text-slate-400 truncate">
+                              <div className="text-xs font-semibold truncate">{act.label}</div>
+                              <div className="text-[11px] text-[var(--fg-muted)] truncate">
                                 {act.description}
                               </div>
                             </div>
                           </div>
                           <CornerDownLeft
-                            className={`w-4 h-4 shrink-0 ${
-                              active ? 'text-brand' : 'text-gray-300 dark:text-slate-600'
+                            className={`w-3.5 h-3.5 shrink-0 ${
+                              active ? 'text-[var(--fg)]' : 'text-[var(--fg-muted)] opacity-50'
                             }`}
                           />
                         </button>
@@ -312,9 +392,9 @@ export default function CommandPalette() {
           )}
         </div>
 
-        {/* Footer Hints */}
-        <div className="px-4 py-2.5 bg-gray-50 dark:bg-slate-950/80 border-t border-gray-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-gray-500 dark:text-slate-400">
-          <span>Usa las flechas Arriba/Abajo para navegar y Enter para abrir</span>
+        {/* Footer */}
+        <div className="px-4 py-2 bg-[var(--bg)] border-t border-[var(--border)] flex items-center justify-between text-[11px] text-[var(--fg-muted)]">
+          <span>{t.commandPalette.footerHint}</span>
           <span className="font-mono">Ctrl+K</span>
         </div>
       </div>

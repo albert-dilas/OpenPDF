@@ -1,4 +1,4 @@
-import fitz  # PyMuPDF
+import pymupdf
 from typing import List
 from app.core.exceptions import PDFProcessingError
 from fastapi.concurrency import run_in_threadpool
@@ -7,11 +7,11 @@ from fastapi.concurrency import run_in_threadpool
 class PDFMergerService:
     @staticmethod
     def _merge_sync(input_paths: List[str], output_path: str) -> str:
-        result_pdf = fitz.open()
+        result_pdf = pymupdf.open()
         try:
             for path in input_paths:
                 try:
-                    pdf_doc = fitz.open(path)
+                    pdf_doc = pymupdf.open(path)
                 except Exception as e:
                     raise PDFProcessingError(f"Error procesando {path}: {str(e)}")
                 try:

@@ -3,7 +3,7 @@ import io
 import re
 from typing import Any, Dict, List, Optional, Tuple
 import cv2
-import fitz
+import pymupdf
 import numpy as np
 import qrcode
 from fastapi.concurrency import run_in_threadpool
@@ -58,7 +58,7 @@ class PDFQRService:
         label_text: Optional[str] = None,
     ) -> str:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as exc:
             raise PDFProcessingError(f"Error abriendo el documento PDF: {str(exc)}")
 
@@ -88,7 +88,7 @@ class PDFQRService:
                 )
 
                 if clean_label:
-                    label_rect = fitz.Rect(
+                    label_rect = pymupdf.Rect(
                         target_rect.x0 - 12,
                         target_rect.y1 + 2,
                         target_rect.x1 + 12,
@@ -100,7 +100,7 @@ class PDFQRService:
                         fontsize=7.5,
                         fontname="helv",
                         color=(0.15, 0.18, 0.24),
-                        align=fitz.TEXT_ALIGN_CENTER,
+                        align=pymupdf.TEXT_ALIGN_CENTER,
                         overlay=True,
                     )
 
@@ -155,7 +155,7 @@ class PDFQRService:
     @staticmethod
     def _scan_qr_codes_sync(input_path: str) -> Tuple[int, List[Dict[str, Any]]]:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as exc:
             raise PDFProcessingError(f"Error abriendo el documento PDF: {str(exc)}")
 

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
-import fitz, io
+import pymupdf, io
 
 client = TestClient(app)
 
@@ -21,7 +21,7 @@ def test_page_numbers_verifica_texto(sample_pdf_bytes):
         files=[("file", ("test.pdf", sample_pdf_bytes, "application/pdf"))],
     )
     assert response.status_code == 200
-    doc = fitz.open(stream=response.content, filetype="pdf")
+    doc = pymupdf.open(stream=response.content, filetype="pdf")
     first_page_text = doc[0].get_text()
     doc.close()
     assert "1" in first_page_text

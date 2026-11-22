@@ -42,7 +42,7 @@ async def merge_pdf_endpoint(
 
     return FileResponse(
         path=output_path,
-        filename="openpdf_merged.pdf",
+        filename="tornio_merged.pdf",
         media_type="application/pdf",
         background=BackgroundTask(remove_file, output_path),
     )

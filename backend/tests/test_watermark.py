@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from app.main import app
-import fitz, io
+import pymupdf, io
 
 client = TestClient(app)
 

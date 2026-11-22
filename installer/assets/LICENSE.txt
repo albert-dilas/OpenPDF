@@ -1,42 +1,35 @@
-MIT License
+                                 Apache License
+                           Version 2.0, January 2004
+                        http://www.apache.org/licenses/
 
-Copyright (c) 2026 OpenPDF Project
+Copyright 2026 Albert Dilas / Tornio Project
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+    http://www.apache.org/licenses/LICENSE-2.0
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
 
 -------------------------------------------------------------------------------
-COMPONENTES DE TERCEROS
+TRADEMARK & THIRD-PARTY COMPONENTS NOTICE
 
-Este software utiliza las siguientes librerias de codigo abierto:
+1. "Tornio" name and emblem are governed by Section 6 of Apache License 2.0.
+2. Complete corresponding source code and full license text are hosted at:
+   https://github.com/albert-dilas/OpenPDF
+3. Bundled Third-Party Components:
+   - PyMuPDF / pymupdf4llm (GNU AGPL v3.0) - Full source published on GitHub
+   - FastAPI, Next.js, React, Tailwind CSS, Zustand, pdf2docx, onnxruntime (MIT)
+   - Uvicorn, httpx, lxml, qrcode, psutil (BSD-3-Clause)
+   - cryptography, opencv-python-headless, pytesseract (Apache-2.0)
+   - Pillow (MIT-CMU / HPND), certifi (MPL-2.0)
+4. Optional External Engines (installed only by user request):
+   - Tesseract OCR (Apache-2.0), LibreOffice (MPL-2.0), FFmpeg (LGPL/GPL),
+     yt-dlp (Unlicense), faster-whisper (MIT)
 
-- FastAPI (MIT) - Framework web de alto rendimiento para Python
-- PyMuPDF / fitz (AGPL v3) - Procesamiento de documentos PDF
-- pymupdf4llm (AGPL v3) - Conversion PDF a Markdown
-- pdf2docx (MIT) - Conversion PDF a Word
-- Pillow (HPND) - Procesamiento de imagenes
-- Uvicorn (BSD) - Servidor ASGI de alto rendimiento
-- Next.js (MIT) - Framework React para el frontend
-- React (MIT) - Libreria de interfaz de usuario
-- Tailwind CSS (MIT) - Framework CSS utilitario
-- Zustand (MIT) - Manejo de estado global
-- Tesseract OCR (Apache 2.0) - Motor de reconocimiento de caracteres
-- LibreOffice (MPL 2.0) - Suite ofimatica para conversion de documentos
-
-Para informacion completa sobre cada licencia, visita:
-https://github.com/openpdf/licenses
+Full inventory: THIRD_PARTY_NOTICES.md and NOTICE installed alongside Tornio.

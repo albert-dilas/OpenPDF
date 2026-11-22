@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 from app.core.exceptions import BusinessRuleError, PDFProcessingError
 from fastapi.concurrency import run_in_threadpool
 
@@ -10,7 +10,7 @@ class PDFProtectorService:
             raise BusinessRuleError("La contraseña no puede estar vacía.")
 
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error al proteger PDF: {str(e)}")
 
@@ -19,7 +19,7 @@ class PDFProtectorService:
                 output_path,
                 user_pw=password,
                 owner_pw=password,
-                encryption=fitz.PDF_ENCRYPT_AES_256,
+                encryption=pymupdf.PDF_ENCRYPT_AES_256,
             )
             return output_path
         except Exception as e:

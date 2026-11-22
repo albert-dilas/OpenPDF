@@ -1,6 +1,6 @@
 """Servicio 100% local para estampar firmas manuscritas o sellos de imagen en documentos PDF."""
 from typing import List, Optional, Set
-import fitz
+import pymupdf
 from PIL import Image
 from fastapi.concurrency import run_in_threadpool
 
@@ -62,14 +62,14 @@ def resolve_target_pages(pages_spec: str, total_pages: int) -> List[int]:
 
 
 def compute_box_rect(
-    page_rect: fitz.Rect,
+    page_rect: pymupdf.Rect,
     img_width: int,
     img_height: int,
     position: str,
     scale: float,
     margin: float = 36.0,
     reserve_bottom_label: bool = False,
-) -> fitz.Rect:
+) -> pymupdf.Rect:
     """Calcula el rectángulo destino manteniendo proporción de la imagen de firma/sello."""
     clamped_scale = max(0.08, min(0.55, float(scale)))
     box_w = page_rect.width * clamped_scale
@@ -97,7 +97,7 @@ def compute_box_rect(
         x0 = page_rect.x1 - margin - box_w
         y0 = page_rect.y1 - margin - box_h - extra_bottom
 
-    return fitz.Rect(x0, y0, x0 + box_w, y0 + box_h)
+    return pymupdf.Rect(x0, y0, x0 + box_w, y0 + box_h)
 
 
 class PDFSignService:
@@ -122,7 +122,7 @@ class PDFSignService:
             raise BusinessRuleError(f"La imagen de firma o sello no es válida: {str(exc)}")
 
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as exc:
             raise PDFProcessingError(f"Error abriendo el documento PDF: {str(exc)}")
 
@@ -151,7 +151,7 @@ class PDFSignService:
                 )
 
                 if clean_label:
-                    label_rect = fitz.Rect(
+                    label_rect = pymupdf.Rect(
                         target_rect.x0 - 10,
                         target_rect.y1 + 2,
                         target_rect.x1 + 10,
@@ -163,7 +163,7 @@ class PDFSignService:
                         fontsize=7.5,
                         fontname="helv",
                         color=(0.22, 0.25, 0.32),
-                        align=fitz.TEXT_ALIGN_CENTER,
+                        align=pymupdf.TEXT_ALIGN_CENTER,
                         overlay=True,
                     )
 

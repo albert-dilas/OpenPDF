@@ -10,29 +10,39 @@ def test_system_status():
     response = client.get("/api/v1/system/status")
     assert response.status_code == 200
     data = response.json()
-    assert data["version"] == "2.2.0"
+    assert data["version"] == "3.0.0"
     assert isinstance(data["capabilities"], dict)
     assert isinstance(data["capabilities"]["ocr"], bool)
     assert isinstance(data["capabilities"]["word_to_pdf"], bool)
+    assert isinstance(data["capabilities"]["ffmpeg"], bool)
+    assert isinstance(data["capabilities"]["yt_dlp"], bool)
+    assert isinstance(data["capabilities"]["rembg_onnx"], bool)
+    assert isinstance(data["capabilities"]["whisper_cpu"], bool)
     assert isinstance(data["ocr_languages"], list)
     assert data["max_file_size_mb"] == 500
     assert isinstance(data.get("modules"), dict)
     assert "ocr" in data["modules"]
     assert "word_to_pdf" in data["modules"]
+    assert "ffmpeg" in data["modules"]
+    assert "yt_dlp" in data["modules"]
+    assert "rembg_onnx" in data["modules"]
+    assert "whisper_cpu" in data["modules"]
     assert isinstance(data["modules"]["winget_available"], bool)
+    assert isinstance(data.get("system"), dict)
 
 
 def test_system_updates_online_newer(monkeypatch):
     clear_update_cache()
     monkeypatch.delenv("OPENPDF_DISABLE_UPDATE_CHECK", raising=False)
+    monkeypatch.delenv("TORNIO_DISABLE_UPDATE_CHECK", raising=False)
 
     class MockResponse:
         status_code = 200
 
         def json(self):
             return {
-                "tag_name": "v2.5.0",
-                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v2.5.0",
+                "tag_name": "v3.2.0",
+                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.2.0",
             }
 
     async def mock_get(self, url, **kwargs):
@@ -44,17 +54,18 @@ def test_system_updates_online_newer(monkeypatch):
     assert response.status_code == 200
     data = response.json()
     assert data == {
-        "current": "2.2.0",
-        "latest": "2.5.0",
+        "current": "3.0.0",
+        "latest": "3.2.0",
         "update_available": True,
         "online": True,
-        "url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v2.5.0",
+        "url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.2.0",
     }
 
 
 def test_system_updates_online_up_to_date_and_cached(monkeypatch):
     clear_update_cache()
     monkeypatch.delenv("OPENPDF_DISABLE_UPDATE_CHECK", raising=False)
+    monkeypatch.delenv("TORNIO_DISABLE_UPDATE_CHECK", raising=False)
     calls = {"count": 0}
 
     class MockResponse:
@@ -62,8 +73,8 @@ def test_system_updates_online_up_to_date_and_cached(monkeypatch):
 
         def json(self):
             return {
-                "tag_name": "v2.2.0",
-                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v2.2.0",
+                "tag_name": "v3.0.0",
+                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.0.0",
             }
 
     async def mock_get(self, url, **kwargs):
@@ -84,6 +95,7 @@ def test_system_updates_online_up_to_date_and_cached(monkeypatch):
 def test_system_updates_offline_fallback(monkeypatch):
     clear_update_cache()
     monkeypatch.delenv("OPENPDF_DISABLE_UPDATE_CHECK", raising=False)
+    monkeypatch.delenv("TORNIO_DISABLE_UPDATE_CHECK", raising=False)
 
     async def mock_get_fail(self, url, **kwargs):
         raise httpx.ConnectError("No network connection")
@@ -94,7 +106,7 @@ def test_system_updates_offline_fallback(monkeypatch):
     assert response.status_code == 200
     data = response.json()
     assert data == {
-        "current": "2.2.0",
+        "current": "3.0.0",
         "latest": None,
         "update_available": False,
         "online": False,
@@ -122,6 +134,7 @@ def test_system_updates_disabled_by_env(monkeypatch):
 def test_system_updates_force_bypass_cache(monkeypatch):
     clear_update_cache()
     monkeypatch.delenv("OPENPDF_DISABLE_UPDATE_CHECK", raising=False)
+    monkeypatch.delenv("TORNIO_DISABLE_UPDATE_CHECK", raising=False)
     calls = {"count": 0}
 
     class MockResponse:
@@ -129,8 +142,8 @@ def test_system_updates_force_bypass_cache(monkeypatch):
 
         def json(self):
             return {
-                "tag_name": "v2.6.0",
-                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v2.6.0",
+                "tag_name": "v3.3.0",
+                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.3.0",
             }
 
     async def mock_get(self, url, **kwargs):
@@ -147,18 +160,18 @@ def test_system_updates_force_bypass_cache(monkeypatch):
     res2 = client.get("/api/v1/system/updates?force=true")
     assert res2.status_code == 200
     assert calls["count"] == 2
-    assert res2.json()["latest"] == "2.6.0"
+    assert res2.json()["latest"] == "3.3.0"
 
 
 def test_system_feedback_endpoint(tmp_path, monkeypatch):
-    monkeypatch.setattr("pathlib.Path.home", lambda: tmp_path)
+    monkeypatch.setenv("TORNIO_CONFIG_PATH", str(tmp_path / "config.json"))
 
     payload = {
         "category": "feature",
         "title": "Soporte de plugins externos",
         "description": "Me gustaria poder anadir scripts de python personalizados.",
         "email": "user@example.com",
-        "system_info": {"os": "windows", "version": "2.2.0"},
+        "system_info": {"os": "windows", "version": "3.0.0"},
     }
     response = client.post("/api/v1/system/feedback", json=payload)
     assert response.status_code == 200
@@ -167,7 +180,7 @@ def test_system_feedback_endpoint(tmp_path, monkeypatch):
     assert data["stored_locally"] is True
 
     # Verificar que el archivo local existe y contiene los datos
-    log_file = tmp_path / ".openpdf" / "feedback_log.json"
+    log_file = tmp_path / "feedback_log.json"
     assert log_file.is_file()
     import json
     entries = json.loads(log_file.read_text(encoding="utf-8"))
@@ -197,20 +210,21 @@ def test_system_feedback_validation_rejects_empty():
 def test_system_updates_parses_notes_and_assets(monkeypatch):
     clear_update_cache()
     monkeypatch.delenv("OPENPDF_DISABLE_UPDATE_CHECK", raising=False)
+    monkeypatch.delenv("TORNIO_DISABLE_UPDATE_CHECK", raising=False)
 
     class MockRichResponse:
         status_code = 200
 
         def json(self):
             return {
-                "tag_name": "v3.0.0",
-                "name": "OpenPDF v3.0.0 Release",
-                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.0.0",
+                "tag_name": "v3.1.0",
+                "name": "Tornio v3.1.0 Release",
+                "html_url": "https://github.com/albert-dilas/OpenPDF/releases/tag/v3.1.0",
                 "body": "Novedades y mejoras importantes.",
                 "assets": [
                     {
-                        "name": "OpenPDF_Setup_v3.0.0.exe",
-                        "browser_download_url": "https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/OpenPDF_Setup_v3.0.0.exe",
+                        "name": "Tornio_Setup_v3.1.0.exe",
+                        "browser_download_url": "https://github.com/albert-dilas/OpenPDF/releases/download/v3.1.0/Tornio_Setup_v3.1.0.exe",
                     }
                 ],
             }
@@ -224,7 +238,7 @@ def test_system_updates_parses_notes_and_assets(monkeypatch):
     assert res.status_code == 200
     data = res.json()
     assert data["update_available"] is True
-    assert data["latest"] == "3.0.0"
+    assert data["latest"] == "3.1.0"
     assert data["notes"] == "Novedades y mejoras importantes."
-    assert "OpenPDF_Setup_v3.0.0.exe" in data["download_url"]
+    assert "Tornio_Setup_v3.1.0.exe" in data["download_url"]
 

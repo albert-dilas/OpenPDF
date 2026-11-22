@@ -2,7 +2,7 @@
 import html as html_stdlib
 import re
 from typing import Dict, List, Tuple
-import fitz
+import pymupdf
 import httpx
 from fastapi.concurrency import run_in_threadpool
 
@@ -120,7 +120,7 @@ class PDFTranslateService:
     @staticmethod
     def _extract_pages_paragraphs(input_path: str) -> List[Tuple[int, List[str]]]:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as exc:
             raise PDFProcessingError(f"Error abriendo el documento PDF: {str(exc)}")
 
@@ -176,7 +176,7 @@ class PDFTranslateService:
 
         pages_data = await run_in_threadpool(self._extract_pages_paragraphs, input_path)
 
-        headers = {"User-Agent": f"OpenPDF/{settings.VERSION}"}
+        headers = {"User-Agent": f"Tornio/{settings.VERSION}"}
         html_sections: List[str] = []
 
         async with httpx.AsyncClient(headers=headers) as client:
@@ -259,7 +259,7 @@ class PDFTranslateService:
         <body>
             <div class="header">
                 <h1>Documento Traducido ({html_stdlib.escape(target_label)})</h1>
-                <p class="sub">Generado con OpenPDF v{settings.VERSION} · Modo: {"Bilingüe" if clean_mode == "bilingual" else "Traducción directa"}</p>
+                <p class="sub">Generado con Tornio v{settings.VERSION} · Modo: {"Bilingüe" if clean_mode == "bilingual" else "Traducción directa"}</p>
             </div>
             {"".join(html_sections)}
         </body>

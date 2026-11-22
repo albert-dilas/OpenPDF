@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 from typing import List
 from app.core.exceptions import BusinessRuleError, PDFProcessingError
 from fastapi.concurrency import run_in_threadpool
@@ -10,16 +10,16 @@ class JpgToPdfService:
         if not input_paths:
             raise BusinessRuleError("Debes proporcionar al menos una imagen para convertir a PDF.")
 
-        doc = fitz.open()
+        doc = pymupdf.open()
         try:
             for img_path in input_paths:
-                img_doc = fitz.open(img_path)
+                img_doc = pymupdf.open(img_path)
                 try:
                     pdf_bytes = img_doc.convert_to_pdf()
                 finally:
                     img_doc.close()
 
-                pdf_doc = fitz.open("pdf", pdf_bytes)
+                pdf_doc = pymupdf.open("pdf", pdf_bytes)
                 try:
                     doc.insert_pdf(pdf_doc)
                 finally:

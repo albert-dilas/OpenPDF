@@ -16,7 +16,12 @@ const config: Config = {
         mono: ["var(--font-geist-mono)", "ui-monospace", "monospace"],
       },
       colors: {
+        bg: "var(--bg)",
         background: "var(--background)",
+        fg: {
+          DEFAULT: "var(--fg)",
+          muted: "var(--fg-muted)",
+        },
         foreground: "var(--foreground)",
         surface: {
           DEFAULT: "var(--surface)",
@@ -25,22 +30,32 @@ const config: Config = {
         },
         border: {
           DEFAULT: "var(--border)",
+          strong: "var(--border-strong)",
+        },
+        accent: {
+          DEFAULT: "rgb(var(--accent-rgb) / <alpha-value>)",
+          hover: "rgb(var(--accent-hover-rgb) / <alpha-value>)",
+          fg: "var(--accent-fg)",
         },
         brand: {
-          DEFAULT: "#e5322d",
-          dark: "#cc2c28",
-          light: "#fef2f2",
-          50: "#fef2f2",
-          100: "#fee2e2",
-          200: "#fecaca",
-          500: "#ef4444",
-          600: "#e5322d",
-          700: "#cc2c28",
+          DEFAULT: "rgb(var(--brand-rgb) / <alpha-value>)",
+          dark: "rgb(var(--brand-hover-rgb) / <alpha-value>)",
+          light: "var(--accent-soft)",
+          50: "rgb(var(--brand-rgb) / 0.06)",
+          100: "rgb(var(--brand-rgb) / 0.12)",
+          200: "rgb(var(--brand-rgb) / 0.24)",
+          500: "rgb(var(--brand-rgb) / <alpha-value>)",
+          600: "rgb(var(--brand-rgb) / <alpha-value>)",
+          700: "rgb(var(--brand-hover-rgb) / <alpha-value>)",
         },
       },
+      borderRadius: {
+        card: "var(--radius-card)",
+        control: "var(--radius-control)",
+      },
       boxShadow: {
-        card: "0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.06)",
-        "card-hover": "0 12px 28px -6px rgba(229, 50, 45, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.08)",
+        card: "0 1px 2px 0 rgba(10, 10, 11, 0.04)",
+        "card-hover": "0 8px 24px -8px rgba(10, 10, 11, 0.12)",
       },
       keyframes: {
         "fade-in": {
@@ -49,7 +64,7 @@ const config: Config = {
         },
       },
       animation: {
-        "fade-in": "fade-in 0.18s ease-out forwards",
+        "fade-in": "fade-in 0.16s ease-out forwards",
       },
     },
   },

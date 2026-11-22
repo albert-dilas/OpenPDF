@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import {
   X,
   CheckCircle2,
@@ -7,53 +8,123 @@ import {
   Loader2,
   WifiOff,
   RefreshCw,
-  Sparkles,
+  ShieldCheck,
+  AlertTriangle,
+  ExternalLink,
+  RotateCw,
 } from 'lucide-react';
-import { SystemUpdateResponse } from '@/lib/api';
+import toast from 'react-hot-toast';
+import { formatBytes } from '@/lib/api';
+import { isMutationPending, isResourceBusy, MutationState } from '@/lib/fsm';
+import {
+  selectUpdateInfo,
+  useSystemStore,
+} from '@/store/useSystemStore';
+import { AsyncButton, ProgressBar } from '@/components/ui/Loaders';
+import { useI18n } from '@/i18n';
 
 interface UpdateModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  isLoading: boolean;
-  updateData: SystemUpdateResponse | null;
-  onCheckAgain: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+  onCheckAgain?: () => void;
 }
 
 export default function UpdateModal({
-  isOpen,
-  onClose,
-  isLoading,
-  updateData,
+  isOpen: controlledOpen,
+  onClose: controlledClose,
   onCheckAgain,
 }: UpdateModalProps) {
-  if (!isOpen) return null;
+  const { locale, t } = useI18n();
+  const storeOpen = useSystemStore((s) => s.updateModalOpen);
+  const setStoreOpen = useSystemStore((s) => s.setUpdateModalOpen);
+  const updateState = useSystemStore((s) => s.updateState);
+  const updateData = useSystemStore(selectUpdateInfo);
+  const selfUpdate = useSystemStore((s) => s.selfUpdateStatus);
+  const checkForUpdatesRealtime = useSystemStore((s) => s.checkForUpdatesRealtime);
+  const beginSelfUpdateDownload = useSystemStore((s) => s.beginSelfUpdateDownload);
+  const cancelSelfUpdate = useSystemStore((s) => s.cancelSelfUpdate);
+  const applyVerifiedUpdate = useSystemStore((s) => s.applyVerifiedUpdate);
+
+  const [applyMutation, setApplyMutation] = useState<MutationState>({ status: 'idle' });
+
+  const open = controlledOpen ?? storeOpen;
+  if (!open) return null;
+
+  const isEn = locale === 'en';
+  const closeHandler = controlledClose ?? (() => setStoreOpen(false));
+  const retryCheckHandler = onCheckAgain ?? (() => checkForUpdatesRealtime());
+
+  const queryBusy = isResourceBusy(updateState);
+  const dlBusy =
+    selfUpdate.status === 'downloading' || selfUpdate.status === 'verifying';
+  const applyBusy = isMutationPending(applyMutation);
+  const modalLocked = queryBusy || applyBusy;
 
   const isUpToDate =
-    !isLoading &&
+    !queryBusy &&
     updateData !== null &&
     updateData.online &&
-    !updateData.update_available;
+    !updateData.update_available &&
+    selfUpdate.status !== 'ready_to_install';
 
   const isUpdateAvailable =
-    !isLoading &&
-    updateData !== null &&
-    updateData.online &&
-    updateData.update_available;
+    !queryBusy &&
+    ((updateData !== null && updateData.online && updateData.update_available) ||
+      selfUpdate.status === 'downloading' ||
+      selfUpdate.status === 'verifying' ||
+      selfUpdate.status === 'ready_to_install');
 
   const isOffline =
-    !isLoading &&
+    !queryBusy &&
+    !isUpdateAvailable &&
     (updateData === null || !updateData.online);
 
+  const canSelfDownload = Boolean(
+    updateData?.latest &&
+      (updateData?.installer_url || updateData?.portable_url || updateData?.download_url) &&
+      updateData?.checksums_url
+  );
+
   const releaseUrl =
-    updateData?.download_url ||
     updateData?.url ||
+    updateData?.download_url ||
     'https://github.com/albert-dilas/OpenPDF/releases';
 
-  const handleUpdateClick = () => {
-    if (typeof window !== 'undefined') {
-      window.open(releaseUrl, '_blank', 'noopener,noreferrer');
+  const handleStartInAppDownload = async () => {
+    try {
+      const started = await beginSelfUpdateDownload();
+      if (!started) {
+        window.open(releaseUrl, '_blank', 'noopener,noreferrer');
+      }
+    } catch {
+      toast.error(
+        isEn
+          ? 'Unable to start verified download from GitHub Releases.'
+          : 'No se pudo iniciar la descarga verificada desde GitHub Releases.'
+      );
     }
-    onClose();
+  };
+
+  const handleApplyNow = async () => {
+    setApplyMutation({ status: 'pending' });
+    try {
+      const res = await applyVerifiedUpdate();
+      setApplyMutation({ status: 'success', data: undefined });
+      toast.success(
+        res.dry_run
+          ? 'Dry-run OK.'
+          : isEn
+          ? 'Launching verified installer and closing Tornio...'
+          : 'Ejecutando instalador verificado y cerrando Tornio...'
+      );
+    } catch {
+      setApplyMutation({ status: 'error', error: 'apply_failed' });
+      toast.error(
+        isEn
+          ? 'Unable to apply update package.'
+          : 'No se pudo aplicar el paquete de actualización.'
+      );
+    }
   };
 
   return (
@@ -61,213 +132,265 @@ export default function UpdateModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="update-modal-title"
-      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/65 backdrop-blur-sm animate-fade-in"
+      className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-[2px] animate-fade-in"
       onClick={(e) => {
-        if (e.target === e.currentTarget && !isLoading) onClose();
+        if (e.target === e.currentTarget && !modalLocked) closeHandler();
       }}
     >
-      <div className="w-full max-w-lg rounded-3xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 shadow-2xl overflow-hidden transition-all text-left">
+      <div className="w-full max-w-lg rounded-[var(--radius-card)] bg-[var(--surface)] border border-[var(--border)] shadow-2xl overflow-hidden text-left text-[var(--fg)]">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-gray-100 dark:border-slate-800/80 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-xl bg-red-50 dark:bg-brand/10 text-brand">
-              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : 'transition-transform duration-300 hover:rotate-180'}`} />
+            <div className="p-1.5 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface-muted)]">
+              <RefreshCw className={`w-4 h-4 ${queryBusy ? 'animate-spin' : ''}`} />
             </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-slate-400">
-              Comprobador de Actualizaciones
+            <span className="text-xs font-mono uppercase tracking-wider text-[var(--fg-muted)]">
+              {t.settings.updates.title}
             </span>
           </div>
           <button
             type="button"
-            onClick={onClose}
-            disabled={isLoading}
-            aria-label="Cerrar diálogo"
-            className="p-1.5 rounded-xl text-gray-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+            onClick={closeHandler}
+            disabled={modalLocked}
+            aria-label={t.common.close}
+            className="p-1.5 rounded-[var(--radius-control)] text-[var(--fg-muted)] hover:text-[var(--fg)] hover:bg-[var(--surface-muted)] transition-colors disabled:opacity-40"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content Body */}
-        <div className="p-6">
-          {isLoading ? (
-            <div className="py-10 flex flex-col items-center justify-center text-center space-y-4">
-              <div className="h-16 w-16 rounded-2xl bg-brand/10 dark:bg-brand/20 flex items-center justify-center text-brand">
-                <Loader2 className="w-8 h-8 animate-spin" />
-              </div>
+        {/* Body */}
+        <div className="p-6 space-y-4">
+          {queryBusy ? (
+            <div className="py-10 flex flex-col items-center justify-center text-center space-y-3">
+              <Loader2 className="w-7 h-7 animate-spin text-[var(--fg)]" />
               <div className="space-y-1">
-                <h3
-                  id="update-modal-title"
-                  className="text-base font-bold text-gray-900 dark:text-white"
-                >
-                  Buscando actualizaciones en tiempo real...
+                <h3 id="update-modal-title" className="text-sm font-semibold">
+                  {t.settings.updates.checking}
                 </h3>
-                <p className="text-xs text-gray-500 dark:text-slate-400 max-w-xs mx-auto">
-                  Consultando la API oficial de GitHub Releases para verificar si existe una nueva versión compilada.
+                <p className="text-xs text-[var(--fg-muted)] max-w-xs mx-auto">
+                  {t.settings.updates.desc}
                 </p>
               </div>
             </div>
           ) : isUpToDate ? (
-            <div className="py-3 space-y-5">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-200 dark:border-emerald-800/60 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
-                  <CheckCircle2 className="w-6 h-6" />
+            <div className="space-y-4">
+              <div className="flex items-start gap-3.5">
+                <div className="h-10 w-10 rounded-[var(--radius-control)] border border-emerald-500/30 bg-emerald-500/10 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shrink-0">
+                  <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">
-                    No necesita actualización
-                  </div>
-                  <h3
-                    id="update-modal-title"
-                    className="text-lg font-bold text-gray-900 dark:text-white"
-                  >
-                    Tu versión no necesita actualización
+                  <h3 id="update-modal-title" className="text-base font-bold">
+                    {isEn ? 'You are running the latest version' : 'Tienes la última versión disponible'}
                   </h3>
-                  <p className="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">
-                    Tienes instalada la versión más reciente disponible (v{updateData?.current}). Todo el motor local está al día y no requiere ninguna descarga o actualización adicional.
+                  <p className="text-xs text-[var(--fg-muted)] leading-relaxed">
+                    {isEn
+                      ? `Tornio v${updateData?.current} is up to date.`
+                      : `Tornio v${updateData?.current} está actualizado.`}
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-gray-50 dark:bg-slate-950/60 border border-gray-200/80 dark:border-slate-800/90 p-4 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-gray-600 dark:text-slate-400">
-                  <span>Versión instalada:</span>
-                  <span className="font-mono font-bold text-gray-900 dark:text-slate-200">
+              <div className="rounded-[var(--radius-control)] bg-[var(--bg)] border border-[var(--border)] p-3.5 space-y-1.5 text-xs">
+                <div className="flex items-center justify-between text-[var(--fg-muted)]">
+                  <span>{t.settings.updates.installedVersion}</span>
+                  <span className="font-mono font-semibold text-[var(--fg)]">
                     v{updateData?.current}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-gray-600 dark:text-slate-400">
-                  <span>Última versión en GitHub:</span>
-                  <span className="font-mono font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="flex items-center justify-between text-[var(--fg-muted)]">
+                  <span>GitHub Releases</span>
+                  <span className="font-mono font-semibold text-emerald-600 dark:text-emerald-400">
                     v{updateData?.latest || updateData?.current}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-gray-600 dark:text-slate-400">
-                  <span>Estado de verificación:</span>
-                  <span className="font-semibold text-emerald-600 dark:text-emerald-400">
-                    Comprobado en tiempo real (Al día)
                   </span>
                 </div>
               </div>
             </div>
           ) : isUpdateAvailable ? (
-            <div className="py-3 space-y-4">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-gradient-to-br from-brand to-orange-600 text-white flex items-center justify-center shrink-0 shadow-md">
-                  <Sparkles className="w-6 h-6 animate-pulse" />
+            <div className="space-y-4">
+              <div className="flex items-start gap-3.5">
+                <div
+                  className="h-10 w-10 rounded-[var(--radius-control)] flex items-center justify-center shrink-0"
+                  style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-fg)' }}
+                >
+                  {selfUpdate.verified ? (
+                    <ShieldCheck className="w-5 h-5" />
+                  ) : (
+                    <Download className="w-5 h-5" />
+                  )}
                 </div>
                 <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-300">
-                    Nueva Versión Disponible
-                  </div>
-                  <h3
-                    id="update-modal-title"
-                    className="text-lg font-bold text-gray-900 dark:text-white"
-                  >
-                    Actualización disponible: v{updateData?.latest}
+                  <h3 id="update-modal-title" className="text-base font-bold">
+                    {isEn
+                      ? `Update available: v${selfUpdate.target_version || updateData?.latest}`
+                      : `Actualización disponible: v${selfUpdate.target_version || updateData?.latest}`}
                   </h3>
-                  <p className="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">
-                    Se ha publicado una versión más reciente de OpenPDF en GitHub. Pulsa en <strong>Actualizar</strong> para descargar la nueva versión oficial o <strong>Cancelar</strong> para continuar con la versión actual.
+                  <p className="text-xs text-[var(--fg-muted)] leading-relaxed">
+                    {isEn
+                      ? `Installed: v${updateData?.current || '3.0.0'}. Verified against official SHA256SUMS.`
+                      : `Instalada: v${updateData?.current || '3.0.0'}. Descarga verificada contra SHA256SUMS oficial.`}
                   </p>
                 </div>
               </div>
 
-              <div className="rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-gray-200/80 dark:border-slate-800/90 p-4 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-gray-600 dark:text-slate-400">
-                  <span>Versión actualmente instalada:</span>
-                  <span className="font-mono font-semibold text-gray-900 dark:text-slate-300">
-                    v{updateData?.current}
-                  </span>
+              {updateData?.notes && selfUpdate.status === 'idle' && (
+                <div className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--bg)] p-3 max-h-28 overflow-y-auto whitespace-pre-line font-mono text-[11px] text-[var(--fg-muted)]">
+                  {updateData.notes}
                 </div>
-                <div className="flex items-center justify-between text-gray-600 dark:text-slate-400">
-                  <span>Nueva versión disponible:</span>
-                  <span className="font-mono font-bold text-brand text-sm">
-                    v{updateData?.latest}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-gray-600 dark:text-slate-400">
-                  <span>Canal de distribución:</span>
-                  <span className="font-medium text-gray-900 dark:text-slate-200">
-                    GitHub Releases (Binarios oficiales)
-                  </span>
-                </div>
-              </div>
+              )}
 
-              {updateData?.notes && (
-                <div className="rounded-xl border border-gray-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 p-3 space-y-1.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-gray-600 dark:text-slate-400 block">
-                    Novedades de la versión:
-                  </span>
-                  <div className="text-xs text-gray-700 dark:text-slate-300 max-h-24 overflow-y-auto whitespace-pre-line leading-relaxed pr-1 font-mono text-[11px]">
-                    {updateData.notes}
+              {dlBusy && (
+                <div className="rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--bg)] p-3.5 space-y-2 text-xs">
+                  <div className="flex items-center justify-between text-[var(--fg-muted)]">
+                    <span>
+                      {selfUpdate.status === 'verifying'
+                        ? isEn
+                          ? 'Verifying SHA-256 checksum...'
+                          : 'Verificando firma SHA-256...'
+                        : isEn
+                        ? 'Downloading package...'
+                        : 'Descargando paquete oficial...'}
+                    </span>
+                    <span className="font-mono font-semibold text-[var(--fg)]">
+                      {selfUpdate.total_bytes > 0
+                        ? `${formatBytes(selfUpdate.downloaded_bytes)} / ${formatBytes(selfUpdate.total_bytes)} (${selfUpdate.percent}%)`
+                        : formatBytes(selfUpdate.downloaded_bytes)}
+                    </span>
                   </div>
+                  <ProgressBar
+                    value={selfUpdate.status === 'verifying' || selfUpdate.total_bytes === 0 ? undefined : selfUpdate.percent}
+                    indeterminate={selfUpdate.status === 'verifying' || selfUpdate.total_bytes === 0}
+                  />
+                </div>
+              )}
+
+              {selfUpdate.status === 'ready_to_install' && selfUpdate.verified && (
+                <div className="rounded-[var(--radius-control)] border border-emerald-500/35 bg-emerald-500/10 p-3.5 space-y-1.5 text-xs text-emerald-700 dark:text-emerald-300">
+                  <div className="flex items-center gap-2 font-semibold">
+                    <ShieldCheck className="w-4 h-4 shrink-0" />
+                    <span>
+                      {isEn
+                        ? 'Integrity verified (SHA-256 match)'
+                        : 'Integridad verificada (SHA-256 válido)'}
+                    </span>
+                  </div>
+                  <p className="font-mono text-[10px] break-all opacity-80">
+                    {selfUpdate.sha256_actual}
+                  </p>
+                </div>
+              )}
+
+              {selfUpdate.status === 'error' && selfUpdate.error && (
+                <div
+                  role="alert"
+                  className="rounded-[var(--radius-control)] border border-red-500/35 bg-red-500/10 p-3.5 flex items-start gap-2.5 text-xs text-red-600 dark:text-red-300"
+                >
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                  <span>{selfUpdate.error}</span>
                 </div>
               )}
             </div>
           ) : isOffline ? (
-            <div className="py-3 space-y-5">
-              <div className="flex items-start gap-4">
-                <div className="h-12 w-12 rounded-2xl bg-slate-100 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 flex items-center justify-center text-slate-500 dark:text-slate-400 shrink-0">
-                  <WifiOff className="w-6 h-6" />
-                </div>
-                <div className="space-y-1">
-                  <h3
-                    id="update-modal-title"
-                    className="text-lg font-bold text-gray-900 dark:text-white"
-                  >
-                    Sin conexión con GitHub
-                  </h3>
-                  <p className="text-xs text-gray-600 dark:text-slate-300 leading-relaxed">
-                    No fue posible conectar con los servidores de GitHub en este momento. OpenPDF sigue funcionando con total privacidad y normalidad en modo local-first.
-                  </p>
-                </div>
+            <div className="flex items-start gap-3.5">
+              <div className="h-10 w-10 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface-muted)] flex items-center justify-center text-[var(--fg-muted)] shrink-0">
+                <WifiOff className="w-5 h-5" />
               </div>
-
-              <div className="rounded-2xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-800/60 p-4 text-xs text-amber-900 dark:text-amber-200">
-                Puedes verificar tu conexión de red o consultar manualmente la página de descargas cuando tengas acceso a internet.
+              <div className="space-y-1">
+                <h3 id="update-modal-title" className="text-base font-bold">
+                  {isEn ? 'GitHub unreachable (offline)' : 'Sin conexión con GitHub'}
+                </h3>
+                <p className="text-xs text-[var(--fg-muted)] leading-relaxed">
+                  {isEn
+                    ? 'Tornio continues operating 100% locally without requiring internet access.'
+                    : 'Tornio continúa operando 100% en local sin requerir conexión a internet.'}
+                </p>
               </div>
             </div>
           ) : null}
         </div>
 
-        {/* Footer Actions */}
-        <div className="px-6 py-4 bg-gray-50/80 dark:bg-slate-950/80 border-t border-gray-100 dark:border-slate-800/80 flex flex-wrap items-center justify-between gap-3">
-          <button
-            type="button"
-            disabled={isLoading}
-            onClick={onCheckAgain}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white transition-colors disabled:opacity-40"
-          >
-            <RefreshCw className="w-3.5 h-3.5" />
-            <span>Volver a comprobar</span>
-          </button>
+        {/* Footer */}
+        <div className="px-6 py-3.5 bg-[var(--bg)] border-t border-[var(--border)] flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              disabled={modalLocked || dlBusy}
+              onClick={retryCheckHandler}
+              className="inline-flex items-center gap-1.5 text-xs font-medium text-[var(--fg-muted)] hover:text-[var(--fg)] transition-colors disabled:opacity-40"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>{t.common.retry}</span>
+            </button>
+            <a
+              href={releaseUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 text-xs font-medium text-[var(--fg-muted)] hover:text-[var(--fg)]"
+            >
+              <span>GitHub</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
+          </div>
 
           <div className="flex items-center gap-2">
-            {isUpdateAvailable ? (
+            {dlBusy ? (
+              <button
+                type="button"
+                onClick={() => cancelSelfUpdate()}
+                className="px-4 py-1.5 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] text-xs font-semibold text-[var(--fg)] hover:border-red-500/40 hover:text-red-500"
+              >
+                {t.common.cancel}
+              </button>
+            ) : selfUpdate.status === 'ready_to_install' && selfUpdate.verified ? (
+              <AsyncButton
+                pending={applyBusy}
+                onClick={handleApplyNow}
+                icon={<RotateCw className="w-3.5 h-3.5" />}
+                className="px-4 py-1.5 rounded-[var(--radius-control)] text-xs font-semibold"
+                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-fg)' }}
+              >
+                {isEn ? 'Restart & install now' : 'Reiniciar e instalar'}
+              </AsyncButton>
+            ) : isUpdateAvailable ? (
               <>
                 <button
                   type="button"
-                  onClick={onClose}
-                  className="px-4 py-2 rounded-xl border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-gray-100 dark:hover:bg-slate-800 text-xs font-semibold text-gray-700 dark:text-slate-200 transition-colors"
+                  onClick={closeHandler}
+                  className="px-3.5 py-1.5 rounded-[var(--radius-control)] border border-[var(--border)] bg-[var(--surface)] text-xs font-medium text-[var(--fg)]"
                 >
-                  Cancelar
+                  {t.common.cancel}
                 </button>
-                <button
-                  type="button"
-                  onClick={handleUpdateClick}
-                  className="inline-flex items-center gap-2 px-5 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white text-xs font-bold shadow-md shadow-brand/20 transition-all"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Actualizar</span>
-                </button>
+                {canSelfDownload ? (
+                  <button
+                    type="button"
+                    onClick={handleStartInAppDownload}
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-[var(--radius-control)] text-xs font-semibold"
+                    style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-fg)' }}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>{isEn ? 'Download & verify' : 'Descargar y verificar'}</span>
+                  </button>
+                ) : (
+                  <a
+                    href={releaseUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-[var(--radius-control)] text-xs font-semibold"
+                    style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-fg)' }}
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>{t.common.download}</span>
+                  </a>
+                )}
               </>
             ) : (
               <button
                 type="button"
-                onClick={onClose}
-                className="px-5 py-2 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold hover:opacity-90 transition-opacity"
+                onClick={closeHandler}
+                className="px-4 py-1.5 rounded-[var(--radius-control)] text-xs font-semibold"
+                style={{ backgroundColor: 'var(--accent)', color: 'var(--accent-fg)' }}
               >
-                Cerrar
+                {t.common.close}
               </button>
             )}
           </div>

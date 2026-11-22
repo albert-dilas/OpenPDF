@@ -1,8 +1,8 @@
 # UTF-8
 VSVersionInfo(
   ffi=FixedFileInfo(
-    filevers=(2, 2, 0, 0),
-    prodvers=(2, 2, 0, 0),
+    filevers=(3, 0, 0, 0),
+    prodvers=(3, 0, 0, 0),
     mask=0x3f,
     flags=0x0,
     OS=0x40004,
@@ -16,14 +16,14 @@ VSVersionInfo(
         StringTable(
           "040904B0",
           [
-            StringStruct("CompanyName", "OpenPDF Project"),
-            StringStruct("FileDescription", "OpenPDF v2.2.0 - Local-First PDF Processing Suite"),
-            StringStruct("FileVersion", "2.2.0.0"),
-            StringStruct("InternalName", "OpenPDF"),
-            StringStruct("LegalCopyright", "Copyright (C) 2026 OpenPDF Project. MIT License."),
-            StringStruct("OriginalFilename", "OpenPDF.exe"),
-            StringStruct("ProductName", "OpenPDF"),
-            StringStruct("ProductVersion", "2.2.0.0"),
+            StringStruct("CompanyName", "Tornio Project"),
+            StringStruct("FileDescription", "Tornio v3.0.0 - Local-First Document and Media Workbench"),
+            StringStruct("FileVersion", "3.0.0.0"),
+            StringStruct("InternalName", "Tornio"),
+            StringStruct("LegalCopyright", "Copyright (C) 2026 Tornio Project. Apache License 2.0."),
+            StringStruct("OriginalFilename", "Tornio.exe"),
+            StringStruct("ProductName", "Tornio"),
+            StringStruct("ProductVersion", "3.0.0.0"),
           ],
         )
       ]

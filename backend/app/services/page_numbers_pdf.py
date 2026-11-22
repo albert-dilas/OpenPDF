@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 from app.core.exceptions import PDFProcessingError
 from fastapi.concurrency import run_in_threadpool
 
@@ -7,14 +7,14 @@ class PageNumbersService:
     @staticmethod
     def _add_page_numbers_sync(input_path: str, output_path: str) -> str:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error añadiendo números de página: {str(e)}")
 
         try:
             for i, page in enumerate(doc):
                 rect = page.rect
-                point = fitz.Point(rect.width / 2, rect.height - 30)
+                point = pymupdf.Point(rect.width / 2, rect.height - 30)
                 text = str(i + 1)
                 page.insert_text(point, text, fontsize=12, color=(0, 0, 0))
 

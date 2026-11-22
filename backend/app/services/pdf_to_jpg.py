@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 import zipfile
 import os
 from app.core.exceptions import PDFProcessingError
@@ -9,7 +9,7 @@ class PDFToJpgService:
     @staticmethod
     def _convert_sync(input_path: str, output_path: str) -> str:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error al convertir PDF a JPG: {str(e)}")
 

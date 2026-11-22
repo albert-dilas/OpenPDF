@@ -10,14 +10,18 @@ def test_get_modules_and_detect_modules(monkeypatch):
     res_mod = client.get("/api/v1/system/modules")
     assert res_mod.status_code == 200
     data = res_mod.json()
-    assert data["version"] == "2.2.0"
+    assert data["version"] == "3.0.0"
     assert "modules" in data
     assert "ocr" in data["modules"]
     assert "word_to_pdf" in data["modules"]
+    assert "ffmpeg" in data["modules"]
+    assert "yt_dlp" in data["modules"]
+    assert "rembg_onnx" in data["modules"]
+    assert "whisper_cpu" in data["modules"]
 
     res_detect = client.post("/api/v1/system/detect-modules")
     assert res_detect.status_code == 200
-    assert res_detect.json()["version"] == "2.2.0"
+    assert res_detect.json()["version"] == "3.0.0"
 
 
 def test_configure_module_custom_and_reset(tmp_path, monkeypatch):

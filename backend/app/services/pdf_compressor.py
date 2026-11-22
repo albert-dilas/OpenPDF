@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 from fastapi.concurrency import run_in_threadpool
 from app.core.exceptions import BusinessRuleError, PDFProcessingError
 from app.core.logging import logger
@@ -16,7 +16,7 @@ class PDFCompressorService:
             )
 
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error abriendo PDF: {str(e)}")
 

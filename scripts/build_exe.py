@@ -1,9 +1,11 @@
 """
-Compila el frontend estático (Next.js) y empaqueta el ejecutable monolítico OpenPDF.exe en dist/OpenPDF.exe.
+Compila el frontend estatico (Next.js) y empaqueta el ejecutable monolitico Tornio.exe en dist/Tornio.exe.
 """
 import os
 import subprocess
 import sys
+
+VERSION = "3.0.0"
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FRONTEND_DIR = os.path.join(PROJECT_ROOT, "frontend")
@@ -11,7 +13,7 @@ BACKEND_DIR = os.path.join(PROJECT_ROOT, "backend")
 INSTALLER_DIR = os.path.join(PROJECT_ROOT, "installer")
 DIST_DIR = os.path.join(PROJECT_ROOT, "dist")
 BUILD_DIR = os.path.join(PROJECT_ROOT, "build")
-SPEC_FILE = os.path.join(INSTALLER_DIR, "OpenPDF.spec")
+SPEC_FILE = os.path.join(INSTALLER_DIR, "Tornio.spec")
 
 
 def get_python_executable() -> str:
@@ -27,7 +29,7 @@ def get_python_executable() -> str:
 def main() -> None:
     py_exe = get_python_executable()
     print("============================================================")
-    print("  OpenPDF v2.0.0 - Compilacion de Ejecutable Monolitico")
+    print(f"  Tornio v{VERSION} - Compilacion de Ejecutable Monolitico")
     print(f"  Python: {py_exe}")
     print("============================================================")
 
@@ -58,7 +60,7 @@ def main() -> None:
     ]
     subprocess.run(pyinstaller_cmd, cwd=PROJECT_ROOT, check=True)
 
-    exe_path = os.path.join(DIST_DIR, "OpenPDF.exe")
+    exe_path = os.path.join(DIST_DIR, "Tornio.exe")
     size_mb = os.path.getsize(exe_path) / (1024 * 1024)
     print(f"\n[OK] Ejecutable generado exitosamente ({size_mb:.1f} MB): {exe_path}")
 

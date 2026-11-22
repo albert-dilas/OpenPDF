@@ -1,6 +1,6 @@
 import json
 from typing import Any, Dict, List
-import fitz
+import pymupdf
 from fastapi.concurrency import run_in_threadpool
 from app.core.exceptions import BusinessRuleError, PDFProcessingError
 
@@ -44,11 +44,11 @@ class PDFOrganizerService:
         spec = parse_pages_spec(pages_json)
 
         try:
-            src_doc = fitz.open(input_path)
+            src_doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error abriendo PDF: {str(e)}")
 
-        out_doc = fitz.open()
+        out_doc = pymupdf.open()
         try:
             if src_doc.is_encrypted:
                 raise BusinessRuleError("No se puede organizar un PDF protegido con contraseña.")

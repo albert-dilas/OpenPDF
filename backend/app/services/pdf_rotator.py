@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 from app.core.exceptions import BusinessRuleError, PDFProcessingError
 from fastapi.concurrency import run_in_threadpool
 
@@ -10,7 +10,7 @@ class PDFRotatorService:
             raise BusinessRuleError("Los grados de rotación deben ser múltiplos de 90 (ej. 90, 180, 270).")
 
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error al rotar PDF: {str(e)}")
 

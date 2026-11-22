@@ -1,7 +1,7 @@
 import os
 import re
 import uuid
-import fitz
+import pymupdf
 import pytesseract
 from PIL import Image  # noqa: F401 - needed by pytesseract
 from fastapi.concurrency import run_in_threadpool
@@ -41,7 +41,7 @@ class OcrService:
         if not tess_path:
             raise PDFProcessingError(
                 "Tesseract no encontrado. Por favor, instala Tesseract-OCR o vincula su ruta "
-                "desde el Gestor de Modulos de OpenPDF."
+                "desde el Gestor de Modulos de Tornio."
             )
 
         pytesseract.pytesseract.tesseract_cmd = tess_path
@@ -49,11 +49,11 @@ class OcrService:
         tess_config = f'--tessdata-dir "{tessdata_dir}"' if tessdata_dir else ""
 
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error abriendo PDF para OCR: {str(e)}")
 
-        final_pdf = fitz.open()
+        final_pdf = pymupdf.open()
         temp_files: list[str] = []
         temp_dir = os.path.dirname(output_path)
 
@@ -62,7 +62,7 @@ class OcrService:
                 existing_text = page.get_text().strip()
 
                 if existing_text:
-                    single_page = fitz.open()
+                    single_page = pymupdf.open()
                     try:
                         single_page.insert_pdf(doc, from_page=page.number, to_page=page.number)
                         final_pdf.insert_pdf(single_page)
@@ -86,7 +86,7 @@ class OcrService:
                     with open(temp_pdf_path, "wb") as f:
                         f.write(pdf_bytes)
 
-                    temp_doc = fitz.open(temp_pdf_path)
+                    temp_doc = pymupdf.open(temp_pdf_path)
                     try:
                         final_pdf.insert_pdf(temp_doc)
                     finally:

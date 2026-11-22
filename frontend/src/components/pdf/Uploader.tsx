@@ -1,8 +1,12 @@
 'use client';
 
-import { useState, useRef } from 'react';
-import { FilePlus, UploadCloud, AlertCircle, ShieldCheck } from 'lucide-react';
-import { useSystemStore } from '@/store/useSystemStore';
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { ShieldCheck } from 'lucide-react';
+import FileDropZone, { DropZoneInteractionState } from '@/components/ui/FileDropZone';
+import { selectMaxFileSizeMb, useSystemStore } from '@/store/useSystemStore';
+import { useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { apiClient, extractErrorMessage } from '@/lib/api';
 
 interface UploaderProps {
   onFilesSelected: (files: File[]) => void;
@@ -10,20 +14,87 @@ interface UploaderProps {
   multiple?: boolean;
 }
 
+let inFlightChainedLoad: { id: string; promise: Promise<File> } | null = null;
+
 export default function Uploader({
   onFilesSelected,
   accept = '.pdf',
   multiple = true,
 }: UploaderProps) {
-  const [isDragging, setIsDragging] = useState(false);
+  const pathname = (usePathname() || '/').replace(/\/+$/, '') || '/';
   const [validationError, setValidationError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const maxFileSizeMb = useSystemStore((s) => s.maxFileSizeMb);
+  const [chainedState, setChainedState] = useState<'idle' | 'pending'>('idle');
+  const maxFileSizeMb = useSystemStore(selectMaxFileSizeMb);
+  const pendingChainedAsset = useWorkspaceStore((s) => s.pendingChainedAsset);
+  const clearPendingChainedAsset = useWorkspaceStore((s) => s.clearPendingChainedAsset);
 
   const allowedExtensions = accept
     .split(',')
     .map((ext) => ext.trim().toLowerCase())
     .filter(Boolean);
+
+  useEffect(() => {
+    if (!pendingChainedAsset) return;
+    const { asset, targetHref } = pendingChainedAsset;
+    const normalizedTarget = (targetHref || '/').replace(/\/+$/, '') || '/';
+    if (normalizedTarget !== pathname) return;
+
+    const exts = accept
+      .split(',')
+      .map((ext) => ext.trim().toLowerCase())
+      .filter(Boolean);
+    const lowerName = asset.filename.toLowerCase();
+    const matchesExt =
+      exts.length === 0 || exts.some((ext) => lowerName.endsWith(ext));
+
+    if (!matchesExt) {
+      setValidationError(
+        `Formato no compatible (${asset.filename}). Formatos admitidos: ${exts
+          .join(', ')
+          .toUpperCase()}`
+      );
+      clearPendingChainedAsset();
+      return;
+    }
+
+    let cancelled = false;
+    setChainedState('pending');
+
+    if (!inFlightChainedLoad || inFlightChainedLoad.id !== asset.id) {
+      const promise = apiClient
+        .get<Blob>(`/workspace/assets/${asset.id}/download`, {
+          responseType: 'blob',
+          timeout: 60000,
+        })
+        .then(({ data }) => {
+          return new File([data], asset.filename, {
+            type: asset.mime_type || data.type || 'application/octet-stream',
+          });
+        });
+      inFlightChainedLoad = { id: asset.id, promise };
+    }
+
+    inFlightChainedLoad.promise
+      .then((file) => {
+        if (cancelled) return;
+        inFlightChainedLoad = null;
+        clearPendingChainedAsset();
+        setChainedState('idle');
+        onFilesSelected([file]);
+      })
+      .catch(async (err) => {
+        if (cancelled) return;
+        inFlightChainedLoad = null;
+        clearPendingChainedAsset();
+        setChainedState('idle');
+        const msg = await extractErrorMessage(err, 'No se pudo cargar el archivo desde Bandeja Viva.');
+        setValidationError(msg);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [accept, clearPendingChainedAsset, onFilesSelected, pathname, pendingChainedAsset]);
 
   const validateAndSelect = (rawFiles: File[]) => {
     setValidationError(null);
@@ -62,115 +133,40 @@ export default function Uploader({
     }
   };
 
-  const handleDrag = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.type === 'dragenter' || e.type === 'dragover') {
-      setIsDragging(true);
-    } else if (e.type === 'dragleave') {
-      setIsDragging(false);
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      validateAndSelect(Array.from(e.dataTransfer.files));
-    }
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-    if (e.target.files && e.target.files.length > 0) {
-      validateAndSelect(Array.from(e.target.files));
-      e.target.value = '';
-    }
-  };
+  const interactionState: DropZoneInteractionState =
+    chainedState === 'pending'
+      ? 'pending'
+      : validationError
+      ? 'error'
+      : 'idle';
 
   return (
     <div className="mt-6 max-w-3xl w-full mx-auto">
-      <div
-        role="button"
-        tabIndex={0}
-        aria-label={multiple ? 'Seleccionar o arrastrar archivos' : 'Seleccionar o arrastrar un archivo'}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            fileInputRef.current?.click();
-          }
-        }}
-        onClick={() => fileInputRef.current?.click()}
-        onDragEnter={handleDrag}
-        onDragLeave={handleDrag}
-        onDragOver={handleDrag}
-        onDrop={handleDrop}
-        className={`group relative flex flex-col items-center justify-center p-10 sm:p-14 border-2 border-dashed rounded-3xl transition-all duration-200 cursor-pointer focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-brand/30 ${
-          validationError
-            ? 'border-red-400 bg-red-50/60 dark:border-red-700 dark:bg-red-950/20'
-            : isDragging
-            ? 'border-brand bg-red-50/80 dark:bg-brand/10 scale-[1.01] shadow-xl'
-            : 'border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-900/90 hover:border-brand/70 dark:hover:border-brand/70 hover:bg-red-50/20 dark:hover:bg-slate-900 shadow-card'
-        }`}
-      >
-        <input
-          type="file"
-          className="hidden"
-          ref={fileInputRef}
-          onChange={handleChange}
-          accept={accept}
-          multiple={multiple}
-        />
-
-        <div
-          className={`mb-5 p-4 rounded-2xl transition-transform duration-200 group-hover:scale-105 ${
-            isDragging
-              ? 'bg-brand text-white'
-              : 'bg-red-50 dark:bg-brand/15 text-brand'
-          }`}
-        >
-          <UploadCloud className="w-10 h-10" />
-        </div>
-
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            fileInputRef.current?.click();
-          }}
-          className="bg-brand hover:bg-brand-dark text-white font-bold py-4 px-8 sm:px-10 rounded-2xl text-lg sm:text-xl mb-3 shadow-lg shadow-brand/20 flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-brand"
-        >
-          <FilePlus className="w-6 h-6 shrink-0" />
-          <span>{multiple ? 'Seleccionar archivos' : 'Seleccionar archivo'}</span>
-        </button>
-
-        <p className="text-gray-500 dark:text-slate-400 text-sm sm:text-base font-medium">
-          o arrastra y suelta {multiple ? 'tus documentos' : 'tu documento'} aquí
-        </p>
-
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2 text-xs text-gray-400 dark:text-slate-500">
-          <span className="px-2.5 py-1 rounded-full bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-300 font-semibold">
-            Formatos: {allowedExtensions.join(', ').toUpperCase()}
-          </span>
-          <span>·</span>
-          <span>Máx. {maxFileSizeMb} MB</span>
-          <span>·</span>
-          <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
-            <ShieldCheck className="w-3.5 h-3.5" /> 100% Local
-          </span>
-        </div>
-      </div>
-
-      {validationError && (
-        <div
-          role="alert"
-          className="mt-3 flex items-center justify-center gap-2 text-xs sm:text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/70 rounded-xl px-4 py-2.5 animate-fade-in"
-        >
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{validationError}</span>
-        </div>
-      )}
+      <FileDropZone
+        variant="canvas"
+        interactionState={interactionState}
+        onFilesSelected={validateAndSelect}
+        accept={accept}
+        multiple={multiple}
+        ariaLabel={multiple ? 'Seleccionar o arrastrar archivos' : 'Seleccionar o arrastrar un archivo'}
+        buttonLabel={multiple ? 'Seleccionar archivos' : 'Seleccionar archivo'}
+        pendingLabel="Cargando desde Bandeja Viva..."
+        subtitle={`Arrastra y suelta ${multiple ? 'tus documentos' : 'tu documento'} aquí`}
+        errorMessage={validationError}
+        footerSlot={
+          <div className="flex flex-wrap items-center justify-center gap-2 text-xs text-[var(--fg-muted)]">
+            <span className="px-2.5 py-0.5 rounded-full bg-[var(--surface-muted)] border border-[var(--border)] text-[var(--fg)] font-mono text-[11px]">
+              {allowedExtensions.join(', ').toUpperCase()}
+            </span>
+            <span>·</span>
+            <span className="font-mono text-[11px]">Máx. {maxFileSizeMb} MB</span>
+            <span>·</span>
+            <span className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+              <ShieldCheck className="w-3.5 h-3.5" /> 100% Local
+            </span>
+          </div>
+        }
+      />
     </div>
   );
 }

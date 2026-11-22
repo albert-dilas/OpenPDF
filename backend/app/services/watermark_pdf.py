@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 import math
 from app.core.exceptions import PDFProcessingError
 from fastapi.concurrency import run_in_threadpool
@@ -7,7 +7,7 @@ class PDFWatermarkService:
     @staticmethod
     def _watermark_sync(input_path: str, text: str, output_path: str) -> str:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error abriendo PDF: {str(e)}")
 
@@ -22,7 +22,7 @@ class PDFWatermarkService:
                 center_x = rect.width / 2
                 center_y = rect.height / 2
                 # Rectángulo grande centrado en la página
-                text_rect = fitz.Rect(
+                text_rect = pymupdf.Rect(
                     center_x - 250, center_y - 50,
                     center_x + 250, center_y + 50
                 )
@@ -30,16 +30,16 @@ class PDFWatermarkService:
                 angle_rad = math.radians(45)
                 cos_a = math.cos(angle_rad)
                 sin_a = math.sin(angle_rad)
-                # fitz.Matrix(a, b, c, d, e, f) → [[a,b],[c,d]] + translation [e,f]
-                matrix = fitz.Matrix(cos_a, sin_a, -sin_a, cos_a, 0, 0)
+                # pymupdf.Matrix(a, b, c, d, e, f) -> [[a,b],[c,d]] + translation [e,f]
+                matrix = pymupdf.Matrix(cos_a, sin_a, -sin_a, cos_a, 0, 0)
                 page.insert_textbox(
                     text_rect,
                     text,
                     fontsize=50,
                     color=(1, 0, 0),
                     fill_opacity=0.3,
-                    morph=(fitz.Point(center_x, center_y), matrix),
-                    align=fitz.TEXT_ALIGN_CENTER,
+                    morph=(pymupdf.Point(center_x, center_y), matrix),
+                    align=pymupdf.TEXT_ALIGN_CENTER,
                 )
 
             doc.save(output_path)

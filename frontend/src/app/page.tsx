@@ -1,339 +1,288 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import {
-  Search,
-  X,
-  ShieldCheck,
-  HardDrive,
-  Code2,
-  ArrowUpRight,
-  Globe,
-  Blocks,
-} from 'lucide-react';
-import { tools, TOOL_CATEGORIES, ToolCategory } from '@/config/tools';
-import ToolIcon from '@/components/pdf/ToolIcon';
-import { useSystemStore } from '@/store/useSystemStore';
+import { useRouter } from 'next/navigation';
+import { Pin, Globe } from 'lucide-react';
+import toast from 'react-hot-toast';
+import HomeActionHeader from '@/components/home/HomeActionHeader';
+import StudioLauncherGrid from '@/components/home/StudioLauncherGrid';
+import HomeQuickDropStrip from '@/components/home/HomeQuickDropStrip';
+import PinnedToolsStrip from '@/components/home/PinnedToolsStrip';
+import ToolIcon from '@/components/ui/ToolIcon';
+import SectionHeader from '@/components/ui/SectionHeader';
+import { EngineOrbState } from '@/components/shell/EngineOrb3D';
+import { ALL_STUDIO_TOOLS, StudioId } from '@/config/studios';
 import { useSettingsStore } from '@/store/useSettingsStore';
+import {
+  selectEngineCapabilities,
+  selectIsEngineOffline,
+  selectSystemMetrics,
+  useSystemStore,
+} from '@/store/useSystemStore';
+import { selectJobs, useJobsStore } from '@/store/useJobsStore';
+import { selectAssets, useWorkspaceStore } from '@/store/useWorkspaceStore';
+import { extractErrorMessage } from '@/lib/api';
+import { useI18n } from '@/i18n';
 
-const CATEGORY_LABELS: Record<ToolCategory, string> = {
-  organizar: 'Organizar',
-  optimizar: 'Optimizar',
-  convertir: 'Convertir',
-  editar: 'Editar',
-  seguridad: 'Seguridad',
-};
+type GreetingPhase = 'fallback' | 'morning' | 'afternoon' | 'evening';
 
-export default function Home() {
+export default function HomePage() {
+  const router = useRouter();
+  const { t, locale } = useI18n();
+
+  const hydrationState = useSettingsStore((s) => s.hydrationState);
+  const threeDLevel = useSettingsStore((s) => s.threeDLevel);
+  const reduceAnimations = useSettingsStore((s) => s.reduceAnimations);
+  const workspaceProfile = useSettingsStore((s) => s.workspaceProfile);
+  const enabledStudios = useSettingsStore((s) => s.enabledStudios);
+  const studioOrder = useSettingsStore((s) => s.studioOrder);
+  const pinnedToolIds = useSettingsStore((s) => s.pinnedToolIds);
+  const updateSetting = useSettingsStore((s) => s.updateSetting);
+  const applyWorkspaceProfile = useSettingsStore((s) => s.applyWorkspaceProfile);
+  const togglePinTool = useSettingsStore((s) => s.togglePinTool);
+
+  const engineOffline = useSystemStore(selectIsEngineOffline);
+  const capabilities = useSystemStore(selectEngineCapabilities);
+  const systemMetrics = useSystemStore(selectSystemMetrics);
+  const setModulesModalOpen = useSystemStore((s) => s.setModulesModalOpen);
+
+  const jobs = useJobsStore(selectJobs);
+  const assets = useWorkspaceStore(selectAssets);
+  const activeAssetId = useWorkspaceStore((s) => s.activeAssetId);
+  const inspectState = useWorkspaceStore((s) => s.inspectState);
+  const inspectAndAddFiles = useWorkspaceStore((s) => s.inspectAndAddFiles);
+  const abortInspect = useWorkspaceStore((s) => s.abortInspect);
+  const chainAssetToTool = useWorkspaceStore((s) => s.chainAssetToTool);
+
+  const [greetingPhase, setGreetingPhase] = useState<GreetingPhase>('fallback');
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<ToolCategory | 'todas'>('todas');
-  const {
-    hasCheckedOnce,
-    online,
-    capabilities,
-    immersiveMode,
-    setModulesModalOpen,
-  } = useSystemStore();
-  const compactGrid = useSettingsStore((s) => s.compactGrid);
 
-  const anyMissingModule =
-    hasCheckedOnce && online && (!capabilities.ocr || !capabilities.word_to_pdf);
+  useEffect(() => {
+    if (hydrationState !== 'hydrated') return;
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) setGreetingPhase('morning');
+    else if (hour >= 12 && hour < 20) setGreetingPhase('afternoon');
+    else setGreetingPhase('evening');
+  }, [hydrationState]);
+
+  const greetingText =
+    greetingPhase === 'morning'
+      ? t.home.greetingMorning
+      : greetingPhase === 'afternoon'
+      ? t.home.greetingAfternoon
+      : greetingPhase === 'evening'
+      ? t.home.greetingEvening
+      : t.home.greetingFallback;
+
+  const activeJobsMeta = useMemo(() => {
+    const active = jobs.filter((j) => j.status === 'queued' || j.status === 'running');
+    if (active.length === 0) return { count: 0, avgProgress: undefined as number | undefined };
+    const vals = active.map((j) => j.progress || 0);
+    const hasProgress = vals.some((v) => v > 0);
+    const avg = hasProgress ? Math.round(vals.reduce((a, b) => a + b, 0) / active.length) : undefined;
+    return { count: active.length, avgProgress: avg };
+  }, [jobs]);
+  const activeJobsCount = activeJobsMeta.count;
+
+  const orbState: EngineOrbState = engineOffline
+    ? 'offline'
+    : activeJobsCount > 0
+    ? 'running'
+    : 'idle';
+
+  const orbAriaLabel =
+    orbState === 'offline'
+      ? t.home.orbStatusOffline
+      : orbState === 'running'
+      ? t.home.orbStatusRunning
+      : t.home.orbStatusIdle;
+
+  const orderedEnabledStudios = useMemo(() => {
+    const enabledSet = new Set(enabledStudios);
+    return studioOrder.filter((id) => enabledSet.has(id));
+  }, [enabledStudios, studioOrder]);
+
+  const latestAsset = useMemo(() => {
+    if (!assets.length) return null;
+    return (activeAssetId && assets.find((a) => a.id === activeAssetId)) || assets[0];
+  }, [activeAssetId, assets]);
 
   const filteredTools = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return tools.filter((tool) => {
-      const matchesCategory =
-        selectedCategory === 'todas' || tool.category === selectedCategory;
-      if (!matchesCategory) return false;
-      if (!q) return true;
-      const internetKeyword = tool.requiresInternet ? 'online internet red web' : 'offline local';
-      return (
-        tool.name.toLowerCase().includes(q) ||
-        tool.description.toLowerCase().includes(q) ||
-        CATEGORY_LABELS[tool.category].toLowerCase().includes(q) ||
-        internetKeyword.includes(q)
-      );
+    if (!q) return [];
+    return ALL_STUDIO_TOOLS.filter((tool) => {
+      const copy = t.tools[tool.id];
+      const studioCopy = t.studios[tool.studio];
+      const haystack = [
+        tool.id,
+        copy?.name ?? '',
+        copy?.description ?? '',
+        studioCopy?.name ?? '',
+        ...(tool.accepts ?? []),
+      ]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(q);
     });
-  }, [searchQuery, selectedCategory]);
+  }, [searchQuery, t.studios, t.tools]);
+
+  const handleInspectFiles = async (fileList: File[]) => {
+    if (!fileList.length) return;
+    try {
+      const created = await inspectAndAddFiles(fileList);
+      if (created.length > 0) {
+        toast.success(
+          locale === 'en'
+            ? `Ready: ${created[0].filename}`
+            : `Archivo listo: ${created[0].filename}`
+        );
+      }
+    } catch (err) {
+      const msg = await extractErrorMessage(err, t.home.dropzoneInspecting);
+      toast.error(msg);
+    }
+  };
+
+  const handleSelectStudio = (studioId: StudioId) => {
+    router.push(`/studios/${studioId}`);
+  };
 
   return (
-    <div className="flex-grow">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden border-b border-gray-200/70 dark:border-slate-800/80 bg-gradient-to-b from-white via-slate-50/70 to-slate-50 dark:from-slate-900 dark:via-[#0b111e] dark:to-[#090d16]">
-        <div
-          className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center ${
-            immersiveMode ? 'pt-5 pb-6' : 'pt-10 pb-12 md:pt-14 md:pb-16'
-          }`}
-        >
-          {!immersiveMode && (
-            <>
-              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 dark:bg-brand/15 border border-red-200/70 dark:border-brand/30 text-brand dark:text-red-400 text-xs sm:text-sm font-semibold mb-6 shadow-sm">
-                <ShieldCheck className="w-4 h-4 shrink-0" />
-                <span>
-                  100% Local-First · Procesamiento en tu equipo + utilidades Online opcionales
-                </span>
-              </div>
+    <div className="flex-1 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+      <HomeActionHeader
+        greeting={greetingText}
+        subtitle={t.home.heroSubtitle}
+        orbState={orbState}
+        orbAriaLabel={orbAriaLabel}
+        threeDLevel={threeDLevel}
+        reduceAnimations={reduceAnimations}
+        capabilities={capabilities}
+        systemMetrics={systemMetrics}
+        activeJobsCount={activeJobsCount}
+        activeProgress={activeJobsMeta.avgProgress}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        onDropFiles={handleInspectFiles}
+        onOpenJobs={() => updateSetting('jobDrawerOpen', true)}
+        onOpenModules={() => setModulesModalOpen(true)}
+      />
 
-              <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-gray-900 dark:text-white tracking-tight text-balance max-w-4xl mx-auto leading-[1.1]">
-                Toda herramienta para <span className="text-brand">PDF</span>,{' '}
-                <span className="underline decoration-brand/30 decoration-4 underline-offset-8">
-                  en tu propia máquina
-                </span>
-              </h1>
-
-              <p className="mt-5 max-w-2xl mx-auto text-base sm:text-lg text-gray-600 dark:text-slate-400 leading-relaxed">
-                Une, divide, firma, censura datos sensibles, comprime, traduce y captura páginas
-                web a PDF con privacidad estricta y control total.
+      {searchQuery.trim() ? (
+        <section className="space-y-4 animate-fade-in">
+          <SectionHeader
+            title={`${t.home.catalogTitle} (${filteredTools.length})`}
+            subtitle={t.home.catalogSubtitle}
+          />
+          {filteredTools.length === 0 ? (
+            <div className="rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] p-8 text-center space-y-2">
+              <p className="text-sm font-semibold text-[var(--fg)]">
+                {t.common.noResults}: &ldquo;{searchQuery}&rdquo;
               </p>
-            </>
-          )}
-
-          {/* Search & Category Filter Bar */}
-          <div className={`${immersiveMode ? 'mt-0' : 'mt-8'} max-w-3xl mx-auto space-y-4`}>
-            <div className="relative">
-              <Search className="w-5 h-5 text-gray-400 dark:text-slate-500 absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar herramienta (ej. firmar, censurar, traducir, URL, QR, comprimir, online)..."
-                aria-label="Buscar herramienta PDF"
-                className="w-full pl-12 pr-11 py-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 text-gray-900 dark:text-slate-100 placeholder-gray-400 dark:placeholder-slate-500 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand focus:border-transparent text-sm sm:text-base transition-all"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  aria-label="Limpiar búsqueda"
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-slate-200 hover:bg-gray-100 dark:hover:bg-slate-800"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              <div
-                role="tablist"
-                aria-label="Filtrar herramientas por categoría"
-                className="flex items-center justify-center gap-2 flex-wrap"
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-xs font-medium text-[var(--fg-muted)] hover:text-[var(--fg)] underline"
               >
-                {TOOL_CATEGORIES.map((cat) => {
-                  const count =
-                    cat.id === 'todas'
-                      ? tools.length
-                      : tools.filter((t) => t.category === cat.id).length;
-                  const active = selectedCategory === cat.id;
-                  return (
-                    <button
-                      key={cat.id}
-                      type="button"
-                      role="tab"
-                      aria-selected={active}
-                      onClick={() => setSelectedCategory(cat.id)}
-                      className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-                        active
-                          ? 'bg-brand text-white shadow-sm'
-                          : 'bg-white dark:bg-slate-900 text-gray-600 dark:text-slate-300 border border-gray-200 dark:border-slate-800 hover:border-brand/50 hover:text-brand dark:hover:text-white'
-                      }`}
-                    >
-                      <span>{cat.label}</span>
-                      <span
-                        className={`text-[11px] px-1.5 py-0.2 rounded-full ${
-                          active
-                            ? 'bg-white/20 text-white'
-                            : 'bg-gray-100 dark:bg-slate-800 text-gray-500 dark:text-slate-400'
-                        }`}
-                      >
-                        {count}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              {anyMissingModule && (
-                <button
-                  type="button"
-                  onClick={() => setModulesModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/60 dark:hover:bg-amber-950 dark:text-amber-300 dark:border-amber-800/70 transition-colors"
-                >
-                  <Blocks className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  <span>Activar módulos en 1 clic</span>
-                </button>
-              )}
+                {t.home.clearFilters}
+              </button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Tools Grid Section */}
-      <section
-        className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${
-          immersiveMode ? 'py-6' : 'py-10 md:py-12'
-        }`}
-      >
-        {filteredTools.length === 0 ? (
-          <div className="bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-800 rounded-2xl p-12 text-center max-w-lg mx-auto">
-            <p className="text-lg font-bold text-gray-900 dark:text-white mb-2">
-              No encontramos herramientas para &ldquo;{searchQuery}&rdquo;
-            </p>
-            <p className="text-sm text-gray-500 dark:text-slate-400 mb-6">
-              Prueba con otro término o muestra todas las categorías disponibles.
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchQuery('');
-                setSelectedCategory('todas');
-              }}
-              className="px-4 py-2 rounded-xl bg-brand hover:bg-brand-dark text-white text-sm font-semibold transition-colors"
-            >
-              Ver todas las herramientas
-            </button>
-          </div>
-        ) : (
-          <div
-            className={`grid ${
-              compactGrid
-                ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3'
-                : 'grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
-            }`}
-          >
-            {filteredTools.map((tool) => {
-              const missingCap =
-                tool.requiredCapability &&
-                hasCheckedOnce &&
-                online &&
-                !capabilities[tool.requiredCapability];
-
-              return (
-                <Link
-                  key={tool.id}
-                  href={tool.href}
-                  className={`group relative bg-white dark:bg-slate-900 rounded-2xl shadow-card hover:shadow-card-hover transition-all duration-200 border border-gray-200/80 dark:border-slate-800 hover:border-brand/50 dark:hover:border-brand/60 flex flex-col h-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand ${
-                    compactGrid ? 'p-3.5' : 'p-6'
-                  }`}
-                >
-                  <div className={`flex items-start justify-between gap-2 ${compactGrid ? 'mb-2' : 'mb-4'}`}>
-                    <div className="group-hover:scale-105 transition-transform duration-200">
-                      <ToolIcon tool={tool} size={compactGrid ? 'sm' : 'lg'} />
-                    </div>
-                    <div className="flex flex-wrap items-center justify-end gap-1.5">
-                      {tool.requiresInternet && (
-                        <span
-                          title="Esta herramienta realiza consultas puntuales a Internet"
-                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-sky-50 text-sky-700 border border-sky-200/80 dark:bg-sky-950/70 dark:text-sky-300 dark:border-sky-800/70"
-                        >
-                          <Globe className="w-2.5 h-2.5" />
-                          {!compactGrid && 'Online'}
-                        </span>
-                      )}
-                      {tool.isNew && (
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-brand/10 text-brand dark:bg-brand/20 dark:text-red-400">
-                          Nuevo
-                        </span>
-                      )}
-                      {!compactGrid && (
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 dark:bg-slate-800 text-gray-600 dark:text-slate-400">
-                          {CATEGORY_LABELS[tool.category]}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <h2
-                      className={`font-bold text-gray-900 dark:text-white group-hover:text-brand dark:group-hover:text-brand-500 transition-colors line-clamp-1 ${
-                        compactGrid ? 'text-xs sm:text-sm' : 'text-lg'
-                      }`}
-                    >
-                      {tool.name}
-                    </h2>
-                    <ArrowUpRight className="w-4 h-4 text-gray-300 dark:text-slate-600 group-hover:text-brand group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0" />
-                  </div>
-
-                  <p
-                    className={`text-gray-500 dark:text-slate-400 leading-relaxed flex-grow ${
-                      compactGrid ? 'text-[11px] line-clamp-2' : 'text-sm'
-                    }`}
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
+              {filteredTools.map((tool) => {
+                const copy = t.tools[tool.id];
+                const studioCopy = t.studios[tool.studio];
+                const isPinned = pinnedToolIds.includes(tool.id);
+                return (
+                  <Link
+                    key={tool.id}
+                    href={tool.href}
+                    className="group relative rounded-[var(--radius-card)] border border-[var(--border)] bg-[var(--surface)] hover:border-[var(--border-strong)] p-4 flex flex-col justify-between gap-3 transition-colors"
                   >
-                    {tool.description}
-                  </p>
-
-                  {missingCap && (
-                    <div
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setModulesModalOpen(true);
-                      }}
-                      className="mt-4 pt-3 border-t border-amber-100 dark:border-amber-900/50 flex items-center justify-between gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 hover:text-brand dark:hover:text-red-300 transition-colors"
-                    >
-                      <span className="inline-flex items-center gap-1.5">
-                        <Blocks className="w-3.5 h-3.5 shrink-0" />
-                        <span>Configurar módulo en 1 clic</span>
-                      </span>
-                      <ArrowUpRight className="w-3.5 h-3.5 shrink-0" />
+                    <div className="flex items-start justify-between gap-2">
+                      <ToolIcon
+                        tool={{
+                          iconName: tool.iconName,
+                          studioId: tool.studio,
+                          name: copy?.name,
+                        }}
+                        size="md"
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border border-[var(--border)] bg-[var(--surface-muted)] text-[var(--fg-muted)]">
+                          {studioCopy?.name}
+                        </span>
+                        {tool.requiresInternet && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono border border-sky-500/30 bg-sky-500/10 text-sky-600 dark:text-sky-300">
+                            <Globe className="w-2.5 h-2.5" />
+                            {t.common.online}
+                          </span>
+                        )}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            togglePinTool(tool.id);
+                          }}
+                          title={isPinned ? t.common.unpinShortcut : t.common.pinShortcut}
+                          className={`p-1 rounded-[var(--radius-control)] border transition-colors ${
+                            isPinned
+                              ? 'border-[var(--accent-border)] bg-[var(--accent-soft)] text-[var(--fg)]'
+                              : 'border-transparent text-[var(--fg-muted)] hover:text-[var(--fg)]'
+                          }`}
+                        >
+                          <Pin className="w-3 h-3" />
+                        </button>
+                      </div>
                     </div>
-                  )}
-                </Link>
+
+                    <div className="space-y-1">
+                      <h3 className="text-sm font-semibold text-[var(--fg)] tracking-tight">
+                        {copy?.name ?? tool.id}
+                      </h3>
+                      <p className="text-xs text-[var(--fg-muted)] leading-relaxed line-clamp-2">
+                        {copy?.description ?? ''}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      ) : (
+        <>
+          <StudioLauncherGrid
+            studioIds={orderedEnabledStudios}
+            threeDLevel={threeDLevel}
+            reduceAnimations={reduceAnimations}
+            workspaceProfile={workspaceProfile}
+            onSelectProfile={(profId) => {
+              applyWorkspaceProfile(profId);
+              toast.success(
+                locale === 'en'
+                  ? `Workspace adapted: ${t.home.profiles[profId]}`
+                  : `Espacio adaptado: ${t.home.profiles[profId]}`
               );
-            })}
-          </div>
-        )}
+            }}
+            onSelectStudio={handleSelectStudio}
+          />
 
-        {/* Privacy & Architecture Trust Strip */}
-        {!immersiveMode && (
-          <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-6 pt-10 border-t border-gray-200/80 dark:border-slate-800/80">
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-white/70 dark:bg-slate-900/60 border border-gray-200/60 dark:border-slate-800/80">
-              <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 shrink-0">
-                <ShieldCheck className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                  Privacidad Local Garantizada
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  Tus contratos, facturas y documentos confidenciales se procesan directamente en tu
-                  CPU y disco local sin pasar por servidores externos.
-                </p>
-              </div>
-            </div>
+          <HomeQuickDropStrip
+            inspectState={inspectState}
+            latestAsset={latestAsset}
+            totalAssetsCount={assets.length}
+            onFilesSelected={handleInspectFiles}
+            onAbort={abortInspect}
+            onChainToTool={(asset, href) =>
+              chainAssetToTool(asset, href, (path) => router.push(path))
+            }
+          />
 
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-white/70 dark:bg-slate-900/60 border border-gray-200/60 dark:border-slate-800/80">
-              <div className="p-2.5 rounded-xl bg-red-50 dark:bg-brand/15 text-brand shrink-0">
-                <HardDrive className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                  Funciona 100% Sin Internet
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  Sin colas de espera, sin marcas de agua forzadas ni suscripciones. Velocidad
-                  nativa impulsada por PyMuPDF en tu propio equipo.
-                </p>
-              </div>
-            </div>
-
-            <div className="flex items-start gap-4 p-5 rounded-2xl bg-white/70 dark:bg-slate-900/60 border border-gray-200/60 dark:border-slate-800/80">
-              <div className="p-2.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 shrink-0">
-                <Code2 className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                  Software Libre y Auditable
-                </h3>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mt-1 leading-relaxed">
-                  Distribuido bajo licencia MIT. Archivos temporales limpiados automáticamente tras
-                  cada operación.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
+          <PinnedToolsStrip pinnedToolIds={pinnedToolIds} />
+        </>
+      )}
     </div>
   );
 }

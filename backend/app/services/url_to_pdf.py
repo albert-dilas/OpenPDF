@@ -3,14 +3,14 @@ import html as html_stdlib
 import re
 from datetime import datetime, timezone
 from typing import List, Tuple
-import fitz
+import pymupdf
 import httpx
 from fastapi.concurrency import run_in_threadpool
 from lxml import html as lxml_html
 
 from app.core.config import settings
 from app.core.exceptions import BusinessRuleError, PDFProcessingError
-from app.utils.network import validate_public_http_url
+from app.utils.network import safe_public_get, validate_public_http_url
 from app.utils.validators import validate_pdf_bytes
 
 MAX_REMOTE_BYTES = 20 * 1024 * 1024  # 20 MB límite para descarga web
@@ -24,7 +24,7 @@ PAGE_SIZES = {
 def _extract_structured_html_blocks(raw_html: str, url: str, mode: str = "reader") -> Tuple[str, str]:
     """
     Extrae bloques semánticos limpios desde el HTML remoto y genera un documento HTML
-    optimizado para el motor tipográfico `fitz.Story` de PyMuPDF.
+    optimizado para el motor tipográfico `pymupdf.Story` de PyMuPDF.
     """
     try:
         tree = lxml_html.fromstring(raw_html)
@@ -171,7 +171,7 @@ def _extract_structured_html_blocks(raw_html: str, url: str, mode: str = "reader
         <div class="meta-box">
             <h1>{safe_title}</h1>
             <p class="source-url">Fuente: {safe_url}</p>
-            <p class="source-url">Capturado con OpenPDF v{settings.VERSION} ({timestamp})</p>
+            <p class="source-url">Capturado con Tornio v{settings.VERSION} ({timestamp})</p>
         </div>
         {"".join(blocks)}
     </body>
@@ -181,15 +181,15 @@ def _extract_structured_html_blocks(raw_html: str, url: str, mode: str = "reader
 
 
 def render_html_story_to_pdf(story_html: str, output_path: str, page_size: str = "a4", title: str = "") -> str:
-    """Renderiza HTML estructurado a un PDF multipágina vectorial mediante `fitz.Story`."""
+    """Renderiza HTML estructurado a un PDF multipágina vectorial mediante `pymupdf.Story`."""
     width, height = PAGE_SIZES.get((page_size or "a4").lower(), PAGE_SIZES["a4"])
-    mediabox = fitz.Rect(0, 0, width, height)
+    mediabox = pymupdf.Rect(0, 0, width, height)
     margin = 48.0
-    where = fitz.Rect(margin, margin, width - margin, height - margin)
+    where = pymupdf.Rect(margin, margin, width - margin, height - margin)
 
     try:
-        story = fitz.Story(html=story_html)
-        writer = fitz.DocumentWriter(output_path)
+        story = pymupdf.Story(html=story_html)
+        writer = pymupdf.DocumentWriter(output_path)
         more = 1
         while more:
             device = writer.begin_page(mediabox)
@@ -199,9 +199,9 @@ def render_html_story_to_pdf(story_html: str, output_path: str, page_size: str =
         writer.close()
 
         if title:
-            doc = fitz.open(output_path)
+            doc = pymupdf.open(output_path)
             try:
-                doc.set_metadata({"title": title[:140], "producer": f"OpenPDF v{settings.VERSION}"})
+                doc.set_metadata({"title": title[:140], "producer": f"Tornio v{settings.VERSION}"})
                 doc.saveIncr()
             finally:
                 doc.close()
@@ -229,19 +229,25 @@ class URLToPDFService:
             raise BusinessRuleError("El tamaño de página debe ser 'a4' o 'letter'.")
 
         headers = {
-            "User-Agent": f"OpenPDF/{settings.VERSION} (+https://github.com/albert-dilas/OpenPDF)",
+            "User-Agent": f"Tornio/{settings.VERSION} (+https://github.com/albert-dilas/OpenPDF)",
             "Accept": "text/html,application/xhtml+xml,application/pdf,text/plain;q=0.9,*/*;q=0.8",
         }
 
         try:
-            async with httpx.AsyncClient(timeout=12.0, follow_redirects=True, max_redirects=5) as client:
-                response = await client.get(validated_url, headers=headers)
+            async with httpx.AsyncClient(timeout=12.0, follow_redirects=False) as client:
+                response = await safe_public_get(
+                    client,
+                    validated_url,
+                    headers=headers,
+                    timeout=12.0,
+                    max_redirects=5,
+                )
         except httpx.TimeoutException:
             raise BusinessRuleError("Tiempo de espera agotado al descargar la página web.")
         except httpx.HTTPError as exc:
             raise BusinessRuleError(f"Error de red al consultar la URL: {str(exc)}")
 
-        final_url = str(response.url)
+        final_url = str(getattr(response, "url", None) or validated_url)
         validate_public_http_url(final_url)
 
         if response.status_code >= 400:

@@ -1,247 +1,167 @@
 <div align="center">
-  <img src="assets/banner.png" alt="OpenPDF Banner" width="100%">
+  <img src="assets/banner.png" alt="Tornio v3.0.0 - Local-First Document and Media Workbench" width="100%">
   <br><br>
 
-  # OpenPDF v2.2.0
+  <h1>Tornio <small>(formerly OpenPDF)</small></h1>
 
-  [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-  [![CI](https://github.com/albert-dilas/OpenPDF/actions/workflows/ci.yml/badge.svg)](https://github.com/albert-dilas/OpenPDF/actions/workflows/ci.yml)
-  [![Architecture](https://img.shields.io/badge/Architecture-Local--First-10b981.svg)](#arquitectura-local-first-offline--online)
-  [![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgray.svg)]()
-  [![Python version](https://img.shields.io/badge/Python-3.12+-3776ab?logo=python&logoColor=white)](https://www.python.org/)
-  [![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
-  [![Website](https://img.shields.io/badge/Website-Live-success.svg)](https://albert-dilas.github.io/OpenPDF)
+  <p>
+    <a href="README.es.md">Leer en Espanol</a>
+    &nbsp;|&nbsp;
+    <a href="https://albert-dilas.github.io/OpenPDF/">Live Website</a>
+    &nbsp;|&nbsp;
+    <a href="https://github.com/albert-dilas/OpenPDF/releases/tag/v3.0.0">Releases (v3.0.0)</a>
+  </p>
 
-  **Plataforma Local-First de código abierto para el procesamiento, conversión, firma, censura, optimización y protección de documentos PDF con privacidad estricta.**
-  <br>
-  *Ejecución local en el equipo complementada con utilidades Online protegidas contra SSRF.*
+  <p>
+    <a href="https://github.com/albert-dilas/OpenPDF/releases/tag/v3.0.0"><img src="https://img.shields.io/badge/Release-v3.0.0-E04826.svg" alt="Release v3.0.0"></a>
+    <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache--2.0-2563EB.svg" alt="License Apache 2.0"></a>
+    <a href="https://github.com/albert-dilas/OpenPDF/actions/workflows/ci.yml"><img src="https://github.com/albert-dilas/OpenPDF/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+    <img src="https://img.shields.io/badge/Platform-Windows%20x64%20%7C%20Source-18181B.svg" alt="Platform Windows x64">
+    <img src="https://img.shields.io/badge/Architecture-Local--First%20(127.0.0.1)-10B981.svg" alt="Local-First">
+    <img src="https://img.shields.io/badge/Workbench-7%20Studios%20%C2%B7%2058%20Tools-3F3F46.svg" alt="7 Studios and 58 Tools">
+  </p>
 
+  <p>
+    <strong>Free, open-source, <code>[LOCAL-FIRST]</code> desktop workbench for documents, video, audio, images, security utilities, and local CPU AI.</strong><br>
+    Everything executes privately on <code>127.0.0.1</code> without uploading files or metadata to external servers.
+  </p>
 </div>
 
 ---
 
-## Tabla de Contenidos
-- [Descarga e Instalación (Usuarios)](#descarga-e-instalación-usuarios)
-- [Descripción General](#descripción-general)
-- [Capturas de Pantalla](#capturas-de-pantalla)
-- [Catálogo de Herramientas (21 Módulos)](#catálogo-de-herramientas-21-módulos)
-- [Centro de Módulos Opcionales y Endpoints del Sistema](#centro-de-módulos-opcionales-y-endpoints-del-sistema)
-- [Arquitectura Local-First (Offline / Online)](#arquitectura-local-first-offline--online)
-- [Guía de Desarrollo y Ejecución Local](#guía-de-desarrollo-y-ejecución-local)
-- [Compilación y Empaquetado (.exe / Instalador)](#compilación-y-empaquetado-exe--instalador)
-- [Pruebas y Calidad](#pruebas-y-calidad)
-- [Contribuir](#contribuir)
-- [Licencia](#licencia)
+## Download & Cryptographic Verification (`v3.0.0`)
 
----
+Prebuilt Windows x64 binaries package the Python FastAPI engine, domain libraries, Windows system-tray runtime, and the 76-route offline Next.js interface with no manual Python or Node.js setup required.
 
-## Descarga e Instalación (Usuarios)
+| Artifact | Format | Size | SHA-256 Digest | Download |
+| :--- | :--- | :---: | :--- | :---: |
+| **`Tornio_Setup_v3.0.0.exe`** | Per-user Windows Installer (3-step wizard, no UAC) | `158.0 MB` | `0c848775e54b30a7028b3aa8896388016b8c6e3fba96f0230f6640a8b6509cc7` | [Download Installer](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/Tornio_Setup_v3.0.0.exe) |
+| **`Tornio.exe`** | Standalone Portable Executable | `161.1 MB` | `026f22a99469b4cb5e2e7514819382648469647e8afefa5454804ac1c12bbbf1` | [Download Portable](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/Tornio.exe) |
+| **`SHA256SUMS.txt`** | Release Integrity Manifest (used by Self-Updater) | — | — | [View Manifest](https://github.com/albert-dilas/OpenPDF/releases/download/v3.0.0/SHA256SUMS.txt) |
 
-Para instalar y ejecutar **OpenPDF** en Windows sin compilar desde el código fuente:
+Verify integrity locally in PowerShell before running:
 
-1. Accede a la sección de [**Releases**](../../releases) de este repositorio.
-2. Descarga el instalador oficial de la versión más reciente ([`OpenPDF_Setup_v2.2.0.exe`](https://github.com/albert-dilas/OpenPDF/releases/download/v2.2.0/OpenPDF_Setup_v2.2.0.exe)) o el ejecutable portátil autónomo ([`OpenPDF.exe`](https://github.com/albert-dilas/OpenPDF/releases/download/v2.2.0/OpenPDF.exe)).
-3. Ejecuta el instalador y sigue las instrucciones del asistente.
-
----
-
-## Descripción General
-
-**OpenPDF** es una suite de escritorio y servidor local autoalojable diseñada para organizaciones y profesionales que requieren manipular documentos confidenciales sin exponerlos a servicios en la nube de terceros. Toda la manipulación criptográfica, firma manuscrita, censura irreversible (redacción física), renderizado, compresión, reconocimiento óptico de caracteres (OCR) y conversión documental se ejecuta localmente mediante un motor asíncrono en Python (**FastAPI + PyMuPDF + OpenCV**) acoplado a una interfaz estática compilada en **Next.js 14 + Tailwind CSS**, e incluye además herramientas asistidas por red con validación anti-SSRF.
-
-### Pilares de Ingeniería (v2.2.0)
-- **Privacidad Estricta (`[LOCAL-FIRST]`)**: Los 18 módulos de procesamiento local operan sin conexión alguna; los 3 módulos con acceso a Internet están explícitamente señalizados con la insignia `Online` e incorporan protección anti-SSRF.
-- **Centro de Módulos Opcionales en 1 Clic**: Instalación desatendida con 1 clic (`winget` + descarga automática del paquete de idioma Español `spa.traineddata`), autodetección profunda en el Registro de Windows y selector gráfico nativo de ejecutables `.exe` sin necesidad de configurar variables de entorno `PATH`.
-- **Soporte Dual para Word a PDF**: Conversión local de `.doc`/`.docx` a PDF compatible tanto con **Microsoft Word (`WINWORD.EXE` vía COM nativo)** como con **LibreOffice (`soffice.exe` en modo *headless*)**.
-- **Experiencia de Escritorio Inmersiva**: Apertura en ventana de aplicación dedicada (`--app`), Modo Inmersivo a pantalla completa (`F11`), Paleta de Comandos instantánea (`Ctrl+K`), barra de estado de telemetría local y sistema iconográfico vectorial SVG unificado de alta densidad (icono HD de 256px *supersampled* desde 1024px).
-- **Ingesta en Streaming con Memoria Constante**: Validación de formato por *magic bytes* en cabecera y escritura en disco por bloques de `1 MiB`, con recolección y borrado garantizado de archivos temporales.
-- **Interfaz Técnica y Accesible**: Búsqueda en tiempo real, clasificación por categorías funcionales, soporte nativo para modo claro y modo oscuro con tipografías locales (*Geist Sans* y *Geist Mono*) 100% offline, barra de progreso por fases con cancelación activa (`AbortController`) y diagnóstico del motor local en vivo.
-- **Ajustes y Personalización Reactiva**: Panel de preferencias (`/settings`) para personalizar temas, modo inmersivo, cuadrícula compacta, opciones de procesamiento, comprobación de actualizaciones en tiempo real contra GitHub Releases (con diálogo interactivo Actualizar/Cancelar) y centro integrado de opiniones, propuestas de funciones y reporte de errores.
-
----
-
-## Capturas de Pantalla
-
-<div align="center">
-  <img src="assets/overview.jpg" alt="Panel Principal de OpenPDF" width="100%">
-  <br>
-  <em>Figura 1: Panel principal con indicador de estado del motor local, buscador en tiempo real, Paleta de Comandos (Ctrl+K) y barra de estado de telemetría.</em>
-</div>
-<br>
-<div align="center">
-  <img src="assets/tools.jpg" alt="Suite Completa de Herramientas en Modo Oscuro" width="100%">
-  <br>
-  <em>Figura 2: Catálogo de los 21 módulos de procesamiento PDF en modo oscuro.</em>
-</div>
-<br>
-<div align="center">
-  <img src="assets/workflow.jpg" alt="Flujo Interactivo de Organización de Páginas" width="100%">
-  <br>
-  <em>Figura 3: Espacio de trabajo interactivo para organizar páginas con miniaturas en tiempo real, rotación individual y reordenamiento.</em>
-</div>
-
----
-
-## Catálogo de Herramientas (21 Módulos)
-
-| Categoría | Herramienta | Ruta / Endpoint | Descripción Técnica | Ejecución |
-| :--- | :--- | :--- | :--- | :---: |
-| **Organizar** | **Unir PDF** | `/merge-pdf` (`POST /api/v1/merge/`) | Combina múltiples documentos PDF en el orden especificado mediante *drag & drop*. | 100% Offline |
-| **Organizar** | **Dividir PDF** | `/split-pdf` (`POST /api/v1/split/`) | Extrae todas las páginas o rangos definidos (`1,3-5,7`) en un archivo comprimido `.zip`. | 100% Offline |
-| **Organizar** | **Organizar PDF** | `/organize-pdf` (`POST /api/v1/organize/`) | Previsualiza miniaturas por página para reordenar, rotar en incrementos de `90°` y descartar páginas. | 100% Offline |
-| **Organizar** | **Rotar PDF** | `/rotate-pdf` (`POST /api/v1/rotate/`) | Aplica rotación uniforme (`90°`, `180°` o `270°`) sobre la totalidad del documento. | 100% Offline |
-| **Optimizar** | **Comprimir PDF** | `/compress-pdf` (`POST /api/v1/compress/`) | Compresión en tres niveles (`low`, `medium`, `high` con *downsampling* de imágenes) y reporte de reducción. | 100% Offline |
-| **Optimizar** | **OCR PDF** | `/ocr-pdf` (`POST /api/v1/ocr/`) | Genera una capa de texto seleccionable y buscable sobre documentos escaneados vía Tesseract OCR local. | 100% Offline* |
-| **Convertir** | **PDF a Word** | `/pdf-to-word` (`POST /api/v1/pdf-to-word/`) | Reconstruye diseño, tablas y párrafos en un archivo editable `.docx` (`pdf2docx`). | 100% Offline |
-| **Convertir** | **Word a PDF** | `/word-to-pdf` (`POST /api/v1/word-to-pdf/`) | Convierte documentos `.doc`/`.docx` a estándar PDF mediante **Microsoft Word (`WINWORD.EXE` vía COM)** o **LibreOffice (`soffice.exe`)**. | 100% Offline* |
-| **Convertir** | **JPG a PDF** | `/jpg-to-pdf` (`POST /api/v1/jpg-to-pdf/`) | Ensambla secuencias de imágenes JPG o PNG en un único documento PDF multipágina. | 100% Offline |
-| **Convertir** | **PDF a JPG** | `/pdf-to-jpg` (`POST /api/v1/pdf-to-jpg/`) | Rasteriza cada página del documento como imagen JPG de alta resolución empaquetada en `.zip`. | 100% Offline |
-| **Convertir** | **PDF a Markdown** | `/pdf-to-markdown` (`POST /api/v1/pdf-to-markdown/`) | Extrae contenido estructurado en formato Markdown (`.md`) para documentación técnica y control de versiones. | 100% Offline |
-| **Convertir** | **Web / URL a PDF** | `/url-to-pdf` (`POST /api/v1/url-to-pdf/`) | Captura artículos y páginas web públicas por URL (modo lectura o completo) con protección anti-SSRF. | Online |
-| **Convertir** | **Traducir PDF** | `/translate-pdf` (`POST /api/v1/translate/`) | Traduce los bloques de texto del PDF a múltiples idiomas generando un PDF maquetado o bilingüe. | Online |
-| **Editar** | **Marca de Agua** | `/watermark-pdf` (`POST /api/v1/watermark/`) | Superpone texto diagonal semitransparente centrado en todas las páginas del documento. | 100% Offline |
-| **Editar** | **Números de Página** | `/page-numbers-pdf` (`POST /api/v1/page-numbers/`) | Inserta numeración secuencial `Página X de Y` en el margen inferior del documento. | 100% Offline |
-| **Editar** | **Editar Metadatos** | `/metadata-pdf` (`POST /api/v1/metadata/`) | Inspecciona, modifica o limpia los atributos estándar (`Título`, `Autor`, `Asunto`, `Palabras clave`). | 100% Offline |
-| **Editar** | **Código QR Web** | `/qr-pdf` (`POST /api/v1/qr/{stamp,inspect}`) | Estampa códigos QR verificando en línea la URL destino o escanea y audita los códigos QR del PDF. | Online / Local |
-| **Seguridad** | **Firmar / Sellar PDF** | `/sign-pdf` (`POST /api/v1/sign/`) | Permite dibujar firma manuscrita en pantalla o cargar imagen PNG/JPG de sello con pie de firma. | 100% Offline |
-| **Seguridad** | **Censurar / Redactar** | `/redact-pdf` (`POST /api/v1/redact/`) | Purga física e irreversiblemente textos confidenciales, correos, teléfonos, identificadores y URLs. | 100% Offline |
-| **Seguridad** | **Proteger PDF** | `/protect-pdf` (`POST /api/v1/protect/`) | Cifra documentos bajo estándar **AES-256** con clave de apertura y permisos. | 100% Offline |
-| **Seguridad** | **Desbloquear PDF** | `/unlock-pdf` (`POST /api/v1/unlock/`) | Elimina el cifrado y las restricciones de acceso de un PDF autenticado mediante su contraseña. | 100% Offline |
-
-> \* *Motores opcionales gestionados desde la interfaz*: **OCR PDF** utiliza **Tesseract OCR** (`tesseract.exe`) y **Word a PDF** soporta tanto **Microsoft Word** (`WINWORD.EXE` vía COM nativo) como **LibreOffice** (`soffice.exe`). Ambos pueden instalarse en 1 clic, autodetectarse en el Registro de Windows o vincularse mediante el selector gráfico de archivos integrado sin necesidad de modificar variables de entorno `PATH`.
-
----
-
-## Centro de Módulos Opcionales y Endpoints del Sistema
-
-La versión `v2.2.0` incorpora un subsistema dedicado para diagnosticar, autodetectar, vincular e instalar motores locales opcionales directamente desde la aplicación de escritorio:
-
-| Endpoint | Método | Función Técnica |
-| :--- | :---: | :--- |
-| `/api/v1/system/status` | `GET` | Estado operativo del motor local, versión activa y resumen de capacidades instaladas. |
-| `/api/v1/system/modules` | `GET` | Inventario detallado de los módulos opcionales (`tesseract`, `word_to_pdf`), ruta resuelta, fuente de detección (`custom_config`, `bundled`, `system_path`, `auto_detected`) y disponibilidad de `winget`. |
-| `/api/v1/system/detect-modules` | `POST` | Ejecuta un escaneo profundo en el Registro de Windows (`HKLM`/`HKCU`), rutas de instalación estándar, `PATH` y directorio portátil `backend/bin/`. |
-| `/api/v1/system/configure-module` | `POST` | Valida y persiste manualmente la ruta a un ejecutable (`.exe` o carpeta de instalación) en la configuración local del usuario. |
-| `/api/v1/system/pick-module-binary` | `POST` | Abre el diálogo nativo de selección de archivos de Windows para elegir `tesseract.exe`, `WINWORD.EXE` o `soffice.exe` sin tocar variables de entorno. |
-| `/api/v1/system/install-module` | `POST` | Ejecuta la instalación desatendida en 1 clic mediante `winget` y descarga automáticamente el modelo de idioma Español (`spa.traineddata`) para Tesseract OCR. |
-| `/api/v1/system/updates` | `GET` | Consulta no bloqueante de nuevas versiones en GitHub Releases con *timeout* de `3s`, notas de versión, URL de descarga y *fallback* silencioso offline. |
-| `/api/v1/system/feedback` | `POST` | Registra retroalimentación local estructurada (propuestas de funciones, reportes de errores y opiniones) con validación estricta en Pydantic. |
-
----
-
-## Arquitectura Local-First (Offline / Online)
-
-```mermaid
-flowchart TD
-    subgraph Client ["Capa de Presentación (Next.js 14 Static Export + Zustand)"]
-        UI["Interfaz React / Tailwind (Ventana --app, F11, Paleta Ctrl+K, Fuentes Locales)"]
-        Hook["useToolProcessor (Streaming Progress + AbortController)"]
-        SysStore["useSystemStore (Centro de Módulos 1-Clic + Telemetría Local)"]
-        UI --> Hook
-        UI --> SysStore
-    end
-
-    subgraph Server ["Motor de Procesamiento Local (FastAPI + Uvicorn en 127.0.0.1)"]
-        API["Router REST /api/v1/*"]
-        TempMgr["TempFileManager (Streaming 1 MiB + Magic Bytes + Auto-Cleanup)"]
-        
-        subgraph CoreServices ["Servicios de Dominio (100% Offline)"]
-            Fitz["PyMuPDF (Merge, Split, Organize, Sign, Redact, Compress, Metadata, AES-256)"]
-            Docx["pdf2docx & pymupdf4llm (PDF a Word / Markdown)"]
-            Bins["Motores Locales Opcionales (Tesseract OCR / MS Word COM / LibreOffice)"]
-        end
-
-        subgraph OnlineModule ["Módulos de Red Opcionales (SSRF Guard + Fallback)"]
-            Upd["GET /api/v1/system/updates (Timeout 3s + Caché 6h + Fallback Silencioso)"]
-            NetTools["URL a PDF / Traducir PDF / Verificador QR Web (Protección Anti-SSRF)"]
-        end
-
-        API --> TempMgr
-        API --> CoreServices
-        API --> OnlineModule
-    end
-
-    Hook -- "Multipart FormData / Blob (localhost)" --> API
-    SysStore -- "GET/POST /system/{status,modules,detect,install}" --> API
-    Upd -. "HTTPS (Solo lectura de versión; nunca bloqueante)" .-> GH["GitHub Releases API"]
+```powershell
+Get-FileHash .\Tornio_Setup_v3.0.0.exe -Algorithm SHA256
 ```
 
-### Garantías de Operación Offline y Resiliencia
-1. **Autonomía Offline en el Núcleo**: Las fuentes tipográficas, hojas de estilo, iconos vectoriales SVG y lógica de interfaz se sirven íntegramente desde el paquete estático local.
-2. **Verificación de Actualizaciones con *Fallback* Silencioso**: El endpoint `GET /api/v1/system/updates` realiza una consulta externa hacia GitHub Releases (con un tiempo límite estricto de `3 segundos` y almacenamiento en caché de `6 horas`). Si el entorno carece de conexión a internet, devuelve `{ "online": false, "update_available": false }` con estado HTTP `200 OK` sin interrumpir el flujo de trabajo. Puede deshabilitarse definiendo la variable de entorno `OPENPDF_DISABLE_UPDATE_CHECK=1`.
-3. **Asignación Dinámica de Puerto, Ventana Dedicada y Endurecimiento de Rutas**: Al iniciarse como ejecutable de escritorio, el servidor selecciona automáticamente el primer puerto disponible en el rango `8000–8010` (o el indicado en `OPENPDF_PORT`), lanza una ventana nativa dedicada en modo aplicación (`--app`) cuando detecta Microsoft Edge o Google Chrome, y valida todas las rutas de archivos estáticos mediante `Path.resolve()` para impedir vulnerabilidades de *path traversal*.
+> **Existing OpenPDF v2.x users**: Tornio automatically migrates `%LOCALAPPDATA%\OpenPDF\config.json` and `tessdata\*.traineddata` into `%LOCALAPPDATA%\Tornio` on first launch without overwriting existing Tornio settings.
 
 ---
 
-## Guía de Desarrollo y Ejecución Local
+## Interface Preview
 
-### Requisitos Previos
-- **Python 3.12+**
-- **Node.js 18+ / 20+**
-- *(Opcional)* **Tesseract OCR** y **Microsoft Word** o **LibreOffice** (instalables o vinculables en 1 clic desde el Centro de Módulos de la aplicación).
+<div align="center">
+  <img src="assets/overview.jpg" alt="Tornio Home Launchpad and Precision Core" width="100%">
+  <br>
+  <em>Figure 1: Tornio Home featuring the calibrated Precision Core (6-engine telemetry &amp; drop zone), 7 Studios, career workspace presets, and Alt+1..9 shortcuts.</em>
+</div>
 
-### 1. Iniciar el Servidor Backend
+<br>
+
+<div align="center">
+  <img src="assets/tools.jpg" alt="Documents and PDF Studio" width="100%">
+  <br>
+  <em>Figure 2: Documents &amp; PDF Studio with live local capability badges (OCR / Word-to-PDF) and Dual-Tone architectural tool cards.</em>
+</div>
+
+<br>
+
+<div align="center">
+  <img src="assets/workflow.jpg" alt="Automated Local Pipelines" width="100%">
+  <br>
+  <em>Figure 3: Multi-step local pipeline builder executing sequential file transformations privately in memory and local temp storage.</em>
+</div>
+
+---
+
+## 7 Studios & 58 Local Tools
+
+Tornio organizes 58 active tools (`TOOL_COUNT = 58`) across 7 specialized Studios inside one consistent workbench:
+
+| Studio | Active Tools | Core Capabilities &amp; Local Engines | Execution Model |
+| :--- | :---: | :--- | :--- |
+| **Documents &amp; PDF** | `24` | Merge, Split, Organize, Rotate, Compress, OCR (Tesseract), Repair/Linearize, PDF to Word/JPG/Markdown/CSV Tables, Word to PDF (MS Word COM / LibreOffice), Watermark, Page Numbers, Metadata, Visual/Text Diff (`pdf-diff`), Handwritten Signature/Stamp, Irreversible Physical Redaction, AES Encryption/Unlock, URL-to-PDF, Translate PDF, QR Stamp/Inspect | 21 100% Offline, 3 Anti-SSRF Web |
+| **Video Studio** | `8` | Interactive `ffprobe` + IN/OUT trim workbench with live SSE queue, Video to GIF, Extract Audio, Compress/Transcode, Contact-Sheet Thumbnails, Burn Subtitles, Merge Clips, Speed Multiplier (`FFmpeg`) | 100% Offline (Local Engine) |
+| **Audio Studio** | `6` | Format Conversion (`MP3`/`WAV`/`FLAC`/`OGG`/`M4A`), Precision Trim/Fade, EBU R128 Loudness Normalization, Denoise Filter, Track Merge, ID3 Metadata Editor (`FFmpeg`) | 100% Offline (Local Engine) |
+| **Images Studio** | `7` | WebP/AVIF Converter &amp; Document Scan Sharpness Enhancer, Optimizer, Resize/Crop, EXIF/GPS Metadata Scrubber, Local `U2NetP` ONNX / OpenCV Background Removal, ICO/Favicon Builder, Dominant Palette Inspector | 100% Offline |
+| **Files &amp; Dev Lab** | `6` | ZIP/TAR/GZ Archive Inspector &amp; Builder, SHA-256 Hash Verifier, `Scrypt + AES-256-GCM` Local Encrypted Vault, JSON/YAML/CSV/XML Transformer, Offline Regex &amp; Text Diff Lab, Batch SVG/PNG QR Generator | 100% Offline |
+| **Local AI Studio** | `4` | Offline CPU Speech Transcription (`faster-whisper` -> `SRT`/`TXT`), Local Windows `SAPI5` Text-to-Speech Narration, Extractive Document Summarizer, Structured RAG Chunker | 100% Offline |
+| **Web &amp; Online Capture** | `3` | Media Stream Archiver (`yt-dlp`), Clean Web-to-Markdown Article Clipper, HTTP Redirect &amp; TLS Header Inspector (`safe_public_get` Anti-SSRF) | Intentional Web + Anti-SSRF |
+
+---
+
+## Core Desktop & Engineering Capabilities
+
+- **Calibrated Precision Core (`EngineOrb3D`)**: Displays live local engine segments (`6` engines), real-time job progress, clickable CPU/RAM and free-disk telemetry popover, 1-click temp storage purge, and direct drag-and-drop file inspection.
+- **Session Files &amp; Multi-Step Pipelines**: Inspect any file via `/workspace`, chain outputs across studios without manual re-uploads, or run 5 prebuilt multi-step templates under `/pipelines`.
+- **Configurable Desktop Lifecycle**:
+  - **Clean Exit by Default (`keep_in_background: false`)**: Closing Tornio terminates the local server with zero background RAM; enable optional native `ctypes` Windows System Tray mode for instant reopen.
+  - **Windows Startup &amp; Explorer Integration**: Toggle per-user HKCU Windows autostart and `"Abrir con Tornio"` Explorer context menu from the installer or *Settings -> System &amp; Desktop* without admin privileges.
+  - **Single-Instance Wake**: Opening `Tornio.exe` or Explorer-selected files while running routes cleanly to the active instance via `/api/v1/system/open-window`.
+- **Cryptographic Self-Updater (`SelfUpdaterManager`)**: Supports `notify`, `auto`, and offline `manual` modes (`<= 3s` check timeout, 6-hour local cache). Enforces strict GitHub HTTPS host allowlists and constant-time `SHA-256` digest verification against `SHA256SUMS.txt` before execution.
+- **Safety &amp; Performance Guards**: `1 MiB` streaming uploads with magic-byte verification, pre-execution **Disk Space Quota Guard**, collision-safe numbered saving, millisecond subprocess cancellation via `X-Request-Id`, and explicit frontend Finite State Machines (`fsm.ts`).
+
+---
+
+## Tornio `[LOCAL-FIRST]` vs. Cloud SaaS Tools
+
+| Capability | Tornio (`v3.0.0`) | Typical Cloud SaaS Suites |
+| :--- | :--- | :--- |
+| **Data Residency** | `100%` on `127.0.0.1` (documents/media stay on disk) | Uploaded to third-party cloud servers |
+| **File &amp; Daily Quotas** | `500 MB` per file / `2 GB` multi-file merge, unlimited runs | Paywalled file sizes, daily limits, watermarks |
+| **Network Dependency** | Core studios work air-gapped; web tools clearly labeled | Requires constant internet connection |
+| **Multi-Domain Coverage** | `7` integrated Studios (`58` tools) + chained pipelines | Separate subscriptions for PDF, media, AI |
+| **Auditability &amp; Integrity** | Open source (`Apache 2.0`) + `SHA256SUMS.txt` builds | Closed server pipelines |
+
+---
+
+## Quick Start from Source
+
+Prerequisites: **Python 3.12+**, **Node.js 20 LTS**, and (for Windows installer builds) **Inno Setup 6**.
+
 ```powershell
+git clone https://github.com/albert-dilas/OpenPDF.git
+cd OpenPDF
+
+# 1. Install frontend dependencies & export static bundle
+npm --prefix frontend ci
+npm --prefix frontend run build
+
+# 2. Set up backend virtual environment
 cd backend
 python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements-dev.txt
+.\.venv\Scripts\python -m pip install --upgrade pip
+.\.venv\Scripts\python -m pip install -r requirements-dev.txt
+cd ..
 
-# Iniciar el servidor en http://127.0.0.1:8000
-uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+# 3. Run local server on http://127.0.0.1:8000
+.\backend\.venv\Scripts\python -m uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
 ```
 
-### 2. Ejecutar o Compilar el Frontend
-```powershell
-cd frontend
-npm install
-
-# Entorno de desarrollo con recarga en caliente (http://localhost:3000)
-npm run dev
-
-# Generar exportación estática en frontend/out/ para servirla desde FastAPI
-npm run build
-```
+To run test suites or build standalone Windows `.exe` / installer binaries, see [BUILD_GUIDE.md](BUILD_GUIDE.md).
 
 ---
 
-## Compilación y Empaquetado (.exe / Instalador)
+## Documentation Index
 
-El repositorio incluye scripts automatizados para generar tanto el binario autónomo (`OpenPDF.exe`) como el instalador de Windows (`OpenPDF_Setup_v2.2.0.exe`):
-
-```powershell
-# 1. Regenerar iconos HD (256px supersampled desde 1024px) y banners del instalador
-python scripts/prepare_assets.py
-
-# 2. Compilar frontend, empaquetar ejecutable PyInstaller y generar instalador Inno Setup
-python scripts/build_installer.py
-```
-
-Los artefactos compilados se depositan en el directorio `dist/`. Consulta [BUILD_GUIDE.md](BUILD_GUIDE.md) para información detallada sobre el proceso de construcción.
+- [ARCHITECTURE.md](ARCHITECTURE.md) — System topology, loopback isolation, Anti-SSRF `safe_public_get`, quota guards, and FSM architecture
+- [BUILD_GUIDE.md](BUILD_GUIDE.md) — Local environment setup, test verification, PyInstaller, and Inno Setup packaging pipeline
+- [CHANGELOG.md](CHANGELOG.md) — Detailed history of changes across `v2.2.0` and `v3.0.0`
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Coding rules, zero-emoji policy, and PR checklist
+- [SECURITY.md](SECURITY.md) — Supported versions, local threat model, and vulnerability reporting
+- [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) — Community standards
 
 ---
 
-## Pruebas y Calidad
+## License & Legal Governance
 
-```powershell
-# Suite de pruebas automatizadas del backend (80+ tests de integración, módulos y seguridad)
-cd backend
-.\.venv\Scripts\python -m pytest -v
+Tornio original source code is licensed under the **Apache License, Version 2.0** ([LICENSE](LICENSE) and [NOTICE](NOTICE)).
 
-# Análisis estático y verificación de tipos del frontend
-cd ../frontend
-npm run lint
-npx tsc --noEmit
-```
+**Combined Binary Notice**: Prebuilt Windows binaries (`Tornio.exe` and `Tornio_Setup_v3.0.0.exe`) bundle `PyMuPDF` (`fitz`) and `pymupdf4llm`, which are licensed under **GNU AGPL v3.0**. Complete corresponding source code and full third-party dependency attributions are maintained openly in this repository and itemized in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Optional external engines (`Tesseract OCR`, `FFmpeg`, `LibreOffice`, `yt-dlp`) remain separate and user-managed.
 
 ---
 
-## Contribuir
+## Support
 
-Consulta [CONTRIBUTING.md](CONTRIBUTING.md) para revisar las pautas de arquitectura, convenciones de código y proceso de envío de *Pull Requests*.
-
----
-
-## Licencia
-
-Este proyecto se distribuye bajo los términos de la [Licencia MIT](LICENSE).
+Tornio is free, open-source software with zero ads, paywalls, or telemetry. If it saves your team time or keeps sensitive documents off external clouds, you can support ongoing development through [GitHub Sponsors](https://github.com/sponsors/albert-dilas).

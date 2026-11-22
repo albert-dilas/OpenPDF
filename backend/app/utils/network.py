@@ -4,7 +4,7 @@ import re
 import socket
 import time
 from typing import Any, Dict, Optional
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import httpx
 
@@ -107,6 +107,41 @@ def _extract_html_title(raw_bytes: bytes) -> Optional[str]:
     return None
 
 
+REDIRECT_STATUS_CODES = {301, 302, 303, 307, 308}
+
+
+async def safe_public_get(
+    client: httpx.AsyncClient,
+    raw_url: str,
+    headers: dict,
+    timeout: float = 12.0,
+    max_redirects: int = 5,
+) -> httpx.Response:
+    """
+    Ejecuta peticiones GET bloqueando redirecciones automaticas y validando
+    con validate_public_http_url() antes de cada salto para evitar SSRF via 3xx.
+    """
+    current_url = validate_public_http_url(raw_url)
+    for hop in range(max_redirects + 1):
+        response = await client.get(
+            current_url,
+            headers=headers,
+            timeout=timeout,
+            follow_redirects=False,
+        )
+        if response.status_code in REDIRECT_STATUS_CODES:
+            location = response.headers.get("location") or response.headers.get("Location")
+            if not location:
+                return response
+            if hop >= max_redirects:
+                raise BusinessRuleError("Se supero el limite maximo de redirecciones permitidas.")
+            next_url = urljoin(current_url, str(location).strip())
+            current_url = validate_public_http_url(next_url)
+            continue
+        return response
+    raise BusinessRuleError("Se supero el limite maximo de redirecciones permitidas.")
+
+
 async def check_url_reachability(raw_url: str, timeout: float = 5.0) -> Dict[str, Any]:
     """
     Comprueba en línea si una URL pública responde correctamente.
@@ -115,16 +150,22 @@ async def check_url_reachability(raw_url: str, timeout: float = 5.0) -> Dict[str
     validated_url = validate_public_http_url(raw_url)
     start = time.perf_counter()
     headers = {
-        "User-Agent": f"OpenPDF/{settings.VERSION} (+https://github.com/albert-dilas/OpenPDF)",
+        "User-Agent": f"Tornio/{settings.VERSION} (+https://github.com/albert-dilas/OpenPDF)",
         "Accept": "text/html,application/xhtml+xml,application/pdf,*/*;q=0.8",
     }
 
     try:
-        async with httpx.AsyncClient(timeout=timeout, follow_redirects=True, max_redirects=5) as client:
-            response = await client.get(validated_url, headers=headers)
+        async with httpx.AsyncClient(timeout=timeout, follow_redirects=False) as client:
+            response = await safe_public_get(
+                client,
+                validated_url,
+                headers=headers,
+                timeout=timeout,
+                max_redirects=5,
+            )
             elapsed_ms = int((time.perf_counter() - start) * 1000)
 
-            final_url = str(response.url)
+            final_url = str(getattr(response, "url", None) or validated_url)
             # Validar también la URL final tras posibles redirecciones
             validate_public_http_url(final_url)
 

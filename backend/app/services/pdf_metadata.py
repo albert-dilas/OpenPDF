@@ -1,5 +1,5 @@
 from typing import Optional
-import fitz
+import pymupdf
 from fastapi.concurrency import run_in_threadpool
 from app.core.exceptions import BusinessRuleError, PDFProcessingError
 
@@ -15,7 +15,7 @@ class PDFMetadataService:
         keywords: Optional[str] = None,
     ) -> str:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error abriendo PDF: {str(e)}")
 

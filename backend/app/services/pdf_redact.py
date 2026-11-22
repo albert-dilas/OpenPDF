@@ -1,7 +1,7 @@
 """Servicio 100% local para censurar y purgar datos sensibles de forma irreversible en archivos PDF."""
 import re
 from typing import List, Optional, Tuple
-import fitz
+import pymupdf
 from fastapi.concurrency import run_in_threadpool
 
 from app.core.exceptions import BusinessRuleError, PDFProcessingError
@@ -53,7 +53,7 @@ class PDFRedactService:
             active_regexes.append(ID_CARD_REGEX)
 
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as exc:
             raise PDFProcessingError(f"Error abriendo el documento PDF: {str(exc)}")
 
@@ -63,7 +63,7 @@ class PDFRedactService:
                 raise BusinessRuleError("No se puede censurar un PDF protegido con contraseña.")
 
             for page in doc:
-                page_rects: List[fitz.Rect] = []
+                page_rects: List[pymupdf.Rect] = []
 
                 # 1. Búsqueda directa de términos o frases personalizadas
                 for term in parsed_terms:
@@ -93,7 +93,7 @@ class PDFRedactService:
                     for rect in page_rects:
                         page.add_redact_annot(rect, fill=fill_rgb)
                         total_redactions += 1
-                    page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_PIXELS)
+                    page.apply_redactions(images=pymupdf.PDF_REDACT_IMAGE_PIXELS)
 
             doc.save(output_path, garbage=3, deflate=True)
             return output_path, total_redactions

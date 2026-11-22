@@ -1,4 +1,4 @@
-import fitz
+import pymupdf
 import shutil
 from app.core.exceptions import PDFProcessingError, BusinessRuleError
 from fastapi.concurrency import run_in_threadpool
@@ -8,7 +8,7 @@ class PDFUnlockerService:
     @staticmethod
     def _unlock_sync(input_path: str, password: str, output_path: str) -> str:
         try:
-            doc = fitz.open(input_path)
+            doc = pymupdf.open(input_path)
         except Exception as e:
             raise PDFProcessingError(f"Error abriendo PDF: {str(e)}")
 

@@ -7,21 +7,23 @@ on:
     branches: [main, master]
 
 jobs:
-  # ──────────────────────────────────────────────
-  # JOB 1: Tests del backend (Python + pytest)
-  # ──────────────────────────────────────────────
   backend-tests:
-    name: Backend Tests
+    name: Backend Tests (Python 3.12)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: backend
+    env:
+      TORNIO_DISABLE_UPDATE_CHECK: "1"
+      TORNIO_DISABLE_REGISTRY_SYNC: "1"
+      TORNIO_UPDATER_DRY_RUN: "1"
+      TORNIO_DISABLE_SHELL_OPEN: "1"
 
     steps:
-      - name: Checkout código
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configurar Python 3.12
+      - name: Set up Python 3.12
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -30,10 +32,10 @@ jobs:
             backend/requirements.txt
             backend/requirements-dev.txt
 
-      - name: Instalar dependencias
+      - name: Install backend dependencies
         run: pip install -r requirements-dev.txt
 
-      - name: Ejecutar pytest (excluir tests que requieren apps externas)
+      - name: Run pytest suite
         run: |
           python -m pytest tests/ \
             -v \
@@ -41,32 +43,60 @@ jobs:
             -k "not (ocr and libreoffice)" \
             --ignore=tests/test_word_to_pdf.py
 
-  # ──────────────────────────────────────────────
-  # JOB 2: Lint y tipos del frontend (ESLint + TypeScript)
-  # ──────────────────────────────────────────────
   frontend-checks:
-    name: Frontend Lint & Types
+    name: Frontend Lint, Types & Static Build
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: frontend
 
     steps:
-      - name: Checkout código
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configurar Node.js 20
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: "20"
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Instalar dependencias
+      - name: Install dependencies
         run: npm ci
 
-      - name: ESLint
+      - name: ESLint check
         run: npm run lint
 
       - name: TypeScript type check
         run: npx tsc --noEmit
+
+      - name: Next.js static export build
+        run: npm run build
+
+  hygiene-zero-emojis:
+    name: Repository Hygiene (Zero Emojis)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify zero emojis in tracked source and docs
+        run: |
+          python - << 'PY'
+          import pathlib, re, subprocess, sys
+          pat = re.compile(r'[\U0001F300-\U0001FAFF\u2600-\u27BF]')
+          exts = {'.py', '.ts', '.tsx', '.js', '.jsx', '.css', '.html', '.md', '.iss', '.spec', '.txt', '.yml', '.yaml', '.json'}
+          tracked = subprocess.check_output(['git', 'ls-files'], text=True).splitlines()
+          bad = []
+          for rel in tracked:
+              p = pathlib.Path(rel)
+              if p.is_file() and p.suffix.lower() in exts:
+                  hits = pat.findall(p.read_text(encoding='utf-8', errors='ignore'))
+                  if hits:
+                      bad.append((rel, hits[:5]))
+          if bad:
+              print('Emoji violations found:', bad)
+              sys.exit(1)
+          print(f'Verified zero emojis across {len(tracked)} tracked files.')
+          PY
